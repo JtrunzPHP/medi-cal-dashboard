@@ -1,165 +1,121 @@
 #!/usr/bin/env python3
-"""Process downloaded DHCS CSV files into JSON for the dashboard."""
+"""Process DHCS CSV files into compact JSON for the dashboard."""
 
-import csv
-import json
-import io
-import os
-import re
+import csv, json, os, re
 from datetime import datetime
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_DIR = os.path.join(SCRIPT_DIR, "..")
-ENROLLMENT_CSV = os.path.join(REPO_DIR, "tmp", "enrollment.csv")
-LANGUAGE_CSV = os.path.join(REPO_DIR, "tmp", "language.csv")
-OUT_DIR = os.path.join(REPO_DIR, "data")
+DIR = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.join(DIR, "..")
+E_CSV = os.path.join(REPO, "tmp", "enrollment.csv")
+L_CSV = os.path.join(REPO, "tmp", "language.csv")
+OUT = os.path.join(REPO, "data")
 
-
-def parse_int(val):
-    if not val or val.strip() in ("", "None"):
-        return 0
-    cleaned = re.sub(r"[\s,\"\u00a0]", "", val.strip())
-    try:
-        return int(cleaned)
-    except ValueError:
-        try:
-            return int(float(cleaned))
-        except ValueError:
-            return 0
-
+def pint(v):
+    if not v: return 0
+    c = re.sub(r"[\s,\"\u00a0]", "", str(v).strip())
+    if c in ("", "None"): return 0
+    try: return int(c)
+    except: 
+        try: return int(float(c))
+        except: return 0
 
 def process_enrollment():
-    print("=== Processing Enrollment CSV ===")
-    if not os.path.exists(ENROLLMENT_CSV):
-        print("  ERROR: enrollment.csv not found")
-        return None
-
-    size_mb = os.path.getsize(ENROLLMENT_CSV) / (1024 * 1024)
-    print(f"  CSV file size: {size_mb:.1f} MB")
-
-    with open(ENROLLMENT_CSV, "r", encoding="utf-8-sig") as f:
+    print("=== Enrollment ===")
+    if not os.path.exists(E_CSV):
+        print("  ERROR: enrollment.csv missing"); return None
+    print(f"  Size: {os.path.getsize(E_CSV)/(1024*1024):.1f} MB")
+    
+    with open(E_CSV, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
-        headers = [h.strip() for h in (reader.fieldnames or [])]
-        print(f"  Headers: {headers}")
-
         rows = []
-        skipped = 0
         for r in reader:
             h = {k.strip(): v for k, v in r.items()}
-            month = h.get("Enrollment Month", "").strip()
-            if not month or month < "2020-01":
-                skipped += 1
-                continue
-
-            count_val = ""
-            for key in h:
-                if "count" in key.lower() and "enrollee" in key.lower():
-                    count_val = h[key]
-                    break
-
-            rows.append({
-                "m": month,
-                "pt": h.get("Plan Type", "").strip(),
-                "co": h.get("County", "").strip(),
-                "p": h.get("Plan Name", "").strip(),
-                "c": parse_int(count_val),
-            })
-
-    print(f"  Parsed {len(rows)} records, skipped {skipped} (pre-2020)")
-
-    # Debug: show unique plan names containing key MCO names
+            m = h.get("Enrollment Month", "").strip()
+            if not m or m < "2020-01": continue
+            cv = ""
+            for k in h:
+                if "count" in k.lower() and "enrollee" in k.lower(): cv = h[k]; break
+            rows.append({"m": m, "pt": h.get("Plan Type","").strip(),
+                         "co": h.get("County","").strip(), "p": h.get("Plan Name","").strip(),
+                         "c": pint(cv)})
+    
+    # Debug MCO mapping
     plans = set(r["p"] for r in rows)
-    for keyword in ["molina", "health net", "anthem", "la care", "l.a. care"]:
-        matches = [p for p in plans if keyword in p.lower()]
-        print(f"  Plans matching '{keyword}': {matches[:5]}")
-
+    for kw in ["molina","health net","anthem","la care","blue cross","inland","kaiser"]:
+        hits = sorted([p for p in plans if kw in p.lower()])
+        if hits: print(f"  '{kw}': {hits[:6]}")
+    
+    # Debug county coverage
+    latest_m = max(r["m"] for r in rows)
+    for kw in ["molina","health net","anthem"]:
+        ctys = sorted(set(r["co"] for r in rows if r["m"]==latest_m and kw in r["p"].lower()))
+        print(f"  {kw} counties ({latest_m}): {ctys}")
+    
+    print(f"  Total: {len(rows)} records")
     return rows
-
 
 def process_language():
-    print("\n=== Processing Language CSV ===")
-    if not os.path.exists(LANGUAGE_CSV):
-        print("  WARNING: language.csv not found")
-        return None
-
-    size = os.path.getsize(LANGUAGE_CSV)
-    if size < 100:
-        print(f"  WARNING: language.csv too small ({size} bytes), likely empty/error")
-        return None
-
-    print(f"  CSV file size: {size / (1024 * 1024):.1f} MB")
-
-    with open(LANGUAGE_CSV, "r", encoding="utf-8-sig") as f:
-        first_line = f.readline()
-        print(f"  First line: {first_line[:200]}")
+    """Process newly-eligible language data (statewide, quarterly)."""
+    print("\n=== Language (Newly Eligible) ===")
+    if not os.path.exists(L_CSV):
+        print("  WARNING: language.csv missing"); return None
+    sz = os.path.getsize(L_CSV)
+    if sz < 200:
+        print(f"  WARNING: too small ({sz}b)"); return None
+    print(f"  Size: {sz/(1024*1024):.2f} MB")
+    
+    with open(L_CSV, "r", encoding="utf-8-sig") as f:
+        first = f.readline(); print(f"  Header: {first.strip()[:120]}")
         f.seek(0)
-
         reader = csv.DictReader(f)
-        headers = [h.strip() for h in (reader.fieldnames or [])]
-        print(f"  Headers: {headers[:8]}")
-
-        moe_col = next((h for h in headers if "month" in h.lower() or "eligibility" in h.lower()), headers[0])
-        county_col = next((h for h in headers if "county" in h.lower()), headers[1] if len(headers) > 1 else None)
-        lang_col = next((h for h in headers if "language" in h.lower()), headers[2] if len(headers) > 2 else None)
-        count_col = next(
-            (h for h in headers if "certified" in h.lower() or "count" in h.lower() or "eligible" in h.lower()),
-            headers[3] if len(headers) > 3 else None,
-        )
-
-        if not all([county_col, lang_col, count_col]):
-            print(f"  WARNING: Could not detect columns")
-            return None
-
-        print(f"  Columns: month={moe_col}, county={county_col}, lang={lang_col}, count={count_col}")
-
+        hdrs = [h.strip() for h in (reader.fieldnames or [])]
+        print(f"  Columns: {hdrs}")
+        
+        # Expected: Year, Reporting Period, Primary Language, Number of Eligible Individuals
+        period_col = next((h for h in hdrs if "period" in h.lower() or "quarter" in h.lower()), 
+                         next((h for h in hdrs if "year" in h.lower()), hdrs[0]))
+        lang_col = next((h for h in hdrs if "language" in h.lower()), hdrs[2] if len(hdrs)>2 else None)
+        count_col = next((h for h in hdrs if "number" in h.lower() or "eligible" in h.lower() or "count" in h.lower()), 
+                        hdrs[3] if len(hdrs)>3 else None)
+        
+        if not lang_col or not count_col:
+            print(f"  WARNING: cant detect columns"); return None
+        print(f"  Using: period={period_col}, lang={lang_col}, count={count_col}")
+        
         rows = []
         for r in reader:
             h = {k.strip(): v for k, v in r.items()}
-            month = h.get(moe_col, "").strip()
-            if not month or month < "2020-01":
-                continue
-            rows.append({
-                "m": month,
-                "co": h.get(county_col, "").strip(),
-                "lang": h.get(lang_col, "").strip(),
-                "c": parse_int(h.get(count_col, "")),
-            })
-
-    print(f"  Parsed {len(rows)} records")
-    if rows:
-        counties = set(r["co"] for r in rows)
-        langs = set(r["lang"] for r in rows)
-        print(f"  Counties: {len(counties)}, Languages: {len(langs)}")
-        print(f"  Sample languages: {list(langs)[:10]}")
-
+            period = h.get(period_col, "").strip()
+            lang = h.get(lang_col, "").strip()
+            count = pint(h.get(count_col, ""))
+            if not period or not lang: continue
+            rows.append({"q": period, "lang": lang, "c": count})
+    
+    periods = sorted(set(r["q"] for r in rows))
+    langs = sorted(set(r["lang"] for r in rows))
+    print(f"  Periods: {periods[:5]}...{periods[-3:]}")
+    print(f"  Languages: {langs[:8]}...")
+    print(f"  Total: {len(rows)} records")
     return rows
 
-
 def main():
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(OUT, exist_ok=True)
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
+    
     enrollment = process_enrollment()
     if enrollment:
-        path = os.path.join(OUT_DIR, "enrollment.json")
-        with open(path, "w") as f:
-            json.dump({"updated": now, "data": enrollment}, f)
-        print(f"  Wrote enrollment.json ({os.path.getsize(path) / (1024*1024):.1f} MB)")
+        p = os.path.join(OUT, "enrollment.json")
+        with open(p, "w") as f: json.dump({"updated": now, "data": enrollment}, f)
+        print(f"  Wrote enrollment.json ({os.path.getsize(p)/(1024*1024):.1f} MB)")
     else:
-        print("  FAILED: No enrollment data")
-        exit(1)
-
+        print("  FAILED"); exit(1)
+    
     language = process_language()
     if language:
-        path = os.path.join(OUT_DIR, "language.json")
-        with open(path, "w") as f:
-            json.dump({"updated": now, "data": language}, f)
-        print(f"  Wrote language.json ({os.path.getsize(path) / (1024*1024):.1f} MB)")
-    else:
-        print("  Skipped language.json")
-
+        p = os.path.join(OUT, "language.json")
+        with open(p, "w") as f: json.dump({"updated": now, "data": language}, f)
+        print(f"  Wrote language.json ({os.path.getsize(p)/(1024*1024):.2f} MB)")
+    
     print("\nDone!")
 
-
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__": main()
