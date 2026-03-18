@@ -18,6 +18,14 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull latest changes first
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -42,11 +50,8 @@ jobs:
       - name: Process CSVs into JSON
         run: python scripts/fetch_data.py
 
-      - name: Commit updated data files
+      - name: Commit and push data files
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
           git add data/
           if git diff --cached --quiet; then
             echo "No data changes detected"
