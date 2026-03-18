@@ -3,479 +3,372 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>California Medi-Cal Managed Care Dashboard</title>
+<title>CA Medi-Cal MCO Enrollment Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
-.header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:20px 24px;border-bottom:1px solid #3730a3}
-.header h1{font-size:20px;font-weight:700}
-.header-sub{font-size:12px;color:#a5b4fc;margin-top:4px}
+body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif}
+.hdr{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:18px 24px;border-bottom:1px solid #3730a3}
+.hdr h1{font-size:19px;font-weight:700}.hdr-sub{font-size:11px;color:#a5b4fc;margin-top:4px}
 .tabs{display:flex;background:#1e1e2e;border-bottom:1px solid #2d2d44;overflow-x:auto}
-.tab{padding:12px 20px;font-size:13px;background:none;border:none;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
-.tab.active{color:#a5b4fc;font-weight:600;border-bottom-color:#6366f1}
-.tab:hover{color:#c7d2fe}
-.content{padding:20px 24px;max-width:1200px;display:none}
-.content.active{display:block}
-.kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-.kpi{background:#1e1e2e;border-radius:10px;padding:14px 18px;min-width:140px;flex:1}
-.kpi-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px}
-.kpi-value{font-size:22px;font-weight:700;color:#e2e8f0;margin-top:4px}
-.kpi-sub{font-size:11px;margin-top:2px}
+.tb{padding:11px 18px;font-size:13px;background:none;border:none;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
+.tb.a{color:#a5b4fc;font-weight:600;border-bottom-color:#6366f1}.tb:hover{color:#c7d2fe}
+.wrap{padding:20px 24px;max-width:1260px;display:none}.wrap.a{display:block}
+.kr{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.k{background:#1e1e2e;border-radius:10px;padding:12px 16px;min-width:130px;flex:1}
+.kl{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.8px}
+.kv{font-size:20px;font-weight:700;margin-top:3px}.ks{font-size:11px;margin-top:2px}
 .pos{color:#10b981}.neg{color:#ef4444}
-.card{background:#1e1e2e;border-radius:10px;padding:16px;margin-bottom:16px}
-.section-title{font-size:14px;font-weight:600;margin-bottom:10px;margin-top:20px}
-.note-box{background:#1e1e2e;border-radius:10px;padding:16px;margin-bottom:16px;font-size:12px;color:#94a3b8;border-left:3px solid #6366f1;line-height:1.6}
-.note-box strong{color:#e2e8f0}
+.cd{background:#1e1e2e;border-radius:10px;padding:14px;margin-bottom:14px}
+.st{font-size:13px;font-weight:600;margin:16px 0 8px}
+.nb{background:#1e1e2e;border-radius:10px;padding:14px;margin-bottom:14px;font-size:12px;color:#94a3b8;border-left:3px solid #6366f1;line-height:1.6}
+.nb b{color:#e2e8f0}
 select{background:#1e1e2e;color:#e2e8f0;border:1px solid #3730a3;border-radius:6px;padding:6px 12px;font-size:13px;font-family:inherit}
-.footer{margin-top:32px;padding:16px 0;border-top:1px solid #2d2d44;font-size:11px;color:#64748b;line-height:1.6}
-.loader{min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
-.spinner{width:40px;height:40px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:16px 0}
-@keyframes spin{to{transform:rotate(360deg)}}
-canvas{max-height:350px}
-.lang-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2d2d44;font-size:12px}
-.lang-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:8px;vertical-align:middle}
-.two-col{display:flex;gap:20px;flex-wrap:wrap}
-.two-col>div{flex:1;min-width:280px}
-.error-msg{color:#ef4444;font-size:18px;font-weight:600}
+.ft{margin-top:28px;padding:14px 0;border-top:1px solid #2d2d44;font-size:10px;color:#64748b;line-height:1.5}
+.ld{min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
+.sp{width:36px;height:36px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:s 1s linear infinite;margin:14px 0}
+@keyframes s{to{transform:rotate(360deg)}}
+canvas{max-height:340px}
+.lr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #2d2d44;font-size:12px}
+.ld2{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:7px;vertical-align:middle}
+.tc{display:flex;gap:16px;flex-wrap:wrap}.tc>div{flex:1;min-width:260px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 6px;border-bottom:1px solid #3730a3;color:#94a3b8;font-weight:600;font-size:10px;text-transform:uppercase}
+td{padding:7px 6px;border-bottom:1px solid #1e1e2e}
+tr:hover td{background:#1a1a2e}
+.chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <h1>California Medi-Cal Managed Care Dashboard</h1>
-  <div class="header-sub" id="header-sub">Source: DHCS Open Data Portal | Loading...</div>
+<div class="hdr">
+  <h1>California Medi-Cal — Public MCO Enrollment Tracker</h1>
+  <div class="hdr-sub" id="hsub">Source: DHCS Open Data Portal | Loading...</div>
+</div>
+<div class="tabs" id="tbar"></div>
+<div id="loader" class="ld">
+  <div style="font-size:17px;font-weight:600">Loading DHCS Enrollment Data...</div>
+  <div class="sp"></div>
 </div>
 
-<div class="tabs" id="tab-bar">
-  <button class="tab active" onclick="showTab(0)">Overview</button>
-  <button class="tab" onclick="showTab(1)">County Deep Dive</button>
-  <button class="tab" onclick="showTab(2)">MOH vs CNC</button>
-  <button class="tab" onclick="showTab(3)">Language / Immigration Proxy</button>
+<div class="wrap" id="t0">
+  <div class="nb"><b>Investment Thesis Tracker:</b> This dashboard maps CA DHCS Medi-Cal managed care enrollment to public MCO tickers.
+  Use quarterly membership trends to validate management guidance and spot enrollment acceleration/deceleration ahead of earnings.
+  Data refreshes monthly from DHCS administrative records — the most accurate source available.</div>
+  <div class="st">Public MCO Scorecard — Latest Available Month</div>
+  <div id="score"></div>
+  <div class="st">Total CA Managed Care Enrollment (Medical Plans Only)</div>
+  <div class="cd"><canvas id="c_total"></canvas></div>
+  <div class="st">Quarterly Enrollment by Public MCO (Fiscal Quarters)</div>
+  <div class="cd"><canvas id="c_qtr"></canvas></div>
 </div>
 
-<div id="loader" class="loader">
-  <div style="font-size:18px;font-weight:600">Loading Medi-Cal Data...</div>
-  <div class="spinner"></div>
-  <div style="font-size:13px;color:#94a3b8">Fetching DHCS enrollment data</div>
+<div class="wrap" id="t1">
+  <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px">
+    <label style="font-size:13px;color:#94a3b8">Select Company:</label>
+    <select id="coSel" onchange="renderCo()">
+      <option value="molina">MOH — Molina Healthcare</option>
+      <option value="health net">CNC — Centene / Health Net</option>
+      <option value="anthem">ELV — Elevance / Anthem Blue Cross</option>
+    </select>
+  </div>
+  <div class="kr" id="co_kpis"></div>
+  <div class="st" id="co_title">Monthly Enrollment Trend</div>
+  <div class="cd"><canvas id="c_co"></canvas></div>
+  <div class="st" id="co_cty_title">Enrollment by County — Latest Month</div>
+  <div class="cd"><canvas id="c_co_cty"></canvas></div>
+  <div class="st">CA Market Share Trend (% of Total Managed Care)</div>
+  <div class="cd"><canvas id="c_co_share"></canvas></div>
 </div>
 
-<!-- TAB 0: OVERVIEW -->
-<div class="content" id="tab0">
-  <div class="kpi-row" id="overview-kpis"></div>
-  <div class="section-title">Total Medi-Cal Managed Care Enrollment (Excl. Dental/PACE)</div>
-  <div class="card"><canvas id="chart-total"></canvas></div>
-  <div class="section-title" id="top-counties-title">Top 10 Counties</div>
-  <div class="card"><canvas id="chart-counties"></canvas></div>
-</div>
-
-<!-- TAB 1: COUNTY DEEP DIVE -->
-<div class="content" id="tab1">
-  <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+<div class="wrap" id="t2">
+  <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px">
     <label style="font-size:13px;color:#94a3b8">Select County:</label>
-    <select id="county-select" onchange="renderCountyTab()"></select>
+    <select id="ctySel" onchange="renderCty()"></select>
   </div>
-  <div class="kpi-row" id="county-kpis"></div>
-  <div class="section-title" id="county-trend-title">Enrollment Trend</div>
-  <div class="card"><canvas id="chart-county-trend"></canvas></div>
-  <div class="section-title" id="county-plans-title">Plans - Latest Month</div>
-  <div class="card"><canvas id="chart-county-plans"></canvas></div>
+  <div class="kr" id="cty_kpis"></div>
+  <div class="st" id="cty_trend_t">County Enrollment Trend</div>
+  <div class="cd"><canvas id="c_cty"></canvas></div>
+  <div class="st" id="cty_plans_t">Plans — Latest Month</div>
+  <div class="cd"><canvas id="c_cty_plans"></canvas></div>
 </div>
 
-<!-- TAB 2: MOH vs CNC -->
-<div class="content" id="tab2">
-  <div class="note-box">
-    <strong>MOH (Molina Healthcare)</strong> operates as "Molina Healthcare of California" across multiple CA counties.
-    <strong>CNC (Centene)</strong> operates as "Health Net" in California Medi-Cal managed care.
-    In LA County, Health Net is the Two-Plan model partner alongside L.A. Care Health Plan.
-  </div>
-  <div class="kpi-row" id="moh-kpis"></div>
-  <div class="section-title">Statewide: Molina vs Health Net (Centene)</div>
-  <div class="card"><canvas id="chart-moh-cnc"></canvas></div>
-  <div class="section-title">MOH vs CNC by County - Latest Month</div>
-  <div class="card"><canvas id="chart-moh-county"></canvas></div>
-  <div class="section-title">LA County: Health Net vs L.A. Care (Two-Plan Partners)</div>
-  <div class="card"><canvas id="chart-la-plans"></canvas></div>
-</div>
-
-<!-- TAB 3: LANGUAGE -->
-<div class="content" id="tab3">
-  <div class="note-box">
-    <strong>Data Source:</strong> DHCS Certified Eligibles by Primary Language, by county and month.
-    Primary language serves as a proxy for immigration patterns. Growth in non-English populations
-    (Spanish, Mandarin, Vietnamese, Korean, Armenian, etc.) indicates demographic shifts.
-  </div>
-  <div class="kpi-row" id="lang-kpis"></div>
-  <div class="section-title">LA County: Non-English vs English Medi-Cal Population</div>
-  <div class="card"><canvas id="chart-lang-trend"></canvas></div>
-  <div class="section-title">Language Distribution - LA County (Latest Month)</div>
-  <div class="two-col">
-    <div class="card"><canvas id="chart-lang-pie"></canvas></div>
-    <div class="card" id="lang-table"></div>
+<div class="wrap" id="t3">
+  <div class="nb"><b>Immigration Proxy:</b> DHCS tracks primary language of Medi-Cal beneficiaries by county. Growth in non-English speaking populations (Spanish, Mandarin, Vietnamese, Korean, Armenian, Tagalog) can indicate demographic shifts driven by immigration and may signal future enrollment growth or mix changes for MCOs.</div>
+  <div class="kr" id="lang_kpis"></div>
+  <div class="st">LA County: English vs Non-English Medi-Cal Beneficiaries</div>
+  <div class="cd"><canvas id="c_lang"></canvas></div>
+  <div class="st">Language Distribution — LA County (Latest Available)</div>
+  <div class="tc">
+    <div class="cd"><canvas id="c_pie"></canvas></div>
+    <div class="cd" id="ltbl"></div>
   </div>
 </div>
 
-<div style="padding:0 24px;max-width:1200px">
-  <div class="footer" id="footer">
-    <strong>Data Sources:</strong> CA DHCS Open Data Portal - Medi-Cal Managed Care Enrollment Report &amp; Certified Eligibles by Primary Language.
-    Auto-refreshes via GitHub Actions monthly. MOH = Molina Healthcare (NYSE: MOH). CNC = Centene Corp (NYSE: CNC), operating as Health Net in CA.
+<div style="padding:0 24px;max-width:1260px">
+  <div class="ft">
+    <b>Data:</b> CA DHCS Open Data Portal — Medi-Cal Managed Care Enrollment Report &amp; Certified Eligibles by Primary Language. Auto-refreshes via GitHub Actions on the 15th of each month.<br>
+    <b>Ticker Map:</b> MOH = Molina Healthcare of CA | CNC = Centene Corp (operates as Health Net in CA) | ELV = Elevance Health (operates as Anthem Blue Cross Partnership Plan in CA)<br>
+    <b>Note:</b> Enrollment counts are point-in-time administrative records. Plans ramping up or winding down may show non-representative counts for 1-2 months.
   </div>
 </div>
 
 <script>
-/* ===== GLOBALS ===== */
-var DATA = null;
-var LANG = null;
-var CHARTS = {};
-var CURRENT_TAB = 0;
-var COLORS = ["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16"];
+var D=null,L=null,CH={},CT=0;
+var CL=["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16"];
+var MCO={molina:{tk:"MOH",nm:"Molina Healthcare",cl:"#0ea5e9"},
+  "health net":{tk:"CNC",nm:"Centene / Health Net",cl:"#f97316"},
+  anthem:{tk:"ELV",nm:"Elevance / Anthem",cl:"#10b981"}};
 
-Chart.defaults.color = "#94a3b8";
-Chart.defaults.borderColor = "#2d2d44";
-Chart.defaults.font.size = 11;
-Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.color="#94a3b8";Chart.defaults.borderColor="#2d2d44";Chart.defaults.font.size=11;
+Chart.defaults.plugins.legend.labels.boxWidth=12;
 
-/* ===== HELPERS ===== */
-function fmtK(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return(n/1e3).toFixed(0)+"K";return n.toString()}
-function fmtFull(n){return n?n.toLocaleString():"0"}
-function pct(a,b){return b?((a-b)/b*100).toFixed(1):"0"}
+function fK(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return Math.round(n/1e3)+"K";return""+n}
+function fF(n){return n?n.toLocaleString():"0"}
+function pct(a,b){return b?((a-b)/b*100).toFixed(1):"0.0"}
+function gB(a,k){var r={};for(var i=0;i<a.length;i++){var v=a[i][k];if(!r[v])r[v]=[];r[v].push(a[i])}return r}
+function sB(a,k){var s=0;for(var i=0;i<a.length;i++)s+=(a[i][k]||0);return s}
+function uq(a){var s={},o=[];for(var i=0;i<a.length;i++){if(a[i]&&!s[a[i]]){s[a[i]]=1;o.push(a[i])}}return o}
+function dC(id){if(CH[id]){CH[id].destroy();delete CH[id]}}
+function kpi(l,v,s,sc,c){return'<div class="k" style="border-left:3px solid '+(c||"#6366f1")+'"><div class="kl">'+l+'</div><div class="kv">'+v+'</div>'+(s?'<div class="ks '+(sc||"")+'">'+s+'</div>':'')+'</div>'}
 
-function groupBy(arr,key){
-  var result={};
-  for(var i=0;i<arr.length;i++){
-    var k=arr[i][key];
-    if(!result[k])result[k]=[];
-    result[k].push(arr[i]);
-  }
-  return result;
+function getP(){
+  if(!D)return[];
+  var skip={Dental:1,PACE:1,SCAN:1,"Special Project":1,"Primary Care Case Mgmt":1};
+  return D.filter(function(r){return!skip[r.pt]});
+}
+function isMCO(r,key){return r.p.toLowerCase().indexOf(key)!==-1}
+function mcoTotal(rows,key){return sB(rows.filter(function(r){return isMCO(r,key)}),"c")}
+function q(m){var p=m.split("-");var mo=parseInt(p[1]);if(mo<=3)return p[0]+"Q1";if(mo<=6)return p[0]+"Q2";if(mo<=9)return p[0]+"Q3";return p[0]+"Q4"}
+
+var TABS=["MCO Scorecard","Company Analysis","County Deep Dive","Language / Demographics"];
+function initTabs(){
+  var h="";for(var i=0;i<TABS.length;i++)h+='<button class="tb'+(i===0?" a":"")+'" onclick="showT('+i+')">'+TABS[i]+"</button>";
+  document.getElementById("tbar").innerHTML=h;
+}
+function showT(n){
+  CT=n;
+  var btns=document.querySelectorAll(".tb");for(var i=0;i<btns.length;i++)btns[i].className=i===n?"tb a":"tb";
+  for(var i=0;i<4;i++){var el=document.getElementById("t"+i);el.className=i===n?"wrap a":"wrap"}
+  if(n===1)renderCo();if(n===2)renderCty();
 }
 
-function sumBy(arr,key){
-  var s=0;for(var i=0;i<arr.length;i++)s+=(arr[i][key]||0);return s;
-}
-
-function uniq(arr){
-  var seen={},out=[];
-  for(var i=0;i<arr.length;i++){if(!seen[arr[i]]&&arr[i]){seen[arr[i]]=1;out.push(arr[i])}}
-  return out;
-}
-
-function makeKPI(label,value,sub,subClass,color){
-  return '<div class="kpi" style="border-left:3px solid '+(color||"#6366f1")+'">'
-    +'<div class="kpi-label">'+label+'</div>'
-    +'<div class="kpi-value">'+value+'</div>'
-    +(sub?'<div class="kpi-sub '+(subClass||"")+'">'+sub+'</div>':'')
-    +'</div>';
-}
-
-function destroyChart(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id]}}
-
-function getPlans(){
-  if(!DATA)return[];
-  var skip={"Dental":1,"PACE":1,"SCAN":1,"Special Project":1,"Primary Care Case Mgmt":1};
-  return DATA.filter(function(r){return !skip[r.pt]});
-}
-
-/* ===== TABS ===== */
-function showTab(n){
-  CURRENT_TAB=n;
-  var tabs=document.querySelectorAll('.tab');
-  for(var i=0;i<tabs.length;i++){tabs[i].className=i===n?'tab active':'tab'}
-  for(var i=0;i<4;i++){document.getElementById('tab'+i).className=i===n?'content active':'content'}
-  if(n===1)renderCountyTab();
-}
-
-/* ===== LOAD DATA ===== */
-function loadData(){
+function load(){
+  initTabs();
   Promise.all([
     fetch("data/enrollment.json").then(function(r){if(!r.ok)throw new Error("No data");return r.json()}),
     fetch("data/language.json").then(function(r){if(!r.ok)return null;return r.json()}).catch(function(){return null})
-  ]).then(function(results){
-    DATA=results[0].data;
-    if(results[1])LANG=results[1].data;
-    document.getElementById('loader').style.display='none';
-    document.getElementById('header-sub').textContent=
-      'Source: DHCS Open Data Portal | Data through '+(DATA.length?DATA[DATA.length-1].m:'?')
-      +' | Last refresh: '+(results[0].updated||'?')+' | Auto-updates monthly via GitHub Actions';
-    renderOverview();
-    buildCountySelect();
-    renderMOH();
-    renderLang();
-    showTab(0);
-  }).catch(function(e){
-    document.getElementById('loader').innerHTML=
-      '<div class="error-msg">Data Not Yet Available</div>'
-      +'<div style="font-size:13px;color:#94a3b8;margin-top:12px;max-width:520px;line-height:1.6">'
-      +'Go to your GitHub repo &rarr; Actions tab &rarr; click "Update Medi-Cal Data" &rarr; click "Run workflow".'
-      +'</div>';
+  ]).then(function(res){
+    D=res[0].data;if(res[1])L=res[1].data;
+    document.getElementById("loader").style.display="none";
+    var lm=D.length?D[D.length-1].m:"?";
+    document.getElementById("hsub").textContent="Source: DHCS Open Data Portal | Through "+lm+" | Refreshed: "+(res[0].updated||"?")+" | Auto-updates monthly";
+    renderScore();buildCtySel();renderLang();showT(0);
+  }).catch(function(){
+    document.getElementById("loader").innerHTML='<div style="color:#ef4444;font-size:17px;font-weight:600">Data Not Available</div><div style="color:#94a3b8;font-size:13px;margin-top:10px">Run the GitHub Action first: Actions → Update Medi-Cal Data → Run workflow</div>';
   });
 }
 
-/* ===== TAB 0: OVERVIEW ===== */
-function renderOverview(){
-  var plans=getPlans();
-  var byMonth=groupBy(plans,"m");
-  var months=Object.keys(byMonth).sort();
-  var totals=months.map(function(m){return sumBy(byMonth[m],"c")});
+/* ===== TAB 0: SCORECARD ===== */
+function renderScore(){
+  var P=getP(),bm=gB(P,"m"),ms=Object.keys(bm).sort();
+  var tots=ms.map(function(m){return sB(bm[m],"c")});
+  var lm=ms[ms.length-1],pm=ms.length>=2?ms[ms.length-2]:"",y1m=ms.length>=13?ms[ms.length-13]:"";
 
-  var last=totals[totals.length-1]||0;
-  var prev=totals.length>=2?totals[totals.length-2]:0;
-  var first=totals[0]||0;
-  var latestM=months[months.length-1]||"";
-  var counties=uniq(plans.map(function(r){return r.co}));
+  // Scorecard table
+  var html='<table><tr><th>Company</th><th>Ticker</th><th>Latest ('+lm+')</th><th>Prior Month</th><th>MoM %</th><th>YoY %</th><th>Counties</th></tr>';
+  Object.keys(MCO).forEach(function(key){
+    var info=MCO[key];
+    var curr=mcoTotal(bm[lm]||[],key);
+    var prev=pm?mcoTotal(bm[pm]||[],key):0;
+    var yago=y1m?mcoTotal(bm[y1m]||[],key):0;
+    var mom=pct(curr,prev),yoy=pct(curr,yago);
+    var ctys=uq((bm[lm]||[]).filter(function(r){return isMCO(r,key)}).map(function(r){return r.co}));
+    var momCls=parseFloat(mom)>=0?"pos":"neg";
+    var yoyCls=parseFloat(yoy)>=0?"pos":"neg";
+    html+='<tr><td><b style="color:'+info.cl+'">'+info.nm+'</b></td><td>'+info.tk+'</td>';
+    html+='<td style="font-weight:700">'+fF(curr)+'</td><td>'+fF(prev)+'</td>';
+    html+='<td class="'+momCls+'">'+mom+'%</td><td class="'+yoyCls+'">'+yoy+'%</td>';
+    html+='<td>'+ctys.length+' ('+ctys.join(", ")+')</td></tr>';
+  });
+  html+='</table>';
+  document.getElementById("score").innerHTML='<div class="cd">'+html+'</div>';
 
-  document.getElementById('overview-kpis').innerHTML=
-    makeKPI("Latest Month",latestM,"","","#6366f1")
-    +makeKPI("Total Enrollment",fmtK(last),pct(last,prev)+"% MoM",last>=prev?"pos":"neg","#10b981")
-    +makeKPI("3-Year Change",pct(last,first)+"%",fmtK(first)+" to "+fmtK(last),last>=first?"pos":"neg","#f59e0b")
-    +makeKPI("Counties",counties.length,"","","#8b5cf6");
-
-  document.getElementById('top-counties-title').textContent="Top 10 Counties - "+latestM;
-
-  destroyChart("chart-total");
-  CHARTS["chart-total"]=new Chart(document.getElementById("chart-total"),{
-    type:"line",
-    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[{
-      label:"Enrollees",data:totals,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.15)",fill:true,tension:0.3,pointRadius:0
-    }]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fmtK}}}}
+  // Total trend
+  dC("c_total");
+  CH.c_total=new Chart(document.getElementById("c_total"),{type:"line",
+    data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:"Total Enrollees",data:tots,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.12)",fill:true,tension:.3,pointRadius:0}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}
   });
 
-  // Top counties
-  var latestRows=plans.filter(function(r){return r.m===latestM});
-  var byCo=groupBy(latestRows,"co");
-  var coTotals=Object.keys(byCo).map(function(co){return{co:co,t:sumBy(byCo[co],"c")}});
-  coTotals.sort(function(a,b){return b.t-a.t});
-  var top10=coTotals.slice(0,10);
-
-  destroyChart("chart-counties");
-  CHARTS["chart-counties"]=new Chart(document.getElementById("chart-counties"),{
-    type:"bar",
-    data:{labels:top10.map(function(r){return r.co}),datasets:[{
-      label:"Enrollees",data:top10.map(function(r){return r.t}),backgroundColor:"#6366f1",borderRadius:4
-    }]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fmtK}}}}
-  });
-}
-
-/* ===== TAB 1: COUNTY ===== */
-function buildCountySelect(){
-  var plans=getPlans();
-  var counties=uniq(plans.map(function(r){return r.co})).sort();
-  var sel=document.getElementById("county-select");
-  sel.innerHTML=counties.map(function(c){
-    return '<option value="'+c+'"'+(c==="Los Angeles"?" selected":"")+'>'+c+'</option>';
-  }).join("");
-}
-
-function renderCountyTab(){
-  var county=document.getElementById("county-select").value;
-  var plans=getPlans().filter(function(r){return r.co===county});
-  var byMonth=groupBy(plans,"m");
-  var months=Object.keys(byMonth).sort();
-  var totals=months.map(function(m){return sumBy(byMonth[m],"c")});
-
-  var last=totals[totals.length-1]||0;
-  var first=totals[0]||0;
-  var latestM=months[months.length-1]||"";
-
-  // Plans in latest month
-  var latestRows=plans.filter(function(r){return r.m===latestM});
-  var byPlan=groupBy(latestRows,"p");
-  var planTotals=Object.keys(byPlan).map(function(p){return{name:p,count:sumBy(byPlan[p],"c")}});
-  planTotals.sort(function(a,b){return b.count-a.count});
-  var topP=planTotals.slice(0,8);
-
-  document.getElementById("county-kpis").innerHTML=
-    makeKPI(county+" Latest",fmtK(last),"","","#6366f1")
-    +makeKPI("3-Year Change",pct(last,first)+"%","","","#f59e0b")
-    +makeKPI("# Plans",topP.length,"","","#10b981");
-
-  document.getElementById("county-trend-title").textContent="Enrollment Trend - "+county+" County";
-  document.getElementById("county-plans-title").textContent="Plans in "+county+" - Latest Month";
-
-  destroyChart("chart-county-trend");
-  CHARTS["chart-county-trend"]=new Chart(document.getElementById("chart-county-trend"),{
-    type:"line",
-    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[{
-      label:"Enrollees",data:totals,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.15)",fill:true,tension:0.3,pointRadius:0
-    }]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fmtK}}}}
+  // Quarterly by MCO
+  var qs={};ms.forEach(function(m,i){var qr=q(m);if(!qs[qr])qs[qr]={};Object.keys(MCO).forEach(function(key){if(!qs[qr][key])qs[qr][key]=[];qs[qr][key].push(mcoTotal(bm[m]||[],key))})});
+  var qLabels=Object.keys(qs).sort();
+  var qDS=Object.keys(MCO).map(function(key){
+    return{label:MCO[key].tk,backgroundColor:MCO[key].cl,
+      data:qLabels.map(function(qr){var arr=qs[qr][key]||[];return arr.length?arr[arr.length-1]:0})};
   });
 
-  destroyChart("chart-county-plans");
-  CHARTS["chart-county-plans"]=new Chart(document.getElementById("chart-county-plans"),{
-    type:"bar",
-    data:{labels:topP.map(function(r){return r.name}),datasets:[{
-      label:"Enrollees",data:topP.map(function(r){return r.count}),backgroundColor:"#8b5cf6",borderRadius:4
-    }]},
-    options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fmtK}}}}
+  dC("c_qtr");
+  CH.c_qtr=new Chart(document.getElementById("c_qtr"),{type:"bar",
+    data:{labels:qLabels,datasets:qDS},
+    options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}
   });
 }
 
-/* ===== TAB 2: MOH vs CNC ===== */
-function renderMOH(){
-  var plans=getPlans();
-  var byMonth=groupBy(plans,"m");
-  var months=Object.keys(byMonth).sort();
+/* ===== TAB 1: COMPANY ANALYSIS ===== */
+function renderCo(){
+  var key=document.getElementById("coSel").value;
+  var info=MCO[key];
+  var P=getP(),bm=gB(P,"m"),ms=Object.keys(bm).sort();
+  var lm=ms[ms.length-1],pm=ms.length>=2?ms[ms.length-2]:"";
+  var y1m=ms.length>=13?ms[ms.length-13]:"";
+  var y3m=ms.length>=37?ms[ms.length-37]:"";
 
-  var molData=[],hnData=[];
-  months.forEach(function(m){
-    var rows=byMonth[m];
-    molData.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c"));
-    hnData.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c"));
+  var mcoData=ms.map(function(m){return mcoTotal(bm[m]||[],key)});
+  var totData=ms.map(function(m){return sB(bm[m]||[],"c")});
+  var shareData=ms.map(function(m,i){return totData[i]?(mcoData[i]/totData[i]*100):0});
+
+  var curr=mcoData[mcoData.length-1]||0;
+  var prev=pm?mcoData[mcoData.length-2]:0;
+  var yago=y1m?mcoData[ms.indexOf(y1m)]:0;
+  var y3ago=y3m?mcoData[ms.indexOf(y3m)]:0;
+
+  document.getElementById("co_kpis").innerHTML=
+    kpi("Latest ("+lm+")",fF(curr),"","",info.cl)
+    +kpi("MoM Change",pct(curr,prev)+"%",fF(curr-prev)+" members",parseFloat(pct(curr,prev))>=0?"pos":"neg","#6366f1")
+    +kpi("YoY Change",pct(curr,yago)+"%","vs "+fF(yago)+" 12mo ago",parseFloat(pct(curr,yago))>=0?"pos":"neg","#f59e0b")
+    +kpi("Market Share",(shareData[shareData.length-1]||0).toFixed(1)+"%","of total CA managed care","","#8b5cf6");
+
+  document.getElementById("co_title").textContent=info.nm+" — Monthly Enrollment";
+  document.getElementById("co_cty_title").textContent=info.nm+" — Enrollment by County ("+lm+")";
+
+  dC("c_co");
+  CH.c_co=new Chart(document.getElementById("c_co"),{type:"line",
+    data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:info.tk+" Enrollees",data:mcoData,borderColor:info.cl,backgroundColor:info.cl+"20",fill:true,tension:.3,pointRadius:0,borderWidth:2.5}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}
   });
 
-  var lastMol=molData[molData.length-1]||0;
-  var lastHN=hnData[hnData.length-1]||0;
+  // County breakdown
+  var lr=(bm[lm]||[]).filter(function(r){return isMCO(r,key)});
+  var byCo=gB(lr,"co");
+  var coArr=Object.keys(byCo).map(function(co){return{co:co,t:sB(byCo[co],"c")}}).sort(function(a,b){return b.t-a.t});
 
-  document.getElementById("moh-kpis").innerHTML=
-    makeKPI("Molina (Statewide)",fmtK(lastMol),"","","#0ea5e9")
-    +makeKPI("Health Net (Statewide)",fmtK(lastHN),"","","#f97316")
-    +makeKPI("Combined",fmtK(lastMol+lastHN),"","","#8b5cf6");
-
-  destroyChart("chart-moh-cnc");
-  CHARTS["chart-moh-cnc"]=new Chart(document.getElementById("chart-moh-cnc"),{
-    type:"line",
-    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[
-      {label:"Molina",data:molData,borderColor:"#0ea5e9",tension:0.3,pointRadius:0,borderWidth:2.5},
-      {label:"Health Net",data:hnData,borderColor:"#f97316",tension:0.3,pointRadius:0,borderWidth:2.5}
-    ]},
-    options:{responsive:true,scales:{y:{ticks:{callback:fmtK}}}}
+  dC("c_co_cty");
+  CH.c_co_cty=new Chart(document.getElementById("c_co_cty"),{type:"bar",
+    data:{labels:coArr.map(function(r){return r.co}),datasets:[{label:"Enrollees",data:coArr.map(function(r){return r.t}),backgroundColor:info.cl,borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fK}}}}
   });
 
-  // By county
-  var latestM=months[months.length-1];
-  var latestRows=plans.filter(function(r){return r.m===latestM});
-  var byCo=groupBy(latestRows,"co");
-  var coData=Object.keys(byCo).map(function(co){
-    var rows=byCo[co];
-    var mol=sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c");
-    var hn=sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c");
-    return{co:co,mol:mol,hn:hn,total:mol+hn};
-  }).filter(function(r){return r.total>0});
-  coData.sort(function(a,b){return b.total-a.total});
-  coData=coData.slice(0,12);
+  // Market share trend
+  dC("c_co_share");
+  CH.c_co_share=new Chart(document.getElementById("c_co_share"),{type:"line",
+    data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:"Market Share %",data:shareData,borderColor:"#a855f7",tension:.3,pointRadius:0,borderWidth:2}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v.toFixed(1)+"%"}}}}}
+  });
+}
 
-  destroyChart("chart-moh-county");
-  CHARTS["chart-moh-county"]=new Chart(document.getElementById("chart-moh-county"),{
-    type:"bar",
-    data:{labels:coData.map(function(r){return r.co}),datasets:[
-      {label:"Molina",data:coData.map(function(r){return r.mol}),backgroundColor:"#0ea5e9"},
-      {label:"Health Net",data:coData.map(function(r){return r.hn}),backgroundColor:"#f97316"}
-    ]},
-    options:{indexAxis:"y",responsive:true,scales:{x:{stacked:true,ticks:{callback:fmtK}},y:{stacked:true}}}
+/* ===== TAB 2: COUNTY ===== */
+function buildCtySel(){
+  var P=getP(),ctys=uq(P.map(function(r){return r.co})).sort();
+  var sel=document.getElementById("ctySel");
+  sel.innerHTML=ctys.map(function(c){return'<option value="'+c+'"'+(c==="Los Angeles"?" selected":"")+'>'+c+'</option>'}).join("");
+}
+
+function renderCty(){
+  var cty=document.getElementById("ctySel").value;
+  var P=getP().filter(function(r){return r.co===cty});
+  var bm=gB(P,"m"),ms=Object.keys(bm).sort();
+  var tots=ms.map(function(m){return sB(bm[m],"c")});
+  var lm=ms[ms.length-1]||"",first=tots[0]||0,last=tots[tots.length-1]||0;
+
+  var lr=P.filter(function(r){return r.m===lm});
+  var bp=gB(lr,"p");
+  var pArr=Object.keys(bp).map(function(p){
+    var t=sB(bp[p],"c");
+    var ticker="";
+    if(p.toLowerCase().indexOf("molina")!==-1)ticker="MOH";
+    else if(p.toLowerCase().indexOf("health net")!==-1)ticker="CNC";
+    else if(p.toLowerCase().indexOf("anthem")!==-1)ticker="ELV";
+    return{name:p,count:t,ticker:ticker};
+  }).sort(function(a,b){return b.count-a.count}).slice(0,10);
+
+  document.getElementById("cty_kpis").innerHTML=
+    kpi(cty+" Latest",fK(last),"","","#6366f1")
+    +kpi("5-Year Change",pct(last,first)+"%",fK(first)+" to "+fK(last),parseFloat(pct(last,first))>=0?"pos":"neg","#f59e0b")
+    +kpi("# Plans",pArr.length,"","","#10b981");
+
+  document.getElementById("cty_trend_t").textContent="Enrollment Trend — "+cty+" County";
+  document.getElementById("cty_plans_t").textContent="Plans in "+cty+" — "+lm;
+
+  dC("c_cty");
+  CH.c_cty=new Chart(document.getElementById("c_cty"),{type:"line",
+    data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:"Enrollees",data:tots,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.12)",fill:true,tension:.3,pointRadius:0}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}
   });
 
-  // LA: HN vs LA Care
-  var laPlans=plans.filter(function(r){return r.co==="Los Angeles"});
-  var laByMonth=groupBy(laPlans,"m");
-  var laMonths=Object.keys(laByMonth).sort();
-  var hnLA=[],lacLA=[];
-  laMonths.forEach(function(m){
-    var rows=laByMonth[m];
-    hnLA.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c"));
-    lacLA.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("la care")!==-1||r.p.toLowerCase().indexOf("l.a. care")!==-1}),"c"));
+  var planLabels=pArr.map(function(r){return r.ticker?(r.name+" ["+r.ticker+"]"):r.name});
+  var planColors=pArr.map(function(r){
+    if(r.ticker==="MOH")return"#0ea5e9";if(r.ticker==="CNC")return"#f97316";if(r.ticker==="ELV")return"#10b981";return"#8b5cf6";
   });
 
-  destroyChart("chart-la-plans");
-  CHARTS["chart-la-plans"]=new Chart(document.getElementById("chart-la-plans"),{
-    type:"line",
-    data:{labels:laMonths.map(function(m){return m.slice(2)}),datasets:[
-      {label:"Health Net",data:hnLA,borderColor:"#f97316",tension:0.3,pointRadius:0,borderWidth:2.5},
-      {label:"L.A. Care",data:lacLA,borderColor:"#6366f1",tension:0.3,pointRadius:0,borderWidth:2.5}
-    ]},
-    options:{responsive:true,scales:{y:{ticks:{callback:fmtK}}}}
+  dC("c_cty_plans");
+  CH.c_cty_plans=new Chart(document.getElementById("c_cty_plans"),{type:"bar",
+    data:{labels:planLabels,datasets:[{label:"Enrollees",data:pArr.map(function(r){return r.count}),backgroundColor:planColors,borderRadius:4}]},
+    options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fK}}}}
   });
 }
 
 /* ===== TAB 3: LANGUAGE ===== */
 function renderLang(){
-  if(!LANG){
-    document.getElementById("lang-kpis").innerHTML='<div class="card" style="width:100%;text-align:center;padding:24px"><div style="color:#f59e0b">Language data not available. Check GitHub Actions log.</div></div>';
+  if(!L||!L.length){
+    document.getElementById("lang_kpis").innerHTML='<div class="cd" style="width:100%;text-align:center;padding:20px;color:#f59e0b">Language data not available yet. The next GitHub Action run should fetch it.</div>';
     return;
   }
+  var la=L.filter(function(r){return(r.co||"").toLowerCase().indexOf("los angeles")!==-1});
+  if(!la.length){document.getElementById("lang_kpis").innerHTML='<div class="cd" style="width:100%;color:#f59e0b;padding:20px">No LA County language records found in data.</div>';return}
 
-  var laRows=LANG.filter(function(r){return(r.co||"").toLowerCase().indexOf("los angeles")!==-1});
-  if(!laRows.length){document.getElementById("lang-kpis").innerHTML='<div class="card" style="width:100%"><div style="color:#f59e0b">No LA County language data found.</div></div>';return}
+  var ms=uq(la.map(function(r){return r.m})).sort();
+  var langs=uq(la.map(function(r){return r.lang})).filter(Boolean);
+  var idx={};la.forEach(function(r){var k=r.m+"||"+r.lang;if(!idx[k])idx[k]=[];idx[k].push(r)});
 
-  var months=uniq(laRows.map(function(r){return r.m})).sort();
-  var languages=uniq(laRows.map(function(r){return r.lang})).filter(Boolean);
-  var byML=groupBy(laRows,function(r){return r.m+"||"+r.lang});
-
-  // Fix groupBy for composite key
-  var byML2={};
-  laRows.forEach(function(r){
-    var k=r.m+"||"+r.lang;
-    if(!byML2[k])byML2[k]=[];
-    byML2[k].push(r);
+  var eD=[],nD=[],tD=[];
+  ms.forEach(function(m){
+    var eng=0,tot=0;
+    langs.forEach(function(l){var s=sB(idx[m+"||"+l]||[],"c");tot+=s;if(l==="English"||l==="ENGLISH")eng+=s});
+    eD.push(eng);nD.push(tot-eng);tD.push(tot);
   });
 
-  var engData=[],nonEngData=[],totalData=[];
-  months.forEach(function(m){
-    var eng=0,total=0;
-    languages.forEach(function(l){
-      var key=m+"||"+l;
-      var s=sumBy(byML2[key]||[],"c");
-      total+=s;
-      if(l==="English"||l==="ENGLISH")eng+=s;
-    });
-    engData.push(eng);
-    nonEngData.push(total-eng);
-    totalData.push(total);
+  var lt=tD[tD.length-1]||0,ln=nD[nD.length-1]||0;
+  document.getElementById("lang_kpis").innerHTML=
+    kpi("LA County Total",fK(lt),"","","#6366f1")
+    +kpi("Non-English Speakers",fK(ln),"","","#f59e0b")
+    +kpi("% Non-English",lt?((ln/lt*100).toFixed(1)+"%"):"?","","","#ef4444");
+
+  dC("c_lang");
+  CH.c_lang=new Chart(document.getElementById("c_lang"),{type:"line",
+    data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[
+      {label:"English",data:eD,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:.3,pointRadius:0},
+      {label:"Non-English",data:nD,borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.1)",fill:true,tension:.3,pointRadius:0}
+    ]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}
   });
 
-  var lastTotal=totalData[totalData.length-1]||0;
-  var lastNonEng=nonEngData[nonEngData.length-1]||0;
-  var lastPct=lastTotal?(lastNonEng/lastTotal*100).toFixed(1):"0";
+  var lastM=ms[ms.length-1];
+  var lt2=langs.map(function(l){return{name:l,v:sB(idx[lastM+"||"+l]||[],"c")}}).filter(function(r){return r.v>0}).sort(function(a,b){return b.v-a.v});
+  var top7=lt2.slice(0,7);var ov=0;for(var i=7;i<lt2.length;i++)ov+=lt2[i].v;
+  if(ov>0)top7.push({name:"Other",v:ov});
 
-  document.getElementById("lang-kpis").innerHTML=
-    makeKPI("LA County Total",fmtK(lastTotal),"","","#6366f1")
-    +makeKPI("Non-English",fmtK(lastNonEng),"","","#f59e0b")
-    +makeKPI("% Non-English",lastPct+"%","","","#ef4444");
-
-  destroyChart("chart-lang-trend");
-  CHARTS["chart-lang-trend"]=new Chart(document.getElementById("chart-lang-trend"),{
-    type:"line",
-    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[
-      {label:"English",data:engData,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:0.3,pointRadius:0},
-      {label:"Non-English",data:nonEngData,borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.1)",fill:true,tension:0.3,pointRadius:0}
-    ]},
-    options:{responsive:true,scales:{y:{ticks:{callback:fmtK}}}}
-  });
-
-  // Pie chart - latest month
-  var lastMonth=months[months.length-1];
-  var langTotals=languages.map(function(l){
-    var key=lastMonth+"||"+l;
-    return{name:l,value:sumBy(byML2[key]||[],"c")};
-  }).filter(function(r){return r.value>0});
-  langTotals.sort(function(a,b){return b.value-a.value});
-  var top7=langTotals.slice(0,7);
-  var otherVal=0;
-  for(var i=7;i<langTotals.length;i++)otherVal+=langTotals[i].value;
-  if(otherVal>0)top7.push({name:"Other",value:otherVal});
-
-  destroyChart("chart-lang-pie");
-  CHARTS["chart-lang-pie"]=new Chart(document.getElementById("chart-lang-pie"),{
-    type:"doughnut",
-    data:{labels:top7.map(function(r){return r.name}),datasets:[{
-      data:top7.map(function(r){return r.value}),
-      backgroundColor:COLORS.slice(0,top7.length)
-    }]},
+  dC("c_pie");
+  CH.c_pie=new Chart(document.getElementById("c_pie"),{type:"doughnut",
+    data:{labels:top7.map(function(r){return r.name}),datasets:[{data:top7.map(function(r){return r.v}),backgroundColor:CL.slice(0,top7.length)}]},
     options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}}}
   });
 
-  // Table
-  var html='<div style="font-size:13px;font-weight:600;margin-bottom:12px">Top Languages (Ranked)</div>';
-  top7.forEach(function(l,i){
-    html+='<div class="lang-row"><span><span class="lang-dot" style="background:'+COLORS[i%COLORS.length]+'"></span>'+l.name+'</span><span style="font-weight:600">'+fmtFull(l.value)+'</span></div>';
-  });
-  document.getElementById("lang-table").innerHTML=html;
+  var th='<div style="font-size:13px;font-weight:600;margin-bottom:10px">Top Languages</div>';
+  top7.forEach(function(l,i){th+='<div class="lr"><span><span class="ld2" style="background:'+CL[i%CL.length]+'"></span>'+l.name+'</span><span style="font-weight:600">'+fF(l.v)+'</span></div>'});
+  document.getElementById("ltbl").innerHTML=th;
 }
 
-/* ===== INIT ===== */
-loadData();
+load();
 </script>
 </body>
 </html>
