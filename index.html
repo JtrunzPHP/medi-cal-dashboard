@@ -3,130 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CA Medi-Cal MCO Enrollment Tracker</title>
+<title>CA Medi-Cal MCO Enrollment Intelligence</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;font-size:13px}
-a{color:#a5b4fc}
-.hd{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:16px 24px;border-bottom:1px solid #3730a3}
-.hd h1{font-size:18px;font-weight:700}.hd p{font-size:11px;color:#a5b4fc;margin-top:3px}
-.tabs{display:flex;background:#1e1e2e;border-bottom:1px solid #2d2d44;overflow-x:auto}
-.t{padding:10px 16px;font-size:12px;background:none;border:none;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
-.t.a{color:#a5b4fc;font-weight:600;border-bottom-color:#6366f1}.t:hover{color:#c7d2fe}
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;font-size:13px}a{color:#a5b4fc}
+.hd{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:16px 24px;border-bottom:1px solid #3730a3}.hd h1{font-size:18px;font-weight:700}.hd p{font-size:11px;color:#a5b4fc;margin-top:3px}
+.tabs{display:flex;background:#1e1e2e;border-bottom:1px solid #2d2d44;overflow-x:auto}.tb{padding:10px 16px;font-size:12px;background:none;border:none;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}.tb.a{color:#a5b4fc;font-weight:600;border-bottom-color:#6366f1}.tb:hover{color:#c7d2fe}
 .W{padding:16px 20px;max-width:1300px;display:none}.W.a{display:block}
-.R{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.K{background:#1e1e2e;border-radius:8px;padding:11px 14px;min-width:120px;flex:1}
-.Kl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.7px}
-.Kv{font-size:18px;font-weight:700;margin-top:2px}.Ks{font-size:10px;margin-top:1px}
-.pos{color:#10b981}.neg{color:#ef4444}
-.C{background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px}
-.S{font-size:12px;font-weight:600;margin:14px 0 6px}
-.N{background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:#94a3b8;border-left:3px solid #6366f1;line-height:1.5}
-.N b{color:#e2e8f0}
-select{background:#1e1e2e;color:#e2e8f0;border:1px solid #3730a3;border-radius:5px;padding:5px 10px;font-size:12px;font-family:inherit}
-canvas{max-height:320px}
-table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;padding:7px 5px;border-bottom:1px solid #3730a3;color:#94a3b8;font-weight:600;font-size:9px;text-transform:uppercase}
-td{padding:6px 5px;border-bottom:1px solid #1a1a2e}
-tr:hover td{background:#1a1a2e}
+.R{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.K{background:#1e1e2e;border-radius:8px;padding:11px 14px;min-width:120px;flex:1}.Kl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.7px}.Kv{font-size:18px;font-weight:700;margin-top:2px}.Ks{font-size:10px;margin-top:1px}.pos{color:#10b981}.neg{color:#ef4444}
+.C{background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px}.S{font-size:12px;font-weight:600;margin:14px 0 6px}
+.N{background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:#94a3b8;border-left:3px solid #6366f1;line-height:1.5}.N b{color:#e2e8f0}
+select{background:#1e1e2e;color:#e2e8f0;border:1px solid #3730a3;border-radius:5px;padding:5px 10px;font-size:12px;font-family:inherit}canvas{max-height:320px}
+table{width:100%;border-collapse:collapse;font-size:11px}th{text-align:left;padding:7px 5px;border-bottom:1px solid #3730a3;color:#94a3b8;font-weight:600;font-size:9px;text-transform:uppercase}td{padding:6px 5px;border-bottom:1px solid #1a1a2e}tr:hover td{background:#1a1a2e}
 .F{margin-top:24px;padding:12px 0;border-top:1px solid #2d2d44;font-size:9px;color:#64748b;line-height:1.5}
-.ld{min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
-.sp{width:34px;height:34px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:s 1s linear infinite;margin:12px 0}
-@keyframes s{to{transform:rotate(360deg)}}
-.G{display:flex;gap:14px;flex-wrap:wrap}.G>div{flex:1;min-width:250px}
-.lr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2d2d44;font-size:11px}
-.dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
+.ld{min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column}.sp{width:34px;height:34px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;margin:12px 0}@keyframes sp{to{transform:rotate(360deg)}}
+.G{display:flex;gap:14px;flex-wrap:wrap}.G>div{flex:1;min-width:250px}.lr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2d2d44;font-size:11px}.dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
 </style>
 </head>
 <body>
-<div class="hd">
-<h1>California Medi-Cal — Public MCO Enrollment Intelligence</h1>
-<p id="hsub">Source: DHCS Open Data Portal | Loading...</p>
-</div>
+<div class="hd"><h1>California Medi-Cal — Public MCO Enrollment Intelligence</h1><p id="hsub">Loading...</p></div>
 <div class="tabs" id="tbar"></div>
 <div id="loader" class="ld"><div style="font-size:16px;font-weight:600">Loading DHCS Data...</div><div class="sp"></div></div>
 
-<!-- Tab 0: Scorecard -->
 <div class="W" id="t0">
-<div class="N"><b>Investment Thesis Tracker:</b> Maps CA DHCS Medi-Cal enrollment to public MCO tickers. Use monthly membership trends to validate management guidance and spot acceleration/deceleration ahead of earnings. Data = administrative records (most accurate source). Refreshes monthly.</div>
+<div class="N"><b>Investment Thesis Tracker:</b> Maps DHCS Medi-Cal enrollment to public tickers using verified plan-to-parent-company ownership data (source: CHCF/DHCS). Centene count includes Health Net + CA Health & Wellness + CalViva subcontracts. Elevance = Anthem Blue Cross Partnership Plan. Molina direct contracts only (LA County sub-contract under Health Net counted separately). Data = admin records, most accurate available.</div>
 <div class="S">Public MCO Scorecard</div><div class="C" id="sc"></div>
 <div class="S">Total CA Managed Care Enrollment</div><div class="C"><canvas id="c0a"></canvas></div>
-<div class="S">Quarterly Enrollment by MCO (End-of-Quarter Snapshot)</div><div class="C"><canvas id="c0b"></canvas></div>
-<div class="S">MCO Growth Rate — YoY % Change by Month</div><div class="C"><canvas id="c0c"></canvas></div>
+<div class="S">Quarterly End-of-Period Enrollment by Ticker</div><div class="C"><canvas id="c0b"></canvas></div>
+<div class="S">YoY Growth Rate by Month (%)</div><div class="C"><canvas id="c0c"></canvas></div>
 </div>
 
-<!-- Tab 1: Company Deep Dive -->
 <div class="W" id="t1">
-<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
-<label style="font-size:12px;color:#94a3b8">Company:</label>
-<select id="coS" onchange="rCo()"><option value="molina">MOH — Molina</option><option value="health net">CNC — Centene / Health Net</option><option value="anthem">ELV — Elevance / Anthem</option></select>
-</div>
+<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><label style="font-size:12px;color:#94a3b8">Company:</label><select id="coS" onchange="rCo()"></select></div>
 <div class="R" id="co_k"></div>
 <div class="S" id="co_t1">Monthly Enrollment</div><div class="C"><canvas id="c1a"></canvas></div>
+<div class="S">Underlying Plan Detail</div><div class="C" id="co_plans"></div>
 <div class="S" id="co_t2">County Breakdown</div><div class="C"><canvas id="c1b"></canvas></div>
-<div class="S">Market Share % (of Total CA Managed Care)</div><div class="C"><canvas id="c1c"></canvas></div>
-<div class="S">County Concentration (Top Counties as % of Company Total)</div><div class="C" id="co_conc"></div>
+<div class="S">Market Share %</div><div class="C"><canvas id="c1c"></canvas></div>
+<div class="S">County Concentration</div><div class="C" id="co_conc"></div>
 </div>
 
-<!-- Tab 2: Head-to-Head -->
 <div class="W" id="t2">
-<div class="N"><b>Cross-Company Comparison:</b> Compare MCO enrollment side-by-side across counties. Identify where companies compete head-to-head and where they have exclusive territory. Color intensity = relative enrollment size.</div>
-<div class="S">County Exposure Comparison — Latest Month</div><div class="C" id="h2h_tbl"></div>
-<div class="S">Head-to-Head: Monthly Enrollment Trend</div><div class="C"><canvas id="c2a"></canvas></div>
-<div class="S">Market Share by County — Latest Month</div><div class="C"><canvas id="c2b"></canvas></div>
+<div class="N"><b>Head-to-Head:</b> Compare public MCO enrollment across every county. Identifies competitive overlap, exclusive territory, and dominant market positions. Column = parent company (all subsidiary plans rolled up).</div>
+<div class="S">County Exposure — All Public MCOs (Latest Month)</div><div class="C" style="overflow-x:auto" id="h2h_tbl"></div>
+<div class="S">Statewide Trend — Public MCOs</div><div class="C"><canvas id="c2a"></canvas></div>
+<div class="S">Stacked County Enrollment — Top 15</div><div class="C"><canvas id="c2b"></canvas></div>
 </div>
 
-<!-- Tab 3: County -->
 <div class="W" id="t3">
-<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px">
-<label style="font-size:12px;color:#94a3b8">County:</label>
-<select id="ctyS" onchange="rCty()"></select>
-</div>
+<div style="margin-bottom:12px;display:flex;align-items:center;gap:10px"><label style="font-size:12px;color:#94a3b8">County:</label><select id="ctyS" onchange="rCty()"></select></div>
 <div class="R" id="cty_k"></div>
 <div class="S" id="cty_t1">Enrollment Trend</div><div class="C"><canvas id="c3a"></canvas></div>
 <div class="S" id="cty_t2">Plans — Latest Month</div><div class="C"><canvas id="c3b"></canvas></div>
 </div>
 
-<!-- Tab 4: Language -->
 <div class="W" id="t4">
-<div class="N"><b>Immigration Proxy:</b> Primary language of <i>newly eligible</i> Medi-Cal individuals (statewide, quarterly). Growth in non-English speakers — particularly Spanish, Mandarin, Vietnamese, Arabic, Armenian — signals demographic shifts that may drive future enrollment growth and plan mix changes for MCOs serving high-immigration counties.</div>
+<div class="N"><b>Immigration Proxy:</b> Primary language of <i>newly eligible</i> Medi-Cal individuals (statewide, quarterly). Growth in non-English speakers signals demographic shifts that may drive future enrollment and plan mix changes.</div>
 <div class="R" id="lg_k"></div>
-<div class="S">Newly Eligible: English vs Non-English (Quarterly)</div><div class="C"><canvas id="c4a"></canvas></div>
+<div class="S">Newly Eligible: English vs Non-English</div><div class="C"><canvas id="c4a"></canvas></div>
 <div class="S">Non-English Share of New Enrollees (%)</div><div class="C"><canvas id="c4b"></canvas></div>
-<div class="S">Language Mix — Latest Quarter</div>
-<div class="G"><div class="C"><canvas id="c4c"></canvas></div><div class="C" id="lg_tbl"></div></div>
+<div class="S">Language Mix — Latest Quarter</div><div class="G"><div class="C"><canvas id="c4c"></canvas></div><div class="C" id="lg_tbl"></div></div>
 </div>
 
-<div style="padding:0 20px;max-width:1300px">
-<div class="F"><b>Data:</b> CA DHCS Open Data Portal — Medi-Cal Managed Care Enrollment Report & Primary Language of Newly Eligible. Auto-refreshes monthly via GitHub Actions.<br>
-<b>Tickers:</b> MOH = Molina Healthcare | CNC = Centene (Health Net in CA) | ELV = Elevance Health (Anthem Blue Cross Partnership Plan in CA)<br>
-<b>Caveats:</b> Point-in-time admin records. Plans ramping up/down may show anomalous counts for 1-2 months. Language data = newly eligible only (statewide), not total enrolled.</div>
-</div>
+<div style="padding:0 20px;max-width:1300px"><div class="F">
+<b>Data:</b> DHCS Open Data Portal. Plan-to-ticker mapping from CHCF "Medi-Cal Explained 2024" and DHCS MCP County Tables.<br>
+<b>Tickers:</b> CNC=Centene (Health Net + CA H&W + CalViva subs) | MOH=Molina Healthcare | ELV=Elevance (Anthem Blue Cross) | KP=Kaiser | LOCAL=Public/nonprofit plans<br>
+<b>Caveats:</b> Molina is a subcontractor in LA County under Health Net — that enrollment counts under CNC unless DHCS reports it separately. Anthem exited many counties in 2024.
+</div></div>
 
 <script>
 var D=null,L=null,CH={},CL=["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16"];
-var M={molina:{t:"MOH",n:"Molina Healthcare",c:"#0ea5e9"},"health net":{t:"CNC",n:"Centene / Health Net",c:"#f97316"},anthem:{t:"ELV",n:"Elevance / Anthem",c:"#10b981"}};
-var MK=Object.keys(M);
+// Public MCO tickers we track (populated from data)
+var TK_INFO={CNC:{n:"Centene",c:"#f97316"},MOH:{n:"Molina",c:"#0ea5e9"},ELV:{n:"Elevance/Anthem",c:"#10b981"},KP:{n:"Kaiser",c:"#8b5cf6"},CVS:{n:"CVS/Aetna",c:"#ec4899"}};
+var PUB_TK=["CNC","MOH","ELV"]; // primary public tickers to track
 
 Chart.defaults.color="#94a3b8";Chart.defaults.borderColor="#2d2d44";Chart.defaults.font.size=10;Chart.defaults.plugins.legend.labels.boxWidth=10;
-
 function fK(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return Math.round(n/1e3)+"K";return""+n}
 function fF(n){return n?n.toLocaleString():"0"}
 function pc(a,b){return b?((a-b)/b*100).toFixed(1):"0.0"}
-function gB(a,k){var r={};for(var i=0;i<a.length;i++){var v=typeof k==="function"?k(a[i]):a[i][k];if(!r[v])r[v]=[];r[v].push(a[i])}return r}
+function gB(a,k){var r={};for(var i=0;i<a.length;i++){var v=a[i][k];if(!r[v])r[v]=[];r[v].push(a[i])}return r}
 function sB(a,k){var s=0;for(var i=0;i<a.length;i++)s+=(a[i][k]||0);return s}
 function uq(a){var s={},o=[];for(var i=0;i<a.length;i++)if(a[i]&&!s[a[i]]){s[a[i]]=1;o.push(a[i])}return o}
 function dC(id){if(CH[id]){CH[id].destroy();delete CH[id]}}
 function kp(l,v,s,sc,c){return'<div class="K" style="border-left:3px solid '+(c||"#6366f1")+'"><div class="Kl">'+l+'</div><div class="Kv">'+v+'</div>'+(s?'<div class="Ks '+(sc||"")+'">'+s+'</div>':'')+'</div>'}
-function isM(r,k){return r.p.toLowerCase().indexOf(k)!==-1}
-function mT(rows,k){return sB(rows.filter(function(r){return isM(r,k)}),"c")}
-function getP(){if(!D)return[];var sk={Dental:1,PACE:1,SCAN:1,"Special Project":1,"Primary Care Case Mgmt":1};return D.filter(function(r){return!sk[r.pt]})}
+function tkT(rows,tk){return sB(rows.filter(function(r){return r.tk===tk}),"c")}
 function q(m){var p=m.split("-"),mo=parseInt(p[1]);return p[0]+"Q"+(mo<=3?1:mo<=6?2:mo<=9?3:4)}
+function getP(){if(!D)return[];var sk={Dental:1,PACE:1,SCAN:1,"Special Project":1,"Primary Care Case Mgmt":1};return D.filter(function(r){return!sk[r.pt]})}
 
-var TABS=["MCO Scorecard","Company Drill-Down","Head-to-Head","County View","Language / Demographics"];
-function initT(){var h="";for(var i=0;i<TABS.length;i++)h+='<button class="t'+(i===0?" a":"")+'" onclick="sT('+i+')">'+TABS[i]+'</button>';document.getElementById("tbar").innerHTML=h}
-function sT(n){var b=document.querySelectorAll(".t");for(var i=0;i<b.length;i++)b[i].className=i===n?"t a":"t";for(var i=0;i<5;i++){var e=document.getElementById("t"+i);if(e)e.className=i===n?"W a":"W"}if(n===1)rCo();if(n===2)rH2H();if(n===3)rCty()}
+var TABS=["MCO Scorecard","Company Drill-Down","Head-to-Head","County View","Language"];
+function initT(){var h="";for(var i=0;i<TABS.length;i++)h+='<button class="tb'+(i===0?" a":"")+'" onclick="sT('+i+')">'+TABS[i]+'</button>';document.getElementById("tbar").innerHTML=h}
+function sT(n){var b=document.querySelectorAll(".tb");for(var i=0;i<b.length;i++)b[i].className=i===n?"tb a":"tb";for(var i=0;i<5;i++){var e=document.getElementById("t"+i);if(e)e.className=i===n?"W a":"W"}if(n===1)rCo();if(n===2)rH2H();if(n===3)rCty()}
 
 function load(){
   initT();
@@ -137,9 +103,19 @@ function load(){
     D=res[0].data;if(res[1])L=res[1].data;
     document.getElementById("loader").style.display="none";
     var lm=D.length?D[D.length-1].m:"?";
-    document.getElementById("hsub").textContent="DHCS Open Data | Through "+lm+" | Refreshed "+(res[0].updated||"?")+" | Monthly auto-update";
-    rSC();bCS();rLang();sT(0);
-  }).catch(function(){document.getElementById("loader").innerHTML='<div style="color:#ef4444;font-size:16px;font-weight:600">Run GitHub Action first</div><div style="color:#94a3b8;margin-top:8px;font-size:12px">Actions → Update Medi-Cal Data → Run workflow</div>'});
+    document.getElementById("hsub").textContent="DHCS Open Data | Through "+lm+" | Refreshed "+(res[0].updated||"?")+" | Auto-updates monthly";
+    buildCoSel();bCS();rSC();rLang();sT(0);
+  }).catch(function(){document.getElementById("loader").innerHTML='<div style="color:#ef4444;font-size:16px;font-weight:600">Run GitHub Action first</div><div style="color:#94a3b8;margin-top:8px;font-size:12px">Actions tab → Update Medi-Cal Data → Run workflow</div>'});
+}
+
+function buildCoSel(){
+  // Build company selector from actual tickers in data
+  var P=getP(),tks=uq(P.map(function(r){return r.tk})).filter(function(t){return t&&t!=="OTHER"}).sort();
+  var s=document.getElementById("coS");
+  s.innerHTML=tks.map(function(tk){
+    var info=TK_INFO[tk]||{n:tk,c:"#999"};
+    return'<option value="'+tk+'">'+tk+' — '+info.n+'</option>';
+  }).join("");
 }
 
 /* === TAB 0: SCORECARD === */
@@ -147,72 +123,70 @@ function rSC(){
   var P=getP(),bm=gB(P,"m"),ms=Object.keys(bm).sort();
   var tots=ms.map(function(m){return sB(bm[m],"c")});
   var lm=ms[ms.length-1],pm=ms.length>=2?ms[ms.length-2]:"",y1=ms.length>=13?ms[ms.length-13]:"";
-
-  var h='<table><tr><th>Company</th><th>Ticker</th><th>Latest ('+lm+')</th><th>Prior Mo</th><th>MoM</th><th>YoY</th><th>Mkt Share</th><th>Counties</th></tr>';
   var totalLast=sB(bm[lm]||[],"c");
-  MK.forEach(function(k){
-    var i=M[k],cur=mT(bm[lm]||[],k),prv=pm?mT(bm[pm]||[],k):0,ya=y1?mT(bm[y1]||[],k):0;
-    var ctys=uq((bm[lm]||[]).filter(function(r){return isM(r,k)}).map(function(r){return r.co})).sort();
+
+  var allTk=["CNC","MOH","ELV","KP","CVS","LOCAL"];
+  var h='<table><tr><th>Parent Company</th><th>Ticker</th><th>Latest ('+lm+')</th><th>Prior Mo</th><th>MoM</th><th>YoY</th><th>Mkt Share</th><th>Counties</th><th>Underlying Plans</th></tr>';
+  allTk.forEach(function(tk){
+    var info=TK_INFO[tk]||{n:tk,c:"#999"};
+    var cur=tkT(bm[lm]||[],tk),prv=pm?tkT(bm[pm]||[],tk):0,ya=y1?tkT(bm[y1]||[],tk):0;
+    if(cur===0&&prv===0)return;
+    var ctys=uq((bm[lm]||[]).filter(function(r){return r.tk===tk}).map(function(r){return r.co})).sort();
+    var plans=uq((bm[lm]||[]).filter(function(r){return r.tk===tk}).map(function(r){return r.p})).sort();
     var mom=pc(cur,prv),yoy=pc(cur,ya),shr=totalLast?(cur/totalLast*100).toFixed(1):"0";
-    h+='<tr><td><b style="color:'+i.c+'">'+i.n+'</b></td><td>'+i.t+'</td><td style="font-weight:700">'+fF(cur)+'</td><td>'+fF(prv)+'</td>';
+    h+='<tr><td><b style="color:'+info.c+'">'+info.n+'</b></td><td>'+tk+'</td><td style="font-weight:700">'+fF(cur)+'</td><td>'+fF(prv)+'</td>';
     h+='<td class="'+(parseFloat(mom)>=0?"pos":"neg")+'">'+mom+'%</td>';
     h+='<td class="'+(parseFloat(yoy)>=0?"pos":"neg")+'">'+yoy+'%</td>';
-    h+='<td>'+shr+'%</td><td style="font-size:10px">'+ctys.join(", ")+'</td></tr>';
+    h+='<td>'+shr+'%</td><td style="font-size:10px">'+ctys.length+' counties</td>';
+    h+='<td style="font-size:9px;color:#94a3b8;max-width:300px">'+plans.join(", ")+'</td></tr>';
   });
   h+='</table>';document.getElementById("sc").innerHTML=h;
 
   dC("c0a");CH.c0a=new Chart(document.getElementById("c0a"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:"Total",data:tots,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:.3,pointRadius:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}});
 
-  // Quarterly
-  var qs={};ms.forEach(function(m){var qr=q(m);if(!qs[qr])qs[qr]={};MK.forEach(function(k){if(!qs[qr][k])qs[qr][k]=[];qs[qr][k].push(mT(bm[m]||[],k))})});
+  var qs={};ms.forEach(function(m){var qr=q(m);if(!qs[qr])qs[qr]={};PUB_TK.forEach(function(tk){if(!qs[qr][tk])qs[qr][tk]=[];qs[qr][tk].push(tkT(bm[m]||[],tk))})});
   var ql=Object.keys(qs).sort();
-  dC("c0b");CH.c0b=new Chart(document.getElementById("c0b"),{type:"bar",data:{labels:ql,datasets:MK.map(function(k){return{label:M[k].t,backgroundColor:M[k].c,data:ql.map(function(qr){var a=qs[qr][k]||[];return a.length?a[a.length-1]:0})}})},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}});
+  dC("c0b");CH.c0b=new Chart(document.getElementById("c0b"),{type:"bar",data:{labels:ql,datasets:PUB_TK.map(function(tk){var i=TK_INFO[tk];return{label:tk,backgroundColor:i.c,data:ql.map(function(qr){var a=qs[qr][tk]||[];return a.length?a[a.length-1]:0})}})},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}});
 
-  // YoY growth rate
-  var growthDS=MK.map(function(k){
-    var data=ms.map(function(m,i){
-      if(i<12)return null;
-      var cur=mT(bm[m]||[],k),prev=mT(bm[ms[i-12]]||[],k);
-      return prev?((cur-prev)/prev*100):null;
-    });
-    return{label:M[k].t+" YoY%",data:data,borderColor:M[k].c,tension:.3,pointRadius:0,borderWidth:2,spanGaps:true};
-  });
-  dC("c0c");CH.c0c=new Chart(document.getElementById("c0c"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:growthDS},options:{responsive:true,scales:{y:{ticks:{callback:function(v){return v.toFixed(0)+"%"}}}}}});
+  var gDS=PUB_TK.map(function(tk){var i=TK_INFO[tk];return{label:tk+" YoY%",data:ms.map(function(m,idx){if(idx<12)return null;var cur=tkT(bm[m]||[],tk),prev=tkT(bm[ms[idx-12]]||[],tk);return prev?((cur-prev)/prev*100):null}),borderColor:i.c,tension:.3,pointRadius:0,borderWidth:2,spanGaps:true}});
+  dC("c0c");CH.c0c=new Chart(document.getElementById("c0c"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:gDS},options:{responsive:true,scales:{y:{ticks:{callback:function(v){return v.toFixed(0)+"%"}}}}}});
 }
 
 /* === TAB 1: COMPANY === */
 function rCo(){
-  var k=document.getElementById("coS").value,inf=M[k];
+  var tk=document.getElementById("coS").value;
+  var inf=TK_INFO[tk]||{n:tk,c:"#999"};
   var P=getP(),bm=gB(P,"m"),ms=Object.keys(bm).sort();
   var lm=ms[ms.length-1],pm=ms.length>=2?ms[ms.length-2]:"",y1=ms.length>=13?ms[ms.length-13]:"";
-  var mD=ms.map(function(m){return mT(bm[m]||[],k)});
+  var mD=ms.map(function(m){return tkT(bm[m]||[],tk)});
   var tD=ms.map(function(m){return sB(bm[m]||[],"c")});
   var shD=ms.map(function(m,i){return tD[i]?(mD[i]/tD[i]*100):0});
   var cur=mD[mD.length-1]||0,prv=mD.length>=2?mD[mD.length-2]:0,ya=y1?mD[ms.indexOf(y1)]:0;
 
-  document.getElementById("co_k").innerHTML=
-    kp("Latest ("+lm+")",fF(cur),"","",inf.c)
-    +kp("MoM",pc(cur,prv)+"%",(cur-prv>=0?"+":"")+fF(cur-prv),parseFloat(pc(cur,prv))>=0?"pos":"neg","#6366f1")
-    +kp("YoY",pc(cur,ya)+"%","vs "+fF(ya),parseFloat(pc(cur,ya))>=0?"pos":"neg","#f59e0b")
-    +kp("Mkt Share",(shD[shD.length-1]||0).toFixed(1)+"%","of CA total","","#8b5cf6");
+  document.getElementById("co_k").innerHTML=kp("Latest ("+lm+")",fF(cur),"","",inf.c)+kp("MoM",pc(cur,prv)+"%",(cur-prv>=0?"+":"")+fF(cur-prv),parseFloat(pc(cur,prv))>=0?"pos":"neg","#6366f1")+kp("YoY",pc(cur,ya)+"%","vs "+fF(ya),parseFloat(pc(cur,ya))>=0?"pos":"neg","#f59e0b")+kp("Mkt Share",(shD[shD.length-1]||0).toFixed(1)+"%","","","#8b5cf6");
   document.getElementById("co_t1").textContent=inf.n+" — Monthly Enrollment";
   document.getElementById("co_t2").textContent=inf.n+" — County Breakdown ("+lm+")";
 
-  dC("c1a");CH.c1a=new Chart(document.getElementById("c1a"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:inf.t,data:mD,borderColor:inf.c,backgroundColor:inf.c+"18",fill:true,tension:.3,pointRadius:0,borderWidth:2.5}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}});
+  // Plan detail table
+  var plR=(bm[lm]||[]).filter(function(r){return r.tk===tk});
+  var byPl=gB(plR,"p");
+  var plArr=Object.keys(byPl).map(function(p){return{name:p,count:sB(byPl[p],"c"),ctys:uq(byPl[p].map(function(r){return r.co})).sort()}}).sort(function(a,b){return b.count-a.count});
+  var ph='<table><tr><th>DHCS Plan Name</th><th>Enrollees</th><th>Counties</th></tr>';
+  plArr.forEach(function(r){ph+='<tr><td>'+r.name+'</td><td style="font-weight:700">'+fF(r.count)+'</td><td style="font-size:10px">'+r.ctys.join(", ")+'</td></tr>'});
+  ph+='</table>';document.getElementById("co_plans").innerHTML=ph;
 
-  var lr=(bm[lm]||[]).filter(function(r){return isM(r,k)});
-  var bc=gB(lr,"co");
-  var ca=Object.keys(bc).map(function(co){return{co:co,t:sB(bc[co],"c")}}).sort(function(a,b){return b.t-a.t});
-  dC("c1b");CH.c1b=new Chart(document.getElementById("c1b"),{type:"bar",data:{labels:ca.map(function(r){return r.co}),datasets:[{label:"Enrollees",data:ca.map(function(r){return r.t}),backgroundColor:inf.c,borderRadius:3}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fK}}}}});
+  dC("c1a");CH.c1a=new Chart(document.getElementById("c1a"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:tk,data:mD,borderColor:inf.c,backgroundColor:inf.c+"18",fill:true,tension:.3,pointRadius:0,borderWidth:2.5}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}});
+
+  var byCo=gB(plR,"co");
+  var ca=Object.keys(byCo).map(function(co){return{co:co,t:sB(byCo[co],"c")}}).sort(function(a,b){return b.t-a.t});
+  dC("c1b");CH.c1b=new Chart(document.getElementById("c1b"),{type:"bar",data:{labels:ca.map(function(r){return r.co}),datasets:[{data:ca.map(function(r){return r.t}),backgroundColor:inf.c,borderRadius:3}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fK}}}}});
 
   dC("c1c");CH.c1c=new Chart(document.getElementById("c1c"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:"Share %",data:shD,borderColor:"#a855f7",tension:.3,pointRadius:0,borderWidth:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v.toFixed(1)+"%"}}}}}});
 
-  // Concentration
-  var total=sB(ca,"t");
-  var h='<table><tr><th>County</th><th>Enrollees</th><th>% of Company Total</th><th>Cumulative %</th></tr>';
-  var cum=0;
-  ca.forEach(function(r){cum+=r.t;var p=(r.t/total*100).toFixed(1),cp=(cum/total*100).toFixed(1);h+='<tr><td>'+r.co+'</td><td>'+fF(r.t)+'</td><td>'+p+'%</td><td>'+cp+'%</td></tr>'});
-  h+='</table>';document.getElementById("co_conc").innerHTML=h;
+  var total=sB(ca,"t"),cum=0;
+  var ch='<table><tr><th>County</th><th>Enrollees</th><th>% of Total</th><th>Cumulative</th></tr>';
+  ca.forEach(function(r){cum+=r.t;ch+='<tr><td>'+r.co+'</td><td>'+fF(r.t)+'</td><td>'+(r.t/total*100).toFixed(1)+'%</td><td>'+(cum/total*100).toFixed(1)+'%</td></tr>'});
+  ch+='</table>';document.getElementById("co_conc").innerHTML=ch;
 }
 
 /* === TAB 2: HEAD-TO-HEAD === */
@@ -220,46 +194,38 @@ function rH2H(){
   var P=getP(),bm=gB(P,"m"),ms=Object.keys(bm).sort(),lm=ms[ms.length-1];
   var lr=bm[lm]||[];
   var allCtys=uq(lr.map(function(r){return r.co})).sort();
+  var trackTk=["CNC","MOH","ELV","KP"];
 
-  // Build comparison table
   var data=allCtys.map(function(co){
     var rows=lr.filter(function(r){return r.co===co});
-    var totalCo=sB(rows,"c");
-    var obj={co:co,total:totalCo};
-    MK.forEach(function(k){obj[k]=mT(rows,k)});
+    var obj={co:co,total:sB(rows,"c")};
+    trackTk.forEach(function(tk){obj[tk]=tkT(rows,tk)});
     return obj;
-  }).filter(function(r){var has=false;MK.forEach(function(k){if(r[k]>0)has=true});return has}).sort(function(a,b){return b.total-a.total});
+  }).filter(function(r){var has=false;trackTk.forEach(function(tk){if(r[tk]>0)has=true});return has}).sort(function(a,b){return b.total-a.total});
 
-  var h='<table><tr><th>County</th><th>Total Enrollment</th>';
-  MK.forEach(function(k){h+='<th style="color:'+M[k].c+'">'+M[k].t+'</th><th>Share</th>'});
-  h+='<th>Dominant MCO</th></tr>';
+  var h='<table><tr><th>County</th><th>Total</th>';
+  trackTk.forEach(function(tk){var i=TK_INFO[tk]||{n:tk,c:"#999"};h+='<th style="color:'+i.c+'">'+tk+'</th><th>Share</th>'});
+  h+='<th>Dominant</th></tr>';
   data.forEach(function(r){
     h+='<tr><td><b>'+r.co+'</b></td><td>'+fF(r.total)+'</td>';
-    var maxK="",maxV=0;
-    MK.forEach(function(k){
-      var v=r[k],sh=r.total?(v/r.total*100).toFixed(1):"0";
-      if(v>maxV){maxV=v;maxK=k}
+    var mx="",mv=0;
+    trackTk.forEach(function(tk){
+      var v=r[tk],sh=r.total?(v/r.total*100).toFixed(1):"0";
+      if(v>mv){mv=v;mx=tk}
       h+='<td>'+(v?fF(v):"-")+'</td><td>'+(v?sh+"%":"-")+'</td>';
     });
-    var dom=maxK?('<span style="color:'+M[maxK].c+'">'+M[maxK].t+'</span>'):"—";
-    h+='<td>'+dom+'</td></tr>';
+    h+='<td style="color:'+(TK_INFO[mx]||{c:"#999"}).c+'"><b>'+(mx||"—")+'</b></td></tr>';
   });
   h+='</table>';document.getElementById("h2h_tbl").innerHTML=h;
 
-  // Stacked trend
-  dC("c2a");CH.c2a=new Chart(document.getElementById("c2a"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:MK.map(function(k){return{label:M[k].t,data:ms.map(function(m){return mT(bm[m]||[],k)}),borderColor:M[k].c,tension:.3,pointRadius:0,borderWidth:2.5}})},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}});
+  dC("c2a");CH.c2a=new Chart(document.getElementById("c2a"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:PUB_TK.map(function(tk){var i=TK_INFO[tk];return{label:tk,data:ms.map(function(m){return tkT(bm[m]||[],tk)}),borderColor:i.c,tension:.3,pointRadius:0,borderWidth:2.5}})},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}});
 
-  // Market share by county (top 12 counties)
-  var top12=data.slice(0,12);
-  dC("c2b");CH.c2b=new Chart(document.getElementById("c2b"),{type:"bar",data:{labels:top12.map(function(r){return r.co}),datasets:MK.map(function(k){return{label:M[k].t,data:top12.map(function(r){return r[k]}),backgroundColor:M[k].c}})},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:fK}}}}});
+  var top15=data.slice(0,15);
+  dC("c2b");CH.c2b=new Chart(document.getElementById("c2b"),{type:"bar",data:{labels:top15.map(function(r){return r.co}),datasets:PUB_TK.map(function(tk){var i=TK_INFO[tk];return{label:tk,data:top15.map(function(r){return r[tk]}),backgroundColor:i.c}})},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:fK}}}}});
 }
 
 /* === TAB 3: COUNTY === */
-function bCS(){
-  var P=getP(),ctys=uq(P.map(function(r){return r.co})).sort();
-  var s=document.getElementById("ctyS");
-  s.innerHTML=ctys.map(function(c){return'<option value="'+c+'"'+(c==="Los Angeles"?" selected":"")+'>'+c+'</option>'}).join("");
-}
+function bCS(){var P=getP(),ctys=uq(P.map(function(r){return r.co})).sort();var s=document.getElementById("ctyS");s.innerHTML=ctys.map(function(c){return'<option value="'+c+'"'+(c==="Los Angeles"?" selected":"")+'>'+c+'</option>'}).join("")}
 function rCty(){
   var cty=document.getElementById("ctyS").value;
   var P=getP().filter(function(r){return r.co===cty});
@@ -268,63 +234,34 @@ function rCty(){
   var lm=ms[ms.length-1]||"",last=tots[tots.length-1]||0,first=tots[0]||0;
   var lr=P.filter(function(r){return r.m===lm});
   var bp=gB(lr,"p");
-  var pa=Object.keys(bp).map(function(p){
-    var t=sB(bp[p],"c"),tk="";
-    if(p.toLowerCase().indexOf("molina")!==-1)tk="MOH";
-    else if(p.toLowerCase().indexOf("health net")!==-1)tk="CNC";
-    else if(p.toLowerCase().indexOf("anthem")!==-1)tk="ELV";
-    return{name:p,count:t,tk:tk}
-  }).sort(function(a,b){return b.count-a.count}).slice(0,10);
+  var pa=Object.keys(bp).map(function(p){var t=sB(bp[p],"c");var tk=(bp[p][0]||{}).tk||"";var pa2=(bp[p][0]||{}).pa||"";return{name:p,count:t,tk:tk,pa:pa2}}).sort(function(a,b){return b.count-a.count}).slice(0,12);
 
-  document.getElementById("cty_k").innerHTML=kp(cty+" Latest",fK(last),"","","#6366f1")+kp("Since 2020",pc(last,first)+"%",fK(first)+" to "+fK(last),parseFloat(pc(last,first))>=0?"pos":"neg","#f59e0b")+kp("Plans",pa.length,"","","#10b981");
+  document.getElementById("cty_k").innerHTML=kp(cty+" Latest",fK(last),"","","#6366f1")+kp("Since 2020",pc(last,first)+"%",fK(first)+" → "+fK(last),parseFloat(pc(last,first))>=0?"pos":"neg","#f59e0b")+kp("Plans",pa.length,"","","#10b981");
   document.getElementById("cty_t1").textContent="Enrollment Trend — "+cty;
   document.getElementById("cty_t2").textContent="Plans in "+cty+" — "+lm;
 
   dC("c3a");CH.c3a=new Chart(document.getElementById("c3a"),{type:"line",data:{labels:ms.map(function(m){return m.slice(2)}),datasets:[{label:"Enrollees",data:tots,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:.3,pointRadius:0}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fK}}}}});
 
-  var colors=pa.map(function(r){if(r.tk==="MOH")return"#0ea5e9";if(r.tk==="CNC")return"#f97316";if(r.tk==="ELV")return"#10b981";return"#8b5cf6"});
-  var labels=pa.map(function(r){return r.tk?r.name+" ["+r.tk+"]":r.name});
+  var colors=pa.map(function(r){var i=TK_INFO[r.tk];return i?i.c:"#8b5cf6"});
+  var labels=pa.map(function(r){return r.tk&&r.tk!=="OTHER"&&r.tk!=="LOCAL"?r.name+" ["+r.tk+"]":r.name});
   dC("c3b");CH.c3b=new Chart(document.getElementById("c3b"),{type:"bar",data:{labels:labels,datasets:[{data:pa.map(function(r){return r.count}),backgroundColor:colors,borderRadius:3}]},options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fK}}}}});
 }
 
 /* === TAB 4: LANGUAGE === */
 function rLang(){
-  if(!L||!L.length){document.getElementById("lg_k").innerHTML='<div class="C" style="width:100%;text-align:center;padding:18px;color:#f59e0b">Language data not available. Run GitHub Action again.</div>';return}
-
-  var byQ=gB(L,"q");
-  var qs=Object.keys(byQ).sort();
-  var langs=uq(L.map(function(r){return r.lang})).filter(Boolean);
-
+  if(!L||!L.length){document.getElementById("lg_k").innerHTML='<div class="C" style="width:100%;text-align:center;padding:18px;color:#f59e0b">Language data not available. Run GitHub Action.</div>';return}
+  var byQ=gB(L,"q"),qs=Object.keys(byQ).sort(),langs=uq(L.map(function(r){return r.lang})).filter(Boolean);
   var eD=[],nD=[],tD=[],pD=[];
-  qs.forEach(function(qr){
-    var rows=byQ[qr],eng=0,tot=0;
-    rows.forEach(function(r){tot+=r.c;if(r.lang==="English")eng+=r.c});
-    eD.push(eng);nD.push(tot-eng);tD.push(tot);pD.push(tot?((tot-eng)/tot*100):0);
-  });
-
-  var lt=tD[tD.length-1]||0,ln=nD[nD.length-1]||0,lp=pD[pD.length-1]||0;
-  var fpct=pD[0]||0;
-  document.getElementById("lg_k").innerHTML=
-    kp("Latest Quarter New Eligibles",fK(lt),"","","#6366f1")
-    +kp("Non-English",fK(ln),lp.toFixed(1)+"% of total","","#f59e0b")
-    +kp("Non-Eng Trend",pc(lp,fpct)+"pts","from "+fpct.toFixed(1)+"% to "+lp.toFixed(1)+"%",lp>fpct?"pos":"neg","#ef4444");
-
-  dC("c4a");CH.c4a=new Chart(document.getElementById("c4a"),{type:"line",data:{labels:qs,datasets:[
-    {label:"English",data:eD,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.08)",fill:true,tension:.3,pointRadius:0},
-    {label:"Non-English",data:nD,borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.08)",fill:true,tension:.3,pointRadius:0}
-  ]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}});
-
+  qs.forEach(function(qr){var rows=byQ[qr],eng=0,tot=0;rows.forEach(function(r){tot+=r.c;if(r.lang==="English")eng+=r.c});eD.push(eng);nD.push(tot-eng);tD.push(tot);pD.push(tot?((tot-eng)/tot*100):0)});
+  var lt=tD[tD.length-1]||0,ln=nD[nD.length-1]||0,lp=pD[pD.length-1]||0,fp=pD[0]||0;
+  document.getElementById("lg_k").innerHTML=kp("New Eligibles (Latest Q)",fK(lt),"","","#6366f1")+kp("Non-English",fK(ln),lp.toFixed(1)+"%","","#f59e0b")+kp("Non-Eng Trend",pc(lp,fp)+"pts",fp.toFixed(1)+"% → "+lp.toFixed(1)+"%",lp>fp?"pos":"neg","#ef4444");
+  dC("c4a");CH.c4a=new Chart(document.getElementById("c4a"),{type:"line",data:{labels:qs,datasets:[{label:"English",data:eD,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.08)",fill:true,tension:.3,pointRadius:0},{label:"Non-English",data:nD,borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.08)",fill:true,tension:.3,pointRadius:0}]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}}}});
   dC("c4b");CH.c4b=new Chart(document.getElementById("c4b"),{type:"line",data:{labels:qs,datasets:[{label:"Non-English %",data:pD,borderColor:"#ef4444",tension:.3,pointRadius:1,borderWidth:2}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v.toFixed(0)+"%"}}}}}});
-
-  var lastQ=qs[qs.length-1];
-  var lR=byQ[lastQ]||[];
+  var lastQ=qs[qs.length-1],lR=byQ[lastQ]||[];
   var lt2=lR.filter(function(r){return r.lang&&r.lang!=="Unknown"&&r.lang!=="Not Reported"&&r.c>0}).sort(function(a,b){return b.c-a.c});
-  var top8=lt2.slice(0,8);var ov=0;for(var i=8;i<lt2.length;i++)ov+=lt2[i].c;
-  if(ov>0)top8.push({lang:"Other",c:ov});
-
+  var top8=lt2.slice(0,8);var ov=0;for(var i=8;i<lt2.length;i++)ov+=lt2[i].c;if(ov>0)top8.push({lang:"Other",c:ov});
   dC("c4c");CH.c4c=new Chart(document.getElementById("c4c"),{type:"doughnut",data:{labels:top8.map(function(r){return r.lang}),datasets:[{data:top8.map(function(r){return r.c}),backgroundColor:CL.slice(0,top8.length)}]},options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}}});
-
-  var th='<div style="font-size:12px;font-weight:600;margin-bottom:8px">Language Breakdown — '+lastQ+'</div>';
+  var th='<div style="font-size:12px;font-weight:600;margin-bottom:8px">'+lastQ+'</div>';
   top8.forEach(function(r,i){th+='<div class="lr"><span><span class="dot" style="background:'+CL[i%CL.length]+'"></span>'+r.lang+'</span><span style="font-weight:600">'+fF(r.c)+'</span></div>'});
   document.getElementById("lg_tbl").innerHTML=th;
 }
