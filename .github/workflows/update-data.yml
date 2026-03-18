@@ -32,20 +32,52 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Download CSVs from DHCS
+      - name: Discover and download DHCS CSVs
         run: |
           mkdir -p tmp
-          echo "Downloading enrollment CSV..."
-          curl -L -o tmp/enrollment.csv \
-            -H "User-Agent: Mozilla/5.0" \
-            "https://data.chhs.ca.gov/dataset/c6ccef54-e7a9-4ebd-b79a-850b72c4dd8c/resource/95358a7a-2c9d-41c6-a0e0-405a7e5c5f18/download/open-data-portal-managed-care-enrollment-count-february-2026.csv"
-          echo "Enrollment CSV size: $(wc -c < tmp/enrollment.csv) bytes"
 
-          echo "Downloading language CSV..."
-          curl -L -o tmp/language.csv \
-            -H "User-Agent: Mozilla/5.0" \
-            "https://data.chhs.ca.gov/dataset/8c897320-ba87-4574-bc37-bae974191c35/resource/b698c8d7-aacd-43c6-a7dd-737ff5692284/download/t5_eligibility_by_primary_language_201001_202602.csv" || echo "Language CSV download failed (non-fatal)"
-          echo "Language CSV size: $(wc -c < tmp/language.csv 2>/dev/null || echo 0) bytes"
+          echo "=== Getting enrollment CSV URL from CKAN API ==="
+          ENROLL_URL=$(python3 -c "
+          import urllib.request, json
+          req = urllib.request.Request(
+            'https://data.chhs.ca.gov/api/3/action/package_show?id=medi-cal-managed-care-enrollment-report',
+            headers={'User-Agent': 'Mozilla/5.0'}
+          )
+          data = json.loads(urllib.request.urlopen(req, timeout=30).read())
+          for r in data['result']['resources']:
+            if r.get('format','').upper() == 'CSV':
+              print(r['url'])
+              break
+          ")
+          echo "Enrollment URL: $ENROLL_URL"
+          curl -L -o tmp/enrollment.csv -H "User-Agent: Mozilla/5.0" --retry 3 --max-time 300 "$ENROLL_URL"
+          echo "Enrollment CSV size: $(wc -c < tmp/enrollment.csv) bytes"
+          head -1 tmp/enrollment.csv
+
+          echo ""
+          echo "=== Getting language CSV URL from CKAN API ==="
+          LANG_URL=$(python3 -c "
+          import urllib.request, json
+          req = urllib.request.Request(
+            'https://data.chhs.ca.gov/api/3/action/package_show?id=medi-cal-certified-eligibles-with-demographics-by-month',
+            headers={'User-Agent': 'Mozilla/5.0'}
+          )
+          data = json.loads(urllib.request.urlopen(req, timeout=30).read())
+          for r in data['result']['resources']:
+            name = (r.get('name','') + r.get('description','')).lower()
+            if 'language' in name and r.get('format','').upper() == 'CSV':
+              print(r['url'])
+              break
+          " 2>/dev/null || echo "")
+
+          if [ -n "$LANG_URL" ]; then
+            echo "Language URL: $LANG_URL"
+            curl -L -o tmp/language.csv -H "User-Agent: Mozilla/5.0" --retry 3 --max-time 300 "$LANG_URL"
+            echo "Language CSV size: $(wc -c < tmp/language.csv) bytes"
+            head -1 tmp/language.csv
+          else
+            echo "Could not find language CSV URL"
+          fi
 
       - name: Process CSVs into JSON
         run: python scripts/fetch_data.py
