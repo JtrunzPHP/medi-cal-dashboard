@@ -1,450 +1,481 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>California Medi-Cal Managed Care Dashboard</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif}
+body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
 .header{background:linear-gradient(135deg,#1e1b4b,#312e81);padding:20px 24px;border-bottom:1px solid #3730a3}
 .header h1{font-size:20px;font-weight:700}
-.header .sub{font-size:12px;color:#a5b4fc;margin-top:4px}
+.header-sub{font-size:12px;color:#a5b4fc;margin-top:4px}
 .tabs{display:flex;background:#1e1e2e;border-bottom:1px solid #2d2d44;overflow-x:auto}
 .tab{padding:12px 20px;font-size:13px;background:none;border:none;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
 .tab.active{color:#a5b4fc;font-weight:600;border-bottom-color:#6366f1}
 .tab:hover{color:#c7d2fe}
-.content{padding:20px 24px;max-width:1200px}
+.content{padding:20px 24px;max-width:1200px;display:none}
+.content.active{display:block}
 .kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
 .kpi{background:#1e1e2e;border-radius:10px;padding:14px 18px;min-width:140px;flex:1}
 .kpi-label{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px}
 .kpi-value{font-size:22px;font-weight:700;color:#e2e8f0;margin-top:4px}
 .kpi-sub{font-size:11px;margin-top:2px}
-.kpi-sub.pos{color:#10b981}.kpi-sub.neg{color:#ef4444}
+.pos{color:#10b981}.neg{color:#ef4444}
 .card{background:#1e1e2e;border-radius:10px;padding:16px;margin-bottom:16px}
-.section-title{font-size:14px;font-weight:600;margin-bottom:10px}
-.note-box{background:#1e1e2e;border-radius:10px;padding:16px;margin-bottom:16px;font-size:12px;color:#94a3b8;border-left:3px solid #6366f1}
+.section-title{font-size:14px;font-weight:600;margin-bottom:10px;margin-top:20px}
+.note-box{background:#1e1e2e;border-radius:10px;padding:16px;margin-bottom:16px;font-size:12px;color:#94a3b8;border-left:3px solid #6366f1;line-height:1.6}
 .note-box strong{color:#e2e8f0}
 select{background:#1e1e2e;color:#e2e8f0;border:1px solid #3730a3;border-radius:6px;padding:6px 12px;font-size:13px;font-family:inherit}
-.footer{margin-top:32px;padding:16px 0;border-top:1px solid #2d2d44;font-size:11px;color:#64748b}
-.loader{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
+.footer{margin-top:32px;padding:16px 0;border-top:1px solid #2d2d44;font-size:11px;color:#64748b;line-height:1.6}
+.loader{min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
 .spinner{width:40px;height:40px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:16px 0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.lang-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2d2d44;font-size:12px}
-.lang-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:8px}
-.flex-wrap{display:flex;gap:20px;flex-wrap:wrap}
-.flex-wrap>div{flex:1 1 300px}
-a{color:#a5b4fc}
+canvas{max-height:350px}
+.lang-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #2d2d44;font-size:12px}
+.lang-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:8px;vertical-align:middle}
+.two-col{display:flex;gap:20px;flex-wrap:wrap}
+.two-col>div{flex:1;min-width:280px}
+.error-msg{color:#ef4444;font-size:18px;font-weight:600}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useEffect,useMemo}=React;
-const {LineChart,Line,BarChart,Bar,AreaChart,Area,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,PieChart,Pie,Cell}=Recharts;
 
-const COLORS=["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16","#a855f7","#e11d48"];
-const MOLINA_C="#0ea5e9";
-const HN_C="#f97316";
-const TABS=["Overview","County Deep Dive","MOH vs CNC","Language / Immigration Proxy"];
+<div class="header">
+  <h1>California Medi-Cal Managed Care Dashboard</h1>
+  <div class="header-sub" id="header-sub">Source: DHCS Open Data Portal | Loading...</div>
+</div>
 
-const fmtK=function(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return(n/1e3).toFixed(0)+"K";return String(n)};
-const fmtFull=function(n){return n?n.toLocaleString():"0"};
-const pctChange=function(a,b){return b?((a-b)/b*100).toFixed(1):0};
+<div class="tabs" id="tab-bar">
+  <button class="tab active" onclick="showTab(0)">Overview</button>
+  <button class="tab" onclick="showTab(1)">County Deep Dive</button>
+  <button class="tab" onclick="showTab(2)">MOH vs CNC</button>
+  <button class="tab" onclick="showTab(3)">Language / Immigration Proxy</button>
+</div>
 
-function KPI(props){
-  return React.createElement("div",{className:"kpi",style:{borderLeft:"3px solid "+(props.color||"#6366f1")}},
-    React.createElement("div",{className:"kpi-label"},props.label),
-    React.createElement("div",{className:"kpi-value"},props.value),
-    props.sub?React.createElement("div",{className:"kpi-sub "+(props.subClass||"")},props.sub):null
-  );
+<div id="loader" class="loader">
+  <div style="font-size:18px;font-weight:600">Loading Medi-Cal Data...</div>
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:#94a3b8">Fetching DHCS enrollment data</div>
+</div>
+
+<!-- TAB 0: OVERVIEW -->
+<div class="content" id="tab0">
+  <div class="kpi-row" id="overview-kpis"></div>
+  <div class="section-title">Total Medi-Cal Managed Care Enrollment (Excl. Dental/PACE)</div>
+  <div class="card"><canvas id="chart-total"></canvas></div>
+  <div class="section-title" id="top-counties-title">Top 10 Counties</div>
+  <div class="card"><canvas id="chart-counties"></canvas></div>
+</div>
+
+<!-- TAB 1: COUNTY DEEP DIVE -->
+<div class="content" id="tab1">
+  <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+    <label style="font-size:13px;color:#94a3b8">Select County:</label>
+    <select id="county-select" onchange="renderCountyTab()"></select>
+  </div>
+  <div class="kpi-row" id="county-kpis"></div>
+  <div class="section-title" id="county-trend-title">Enrollment Trend</div>
+  <div class="card"><canvas id="chart-county-trend"></canvas></div>
+  <div class="section-title" id="county-plans-title">Plans - Latest Month</div>
+  <div class="card"><canvas id="chart-county-plans"></canvas></div>
+</div>
+
+<!-- TAB 2: MOH vs CNC -->
+<div class="content" id="tab2">
+  <div class="note-box">
+    <strong>MOH (Molina Healthcare)</strong> operates as "Molina Healthcare of California" across multiple CA counties.
+    <strong>CNC (Centene)</strong> operates as "Health Net" in California Medi-Cal managed care.
+    In LA County, Health Net is the Two-Plan model partner alongside L.A. Care Health Plan.
+  </div>
+  <div class="kpi-row" id="moh-kpis"></div>
+  <div class="section-title">Statewide: Molina vs Health Net (Centene)</div>
+  <div class="card"><canvas id="chart-moh-cnc"></canvas></div>
+  <div class="section-title">MOH vs CNC by County - Latest Month</div>
+  <div class="card"><canvas id="chart-moh-county"></canvas></div>
+  <div class="section-title">LA County: Health Net vs L.A. Care (Two-Plan Partners)</div>
+  <div class="card"><canvas id="chart-la-plans"></canvas></div>
+</div>
+
+<!-- TAB 3: LANGUAGE -->
+<div class="content" id="tab3">
+  <div class="note-box">
+    <strong>Data Source:</strong> DHCS Certified Eligibles by Primary Language, by county and month.
+    Primary language serves as a proxy for immigration patterns. Growth in non-English populations
+    (Spanish, Mandarin, Vietnamese, Korean, Armenian, etc.) indicates demographic shifts.
+  </div>
+  <div class="kpi-row" id="lang-kpis"></div>
+  <div class="section-title">LA County: Non-English vs English Medi-Cal Population</div>
+  <div class="card"><canvas id="chart-lang-trend"></canvas></div>
+  <div class="section-title">Language Distribution - LA County (Latest Month)</div>
+  <div class="two-col">
+    <div class="card"><canvas id="chart-lang-pie"></canvas></div>
+    <div class="card" id="lang-table"></div>
+  </div>
+</div>
+
+<div style="padding:0 24px;max-width:1200px">
+  <div class="footer" id="footer">
+    <strong>Data Sources:</strong> CA DHCS Open Data Portal - Medi-Cal Managed Care Enrollment Report &amp; Certified Eligibles by Primary Language.
+    Auto-refreshes via GitHub Actions monthly. MOH = Molina Healthcare (NYSE: MOH). CNC = Centene Corp (NYSE: CNC), operating as Health Net in CA.
+  </div>
+</div>
+
+<script>
+/* ===== GLOBALS ===== */
+var DATA = null;
+var LANG = null;
+var CHARTS = {};
+var CURRENT_TAB = 0;
+var COLORS = ["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16"];
+
+Chart.defaults.color = "#94a3b8";
+Chart.defaults.borderColor = "#2d2d44";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+
+/* ===== HELPERS ===== */
+function fmtK(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return(n/1e3).toFixed(0)+"K";return n.toString()}
+function fmtFull(n){return n?n.toLocaleString():"0"}
+function pct(a,b){return b?((a-b)/b*100).toFixed(1):"0"}
+
+function groupBy(arr,key){
+  var result={};
+  for(var i=0;i<arr.length;i++){
+    var k=arr[i][key];
+    if(!result[k])result[k]=[];
+    result[k].push(arr[i]);
+  }
+  return result;
 }
 
-function App(){
-  const [enroll,setEnroll]=useState(null);
-  const [lang,setLang]=useState(null);
-  const [loading,setLoading]=useState(true);
-  const [err,setErr]=useState(null);
-  const [tab,setTab]=useState(0);
-  const [county,setCounty]=useState("Los Angeles");
-  const [lastUpdated,setLastUpdated]=useState("");
-
-  useEffect(function(){
-    Promise.all([
-      fetch("data/enrollment.json").then(function(r){if(!r.ok)throw new Error("enrollment.json not found");return r.json()}),
-      fetch("data/language.json").then(function(r){if(!r.ok)throw new Error("language.json not found");return r.json()}).catch(function(){return null})
-    ]).then(function(results){
-      var e=results[0],l=results[1];
-      setEnroll(e.data);setLastUpdated(e.updated||"");
-      if(l)setLang(l.data);
-      setLoading(false);
-    }).catch(function(e){setErr(e.message);setLoading(false)});
-  },[]);
-
-  var plans=useMemo(function(){
-    if(!enroll)return[];
-    return enroll.filter(function(r){return["Dental","PACE","SCAN","Special Project","Primary Care Case Mgmt"].indexOf(r.pt)===-1});
-  },[enroll]);
-
-  var monthlyTotal=useMemo(function(){
-    if(!plans.length)return[];
-    var g=_.groupBy(plans,"m");
-    return _.sortBy(Object.keys(g).map(function(m){return{m:m,label:m.slice(2),total:_.sumBy(g[m],"c")}}),"m");
-  },[plans]);
-
-  var counties=useMemo(function(){
-    return plans.length?_.uniq(plans.map(function(r){return r.co})).filter(Boolean).sort():[];
-  },[plans]);
-
-  var countyTrend=useMemo(function(){
-    var f=plans.filter(function(r){return r.co===county});
-    var g=_.groupBy(f,"m");
-    return _.sortBy(Object.keys(g).map(function(m){return{m:m,label:m.slice(2),total:_.sumBy(g[m],"c")}}),"m");
-  },[plans,county]);
-
-  var countyPlans=useMemo(function(){
-    var f=plans.filter(function(r){return r.co===county});
-    var g=_.groupBy(f,"m");
-    return _.sortBy(Object.keys(g).map(function(m){
-      var bp=_.groupBy(g[m],"p");
-      var obj={m:m,label:m.slice(2)};
-      Object.keys(bp).forEach(function(p){obj[p]=_.sumBy(bp[p],"c")});
-      return obj;
-    }),"m");
-  },[plans,county]);
-
-  var topPlans=useMemo(function(){
-    if(!countyPlans.length)return[];
-    var last=countyPlans[countyPlans.length-1];
-    var ps=Object.keys(last).filter(function(k){return k!=="m"&&k!=="label"});
-    return _.orderBy(ps.map(function(p){return{name:p,count:last[p]||0}}),"count","desc").slice(0,8);
-  },[countyPlans]);
-
-  var mohCnc=useMemo(function(){
-    if(!plans.length)return[];
-    var g=_.groupBy(plans,"m");
-    return _.sortBy(Object.keys(g).map(function(m){
-      var rows=g[m];
-      return{m:m,label:m.slice(2),
-        Molina:_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c"),
-        "Health Net":_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c")
-      };
-    }),"m");
-  },[plans]);
-
-  var mohCncCounty=useMemo(function(){
-    if(!plans.length)return[];
-    var latest=_.maxBy(plans,"m");
-    if(!latest)return[];
-    var lr=plans.filter(function(r){return r.m===latest.m});
-    var bc=_.groupBy(lr,"co");
-    return _.orderBy(Object.keys(bc).map(function(co){
-      var rows=bc[co];
-      var mol=_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c");
-      var hn=_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c");
-      return{county:co,Molina:mol,"Health Net":hn,total:mol+hn};
-    }).filter(function(r){return r.total>0}),"total","desc").slice(0,15);
-  },[plans]);
-
-  var mohCncLA=useMemo(function(){
-    var la=plans.filter(function(r){return r.co==="Los Angeles"});
-    var g=_.groupBy(la,"m");
-    return _.sortBy(Object.keys(g).map(function(m){
-      var rows=g[m];
-      return{m:m,label:m.slice(2),
-        "Health Net":_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c"),
-        "L.A. Care":_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("la care")!==-1||r.p.toLowerCase().indexOf("l.a. care")!==-1}),"c")
-      };
-    }),"m");
-  },[plans]);
-
-  var langProcessed=useMemo(function(){
-    if(!lang)return null;
-    var laRows=lang.filter(function(r){return(r.co||"").toLowerCase().indexOf("los angeles")!==-1});
-    if(!laRows.length)return null;
-    var months=_.uniq(laRows.map(function(r){return r.m})).sort();
-    var languages=_.uniq(laRows.map(function(r){return r.lang})).filter(Boolean);
-    var byML=_.groupBy(laRows,function(r){return r.m+"||"+r.lang});
-    var trend=months.map(function(m){
-      var obj={m:m,label:m.slice(2)};
-      languages.forEach(function(l){obj[l]=_.sumBy(byML[m+"||"+l]||[],"c")});
-      return obj;
-    });
-    var last=trend[trend.length-1]||{};
-    var totals=_.orderBy(languages.map(function(l){return{name:l,value:last[l]||0}}).filter(function(r){return r.value>0}),"value","desc");
-    var top7=totals.slice(0,7);
-    var otherV=_.sumBy(totals.slice(7),"value");
-    if(otherV>0)top7.push({name:"Other",value:otherV});
-    var nonEngTrend=trend.map(function(t){
-      var eng=t["English"]||t["ENGLISH"]||0;
-      var total=languages.reduce(function(s,l){return s+(t[l]||0)},0);
-      return{m:t.m,label:t.label,english:eng,nonEnglish:total-eng,total:total,pct:total?(((total-eng)/total)*100).toFixed(1):0};
-    });
-    return{topLangs:top7,nonEngTrend:nonEngTrend};
-  },[lang]);
-
-  var latestM=plans.length?(_.maxBy(plans,"m")||{}).m:"";
-
-  if(loading)return(
-    <div className="loader">
-      <div style={{fontSize:18,fontWeight:600}}>Loading Medi-Cal Data...</div>
-      <div className="spinner"></div>
-      <div style={{fontSize:13,color:"#94a3b8"}}>Reading DHCS data files</div>
-    </div>
-  );
-
-  if(err)return(
-    <div className="loader">
-      <div style={{fontSize:18,fontWeight:600,color:"#ef4444"}}>Data Not Yet Available</div>
-      <div style={{fontSize:13,color:"#94a3b8",marginTop:12,maxWidth:520,lineHeight:1.6}}>
-        Go to your GitHub repo Actions tab and run the "Update Medi-Cal Data" workflow.
-      </div>
-    </div>
-  );
-
-  var mt=monthlyTotal;
-  var lastTotal=mt.length?mt[mt.length-1].total:0;
-  var prevTotal=mt.length>=2?mt[mt.length-2].total:0;
-  var firstTotal=mt.length?mt[0].total:0;
-
-  var ttStyle={background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12};
-
-  return(
-    <div>
-      <div className="header">
-        <h1>California Medi-Cal Managed Care Dashboard</h1>
-        <div className="sub">Source: DHCS Open Data Portal | Data through {latestM} | Last refresh: {lastUpdated} | Auto-updates monthly via GitHub Actions</div>
-      </div>
-      <div className="tabs">
-        {TABS.map(function(t,i){return <button key={i} className={"tab"+(tab===i?" active":"")} onClick={function(){setTab(i)}}>{t}</button>})}
-      </div>
-      <div className="content">
-
-        {tab===0 && <div>
-          <div className="kpi-row">
-            <KPI label="Latest Month" value={latestM} color="#6366f1"/>
-            <KPI label="Total Enrollment" value={fmtK(lastTotal)} sub={pctChange(lastTotal,prevTotal)+"% MoM"} subClass={lastTotal>=prevTotal?"pos":"neg"} color="#10b981"/>
-            <KPI label="3-Year Change" value={pctChange(lastTotal,firstTotal)+"%"} sub={fmtK(firstTotal)+" to "+fmtK(lastTotal)} subClass={lastTotal>=firstTotal?"pos":"neg"} color="#f59e0b"/>
-            <KPI label="Counties" value={counties.length} color="#8b5cf6"/>
-          </div>
-
-          <div className="section-title">Total Medi-Cal Managed Care Enrollment (Excl. Dental/PACE)</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={320}>
-              <AreaChart data={mt}>
-                <defs><linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
-                <Area type="monotone" dataKey="total" stroke="#6366f1" fill="url(#gt)" strokeWidth={2}/>
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="section-title">Top 10 Counties - {latestM}</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={function(){var lr=plans.filter(function(r){return r.m===latestM});var bc=_.groupBy(lr,"co");return _.orderBy(Object.keys(bc).map(function(c){return{county:c,total:_.sumBy(bc[c],"c")}}),"total","desc").slice(0,10)}()}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis dataKey="county" tick={{fontSize:10,fill:"#94a3b8"}} angle={-20} textAnchor="end" height={60}/>
-                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}}/>
-                <Bar dataKey="total" fill="#6366f1" radius={[4,4,0,0]}/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>}
-
-        {tab===1 && <div>
-          <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
-            <label style={{fontSize:13,color:"#94a3b8"}}>Select County:</label>
-            <select value={county} onChange={function(e){setCounty(e.target.value)}}>
-              {counties.map(function(c){return <option key={c} value={c}>{c}</option>})}
-            </select>
-          </div>
-          <div className="kpi-row">
-            <KPI label={county+" Latest"} value={fmtK(countyTrend.length?countyTrend[countyTrend.length-1].total:0)} color="#6366f1"/>
-            <KPI label="3-Year Change" value={countyTrend.length>=2?pctChange(countyTrend[countyTrend.length-1].total,countyTrend[0].total)+"%":"--"} color="#f59e0b"/>
-            <KPI label="# Plans" value={topPlans.length} color="#10b981"/>
-          </div>
-
-          <div className="section-title">Enrollment Trend - {county} County</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={countyTrend}>
-                <defs><linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
-                <Area type="monotone" dataKey="total" stroke="#6366f1" fill="url(#gc)" strokeWidth={2}/>
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="section-title">Plans in {county} - Latest Month</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={Math.max(200,topPlans.length*40)}>
-              <BarChart data={topPlans} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis type="number" tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <YAxis type="category" dataKey="name" tick={{fontSize:10,fill:"#94a3b8"}} width={220}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}}/>
-                <Bar dataKey="count" fill="#8b5cf6" radius={[0,4,4,0]}/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="section-title">Plan Trends - {county}</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={countyPlans}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={3}/>
-                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
-                <Legend wrapperStyle={{fontSize:11}}/>
-                {topPlans.slice(0,6).map(function(p,i){return <Line key={p.name} type="monotone" dataKey={p.name} stroke={COLORS[i%COLORS.length]} strokeWidth={2} dot={false}/>})}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>}
-
-        {tab===2 && <div>
-          <div className="note-box">
-            <strong>MOH (Molina Healthcare)</strong> operates as "Molina Healthcare of California" across multiple CA counties.
-            <strong> CNC (Centene)</strong> operates as "Health Net" in California Medi-Cal managed care.
-            In LA County, Health Net is the Two-Plan model partner alongside L.A. Care Health Plan.
-          </div>
-          <div className="kpi-row">
-            <KPI label="Molina (Statewide)" value={fmtK(mohCnc.length?mohCnc[mohCnc.length-1].Molina:0)} color={MOLINA_C}/>
-            <KPI label="Health Net (Statewide)" value={fmtK(mohCnc.length?mohCnc[mohCnc.length-1]["Health Net"]:0)} color={HN_C}/>
-            <KPI label="Combined" value={fmtK(mohCnc.length?(mohCnc[mohCnc.length-1].Molina+mohCnc[mohCnc.length-1]["Health Net"]):0)} color="#8b5cf6"/>
-          </div>
-
-          <div className="section-title">Statewide: Molina vs Health Net (Centene)</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={mohCnc}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
-                <Legend wrapperStyle={{fontSize:12}}/>
-                <Line type="monotone" dataKey="Molina" stroke={MOLINA_C} strokeWidth={2.5} dot={false}/>
-                <Line type="monotone" dataKey="Health Net" stroke={HN_C} strokeWidth={2.5} dot={false}/>
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="section-title">MOH vs CNC by County - Latest Month</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={420}>
-              <BarChart data={mohCncCounty} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis type="number" tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <YAxis type="category" dataKey="county" tick={{fontSize:10,fill:"#94a3b8"}} width={120}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}}/>
-                <Legend wrapperStyle={{fontSize:12}}/>
-                <Bar dataKey="Molina" fill={MOLINA_C} stackId="a"/>
-                <Bar dataKey="Health Net" fill={HN_C} stackId="a" radius={[0,4,4,0]}/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="section-title">LA County: Health Net vs L.A. Care (Two-Plan Partners)</div>
-          <div className="card">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={mohCncLA}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
-                <Legend wrapperStyle={{fontSize:12}}/>
-                <Line type="monotone" dataKey="Health Net" stroke={HN_C} strokeWidth={2.5} dot={false}/>
-                <Line type="monotone" dataKey="L.A. Care" stroke="#6366f1" strokeWidth={2.5} dot={false}/>
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>}
-
-        {tab===3 && <div>
-          <div className="note-box">
-            <strong>Data Source:</strong> DHCS Certified Eligibles by Primary Language, by county and month.
-            Primary language serves as a proxy for immigration patterns. Growth in non-English populations
-            (Spanish, Mandarin, Vietnamese, Korean, Armenian, etc.) indicates demographic shifts.
-          </div>
-          {langProcessed ? <div>
-            <div className="kpi-row">
-              <KPI label="LA County Total" value={fmtK(langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1].total)} color="#6366f1"/>
-              <KPI label="Non-English" value={fmtK(langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1].nonEnglish)} color="#f59e0b"/>
-              <KPI label="% Non-English" value={langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1].pct+"%"} color="#ef4444"/>
-            </div>
-
-            <div className="section-title">LA County: Non-English vs English Medi-Cal Population</div>
-            <div className="card">
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={langProcessed.nonEngTrend}>
-                  <defs>
-                    <linearGradient id="ge" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient>
-                    <linearGradient id="gn" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-                  <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-                  <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-                  <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v)]}} labelFormatter={function(l){return"20"+l}}/>
-                  <Legend wrapperStyle={{fontSize:12}}/>
-                  <Area type="monotone" dataKey="english" stroke="#6366f1" fill="url(#ge)" strokeWidth={2} name="English"/>
-                  <Area type="monotone" dataKey="nonEnglish" stroke="#f59e0b" fill="url(#gn)" strokeWidth={2} name="Non-English"/>
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="section-title">Language Distribution - LA County (Latest Month)</div>
-            <div className="flex-wrap">
-              <div className="card">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={langProcessed.topLangs} cx="50%" cy="50%" outerRadius={100} dataKey="value" nameKey="name"
-                      label={function(d){return d.name+" "+(d.percent*100).toFixed(1)+"%"}} labelLine={{stroke:"#4b5563"}} style={{fontSize:10}}>
-                      {langProcessed.topLangs.map(function(e,i){return <Cell key={i} fill={COLORS[i%COLORS.length]}/>})}
-                    </Pie>
-                    <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Eligibles"]}}/>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="card">
-                <div style={{fontSize:13,fontWeight:600,marginBottom:12}}>Top Languages (Ranked)</div>
-                {langProcessed.topLangs.map(function(l,i){
-                  return <div key={i} className="lang-row">
-                    <span><span className="lang-dot" style={{background:COLORS[i%COLORS.length]}}></span>{l.name}</span>
-                    <span style={{fontWeight:600}}>{fmtFull(l.value)}</span>
-                  </div>
-                })}
-              </div>
-            </div>
-          </div> : <div className="card" style={{textAlign:"center",padding:24}}>
-            <div style={{color:"#f59e0b",marginBottom:8}}>Language data not yet loaded</div>
-            <div style={{fontSize:12,color:"#94a3b8"}}>Check the GitHub Actions log for details.</div>
-          </div>}
-        </div>}
-
-        <div className="footer">
-          <strong>Data Sources:</strong> CA DHCS Open Data Portal - Medi-Cal Managed Care Enrollment Report and Certified Eligibles by Primary Language.
-          Auto-refreshes via GitHub Actions monthly. MOH = Molina Healthcare (NYSE: MOH). CNC = Centene Corp (NYSE: CNC), operating as Health Net in CA.
-        </div>
-      </div>
-    </div>
-  );
+function sumBy(arr,key){
+  var s=0;for(var i=0;i<arr.length;i++)s+=(arr[i][key]||0);return s;
 }
 
-ReactDOM.render(React.createElement(App),document.getElementById("root"));
+function uniq(arr){
+  var seen={},out=[];
+  for(var i=0;i<arr.length;i++){if(!seen[arr[i]]&&arr[i]){seen[arr[i]]=1;out.push(arr[i])}}
+  return out;
+}
+
+function makeKPI(label,value,sub,subClass,color){
+  return '<div class="kpi" style="border-left:3px solid '+(color||"#6366f1")+'">'
+    +'<div class="kpi-label">'+label+'</div>'
+    +'<div class="kpi-value">'+value+'</div>'
+    +(sub?'<div class="kpi-sub '+(subClass||"")+'">'+sub+'</div>':'')
+    +'</div>';
+}
+
+function destroyChart(id){if(CHARTS[id]){CHARTS[id].destroy();delete CHARTS[id]}}
+
+function getPlans(){
+  if(!DATA)return[];
+  var skip={"Dental":1,"PACE":1,"SCAN":1,"Special Project":1,"Primary Care Case Mgmt":1};
+  return DATA.filter(function(r){return !skip[r.pt]});
+}
+
+/* ===== TABS ===== */
+function showTab(n){
+  CURRENT_TAB=n;
+  var tabs=document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++){tabs[i].className=i===n?'tab active':'tab'}
+  for(var i=0;i<4;i++){document.getElementById('tab'+i).className=i===n?'content active':'content'}
+  if(n===1)renderCountyTab();
+}
+
+/* ===== LOAD DATA ===== */
+function loadData(){
+  Promise.all([
+    fetch("data/enrollment.json").then(function(r){if(!r.ok)throw new Error("No data");return r.json()}),
+    fetch("data/language.json").then(function(r){if(!r.ok)return null;return r.json()}).catch(function(){return null})
+  ]).then(function(results){
+    DATA=results[0].data;
+    if(results[1])LANG=results[1].data;
+    document.getElementById('loader').style.display='none';
+    document.getElementById('header-sub').textContent=
+      'Source: DHCS Open Data Portal | Data through '+(DATA.length?DATA[DATA.length-1].m:'?')
+      +' | Last refresh: '+(results[0].updated||'?')+' | Auto-updates monthly via GitHub Actions';
+    renderOverview();
+    buildCountySelect();
+    renderMOH();
+    renderLang();
+    showTab(0);
+  }).catch(function(e){
+    document.getElementById('loader').innerHTML=
+      '<div class="error-msg">Data Not Yet Available</div>'
+      +'<div style="font-size:13px;color:#94a3b8;margin-top:12px;max-width:520px;line-height:1.6">'
+      +'Go to your GitHub repo &rarr; Actions tab &rarr; click "Update Medi-Cal Data" &rarr; click "Run workflow".'
+      +'</div>';
+  });
+}
+
+/* ===== TAB 0: OVERVIEW ===== */
+function renderOverview(){
+  var plans=getPlans();
+  var byMonth=groupBy(plans,"m");
+  var months=Object.keys(byMonth).sort();
+  var totals=months.map(function(m){return sumBy(byMonth[m],"c")});
+
+  var last=totals[totals.length-1]||0;
+  var prev=totals.length>=2?totals[totals.length-2]:0;
+  var first=totals[0]||0;
+  var latestM=months[months.length-1]||"";
+  var counties=uniq(plans.map(function(r){return r.co}));
+
+  document.getElementById('overview-kpis').innerHTML=
+    makeKPI("Latest Month",latestM,"","","#6366f1")
+    +makeKPI("Total Enrollment",fmtK(last),pct(last,prev)+"% MoM",last>=prev?"pos":"neg","#10b981")
+    +makeKPI("3-Year Change",pct(last,first)+"%",fmtK(first)+" to "+fmtK(last),last>=first?"pos":"neg","#f59e0b")
+    +makeKPI("Counties",counties.length,"","","#8b5cf6");
+
+  document.getElementById('top-counties-title').textContent="Top 10 Counties - "+latestM;
+
+  destroyChart("chart-total");
+  CHARTS["chart-total"]=new Chart(document.getElementById("chart-total"),{
+    type:"line",
+    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[{
+      label:"Enrollees",data:totals,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.15)",fill:true,tension:0.3,pointRadius:0
+    }]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fmtK}}}}
+  });
+
+  // Top counties
+  var latestRows=plans.filter(function(r){return r.m===latestM});
+  var byCo=groupBy(latestRows,"co");
+  var coTotals=Object.keys(byCo).map(function(co){return{co:co,t:sumBy(byCo[co],"c")}});
+  coTotals.sort(function(a,b){return b.t-a.t});
+  var top10=coTotals.slice(0,10);
+
+  destroyChart("chart-counties");
+  CHARTS["chart-counties"]=new Chart(document.getElementById("chart-counties"),{
+    type:"bar",
+    data:{labels:top10.map(function(r){return r.co}),datasets:[{
+      label:"Enrollees",data:top10.map(function(r){return r.t}),backgroundColor:"#6366f1",borderRadius:4
+    }]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fmtK}}}}
+  });
+}
+
+/* ===== TAB 1: COUNTY ===== */
+function buildCountySelect(){
+  var plans=getPlans();
+  var counties=uniq(plans.map(function(r){return r.co})).sort();
+  var sel=document.getElementById("county-select");
+  sel.innerHTML=counties.map(function(c){
+    return '<option value="'+c+'"'+(c==="Los Angeles"?" selected":"")+'>'+c+'</option>';
+  }).join("");
+}
+
+function renderCountyTab(){
+  var county=document.getElementById("county-select").value;
+  var plans=getPlans().filter(function(r){return r.co===county});
+  var byMonth=groupBy(plans,"m");
+  var months=Object.keys(byMonth).sort();
+  var totals=months.map(function(m){return sumBy(byMonth[m],"c")});
+
+  var last=totals[totals.length-1]||0;
+  var first=totals[0]||0;
+  var latestM=months[months.length-1]||"";
+
+  // Plans in latest month
+  var latestRows=plans.filter(function(r){return r.m===latestM});
+  var byPlan=groupBy(latestRows,"p");
+  var planTotals=Object.keys(byPlan).map(function(p){return{name:p,count:sumBy(byPlan[p],"c")}});
+  planTotals.sort(function(a,b){return b.count-a.count});
+  var topP=planTotals.slice(0,8);
+
+  document.getElementById("county-kpis").innerHTML=
+    makeKPI(county+" Latest",fmtK(last),"","","#6366f1")
+    +makeKPI("3-Year Change",pct(last,first)+"%","","","#f59e0b")
+    +makeKPI("# Plans",topP.length,"","","#10b981");
+
+  document.getElementById("county-trend-title").textContent="Enrollment Trend - "+county+" County";
+  document.getElementById("county-plans-title").textContent="Plans in "+county+" - Latest Month";
+
+  destroyChart("chart-county-trend");
+  CHARTS["chart-county-trend"]=new Chart(document.getElementById("chart-county-trend"),{
+    type:"line",
+    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[{
+      label:"Enrollees",data:totals,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.15)",fill:true,tension:0.3,pointRadius:0
+    }]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:fmtK}}}}
+  });
+
+  destroyChart("chart-county-plans");
+  CHARTS["chart-county-plans"]=new Chart(document.getElementById("chart-county-plans"),{
+    type:"bar",
+    data:{labels:topP.map(function(r){return r.name}),datasets:[{
+      label:"Enrollees",data:topP.map(function(r){return r.count}),backgroundColor:"#8b5cf6",borderRadius:4
+    }]},
+    options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:fmtK}}}}
+  });
+}
+
+/* ===== TAB 2: MOH vs CNC ===== */
+function renderMOH(){
+  var plans=getPlans();
+  var byMonth=groupBy(plans,"m");
+  var months=Object.keys(byMonth).sort();
+
+  var molData=[],hnData=[];
+  months.forEach(function(m){
+    var rows=byMonth[m];
+    molData.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c"));
+    hnData.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c"));
+  });
+
+  var lastMol=molData[molData.length-1]||0;
+  var lastHN=hnData[hnData.length-1]||0;
+
+  document.getElementById("moh-kpis").innerHTML=
+    makeKPI("Molina (Statewide)",fmtK(lastMol),"","","#0ea5e9")
+    +makeKPI("Health Net (Statewide)",fmtK(lastHN),"","","#f97316")
+    +makeKPI("Combined",fmtK(lastMol+lastHN),"","","#8b5cf6");
+
+  destroyChart("chart-moh-cnc");
+  CHARTS["chart-moh-cnc"]=new Chart(document.getElementById("chart-moh-cnc"),{
+    type:"line",
+    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[
+      {label:"Molina",data:molData,borderColor:"#0ea5e9",tension:0.3,pointRadius:0,borderWidth:2.5},
+      {label:"Health Net",data:hnData,borderColor:"#f97316",tension:0.3,pointRadius:0,borderWidth:2.5}
+    ]},
+    options:{responsive:true,scales:{y:{ticks:{callback:fmtK}}}}
+  });
+
+  // By county
+  var latestM=months[months.length-1];
+  var latestRows=plans.filter(function(r){return r.m===latestM});
+  var byCo=groupBy(latestRows,"co");
+  var coData=Object.keys(byCo).map(function(co){
+    var rows=byCo[co];
+    var mol=sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c");
+    var hn=sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c");
+    return{co:co,mol:mol,hn:hn,total:mol+hn};
+  }).filter(function(r){return r.total>0});
+  coData.sort(function(a,b){return b.total-a.total});
+  coData=coData.slice(0,12);
+
+  destroyChart("chart-moh-county");
+  CHARTS["chart-moh-county"]=new Chart(document.getElementById("chart-moh-county"),{
+    type:"bar",
+    data:{labels:coData.map(function(r){return r.co}),datasets:[
+      {label:"Molina",data:coData.map(function(r){return r.mol}),backgroundColor:"#0ea5e9"},
+      {label:"Health Net",data:coData.map(function(r){return r.hn}),backgroundColor:"#f97316"}
+    ]},
+    options:{indexAxis:"y",responsive:true,scales:{x:{stacked:true,ticks:{callback:fmtK}},y:{stacked:true}}}
+  });
+
+  // LA: HN vs LA Care
+  var laPlans=plans.filter(function(r){return r.co==="Los Angeles"});
+  var laByMonth=groupBy(laPlans,"m");
+  var laMonths=Object.keys(laByMonth).sort();
+  var hnLA=[],lacLA=[];
+  laMonths.forEach(function(m){
+    var rows=laByMonth[m];
+    hnLA.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c"));
+    lacLA.push(sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("la care")!==-1||r.p.toLowerCase().indexOf("l.a. care")!==-1}),"c"));
+  });
+
+  destroyChart("chart-la-plans");
+  CHARTS["chart-la-plans"]=new Chart(document.getElementById("chart-la-plans"),{
+    type:"line",
+    data:{labels:laMonths.map(function(m){return m.slice(2)}),datasets:[
+      {label:"Health Net",data:hnLA,borderColor:"#f97316",tension:0.3,pointRadius:0,borderWidth:2.5},
+      {label:"L.A. Care",data:lacLA,borderColor:"#6366f1",tension:0.3,pointRadius:0,borderWidth:2.5}
+    ]},
+    options:{responsive:true,scales:{y:{ticks:{callback:fmtK}}}}
+  });
+}
+
+/* ===== TAB 3: LANGUAGE ===== */
+function renderLang(){
+  if(!LANG){
+    document.getElementById("lang-kpis").innerHTML='<div class="card" style="width:100%;text-align:center;padding:24px"><div style="color:#f59e0b">Language data not available. Check GitHub Actions log.</div></div>';
+    return;
+  }
+
+  var laRows=LANG.filter(function(r){return(r.co||"").toLowerCase().indexOf("los angeles")!==-1});
+  if(!laRows.length){document.getElementById("lang-kpis").innerHTML='<div class="card" style="width:100%"><div style="color:#f59e0b">No LA County language data found.</div></div>';return}
+
+  var months=uniq(laRows.map(function(r){return r.m})).sort();
+  var languages=uniq(laRows.map(function(r){return r.lang})).filter(Boolean);
+  var byML=groupBy(laRows,function(r){return r.m+"||"+r.lang});
+
+  // Fix groupBy for composite key
+  var byML2={};
+  laRows.forEach(function(r){
+    var k=r.m+"||"+r.lang;
+    if(!byML2[k])byML2[k]=[];
+    byML2[k].push(r);
+  });
+
+  var engData=[],nonEngData=[],totalData=[];
+  months.forEach(function(m){
+    var eng=0,total=0;
+    languages.forEach(function(l){
+      var key=m+"||"+l;
+      var s=sumBy(byML2[key]||[],"c");
+      total+=s;
+      if(l==="English"||l==="ENGLISH")eng+=s;
+    });
+    engData.push(eng);
+    nonEngData.push(total-eng);
+    totalData.push(total);
+  });
+
+  var lastTotal=totalData[totalData.length-1]||0;
+  var lastNonEng=nonEngData[nonEngData.length-1]||0;
+  var lastPct=lastTotal?(lastNonEng/lastTotal*100).toFixed(1):"0";
+
+  document.getElementById("lang-kpis").innerHTML=
+    makeKPI("LA County Total",fmtK(lastTotal),"","","#6366f1")
+    +makeKPI("Non-English",fmtK(lastNonEng),"","","#f59e0b")
+    +makeKPI("% Non-English",lastPct+"%","","","#ef4444");
+
+  destroyChart("chart-lang-trend");
+  CHARTS["chart-lang-trend"]=new Chart(document.getElementById("chart-lang-trend"),{
+    type:"line",
+    data:{labels:months.map(function(m){return m.slice(2)}),datasets:[
+      {label:"English",data:engData,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:0.3,pointRadius:0},
+      {label:"Non-English",data:nonEngData,borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.1)",fill:true,tension:0.3,pointRadius:0}
+    ]},
+    options:{responsive:true,scales:{y:{ticks:{callback:fmtK}}}}
+  });
+
+  // Pie chart - latest month
+  var lastMonth=months[months.length-1];
+  var langTotals=languages.map(function(l){
+    var key=lastMonth+"||"+l;
+    return{name:l,value:sumBy(byML2[key]||[],"c")};
+  }).filter(function(r){return r.value>0});
+  langTotals.sort(function(a,b){return b.value-a.value});
+  var top7=langTotals.slice(0,7);
+  var otherVal=0;
+  for(var i=7;i<langTotals.length;i++)otherVal+=langTotals[i].value;
+  if(otherVal>0)top7.push({name:"Other",value:otherVal});
+
+  destroyChart("chart-lang-pie");
+  CHARTS["chart-lang-pie"]=new Chart(document.getElementById("chart-lang-pie"),{
+    type:"doughnut",
+    data:{labels:top7.map(function(r){return r.name}),datasets:[{
+      data:top7.map(function(r){return r.value}),
+      backgroundColor:COLORS.slice(0,top7.length)
+    }]},
+    options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}}}
+  });
+
+  // Table
+  var html='<div style="font-size:13px;font-weight:600;margin-bottom:12px">Top Languages (Ranked)</div>';
+  top7.forEach(function(l,i){
+    html+='<div class="lang-row"><span><span class="lang-dot" style="background:'+COLORS[i%COLORS.length]+'"></span>'+l.name+'</span><span style="font-weight:600">'+fmtFull(l.value)+'</span></div>';
+  });
+  document.getElementById("lang-table").innerHTML=html;
+}
+
+/* ===== INIT ===== */
+loadData();
 </script>
 </body>
 </html>
