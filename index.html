@@ -32,7 +32,7 @@ body{background:#0f0f1a;color:#e2e8f0;font-family:system-ui,-apple-system,sans-s
 .note-box strong{color:#e2e8f0}
 select{background:#1e1e2e;color:#e2e8f0;border:1px solid #3730a3;border-radius:6px;padding:6px 12px;font-size:13px;font-family:inherit}
 .footer{margin-top:32px;padding:16px 0;border-top:1px solid #2d2d44;font-size:11px;color:#64748b}
-.loader{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
+.loader{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
 .spinner{width:40px;height:40px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:16px 0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .lang-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #2d2d44;font-size:12px}
@@ -49,19 +49,20 @@ const {useState,useEffect,useMemo}=React;
 const {LineChart,Line,BarChart,Bar,AreaChart,Area,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,PieChart,Pie,Cell}=Recharts;
 
 const COLORS=["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16","#a855f7","#e11d48"];
-const MOLINA_C="#0ea5e9",HN_C="#f97316";
+const MOLINA_C="#0ea5e9";
+const HN_C="#f97316";
 const TABS=["Overview","County Deep Dive","MOH vs CNC","Language / Immigration Proxy"];
 
-const fmtK=n=>{if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return(n/1e3).toFixed(0)+"K";return String(n)};
-const fmtFull=n=>n?n.toLocaleString():"0";
-const pctChange=(a,b)=>b?((a-b)/b*100).toFixed(1):0;
+const fmtK=function(n){if(n>=1e6)return(n/1e6).toFixed(1)+"M";if(n>=1e3)return(n/1e3).toFixed(0)+"K";return String(n)};
+const fmtFull=function(n){return n?n.toLocaleString():"0"};
+const pctChange=function(a,b){return b?((a-b)/b*100).toFixed(1):0};
 
-function KPI({label,value,sub,subClass,color}){
-  return <div className="kpi" style={{borderLeft:`3px solid ${color||"#6366f1"}`}}>
-    <div className="kpi-label">{label}</div>
-    <div className="kpi-value">{value}</div>
-    {sub&&<div className={`kpi-sub ${subClass||""}`}>{sub}</div>}
-  </div>;
+function KPI(props){
+  return React.createElement("div",{className:"kpi",style:{borderLeft:"3px solid "+(props.color||"#6366f1")}},
+    React.createElement("div",{className:"kpi-label"},props.label),
+    React.createElement("div",{className:"kpi-value"},props.value),
+    props.sub?React.createElement("div",{className:"kpi-sub "+(props.subClass||"")},props.sub):null
+  );
 }
 
 function App(){
@@ -73,350 +74,377 @@ function App(){
   const [county,setCounty]=useState("Los Angeles");
   const [lastUpdated,setLastUpdated]=useState("");
 
-  useEffect(()=>{
+  useEffect(function(){
     Promise.all([
-      fetch("data/enrollment.json").then(r=>{if(!r.ok)throw new Error("enrollment.json not found");return r.json()}),
-      fetch("data/language.json").then(r=>{if(!r.ok)throw new Error("language.json not found");return r.json()}).catch(()=>null)
-    ]).then(([e,l])=>{
+      fetch("data/enrollment.json").then(function(r){if(!r.ok)throw new Error("enrollment.json not found");return r.json()}),
+      fetch("data/language.json").then(function(r){if(!r.ok)throw new Error("language.json not found");return r.json()}).catch(function(){return null})
+    ]).then(function(results){
+      var e=results[0],l=results[1];
       setEnroll(e.data);setLastUpdated(e.updated||"");
       if(l)setLang(l.data);
       setLoading(false);
-    }).catch(e=>{setErr(e.message);setLoading(false)});
+    }).catch(function(e){setErr(e.message);setLoading(false)});
   },[]);
 
-  const plans=useMemo(()=>{
+  var plans=useMemo(function(){
     if(!enroll)return[];
-    return enroll.filter(r=>!["Dental","PACE","SCAN","Special Project","Primary Care Case Mgmt"].includes(r.pt));
+    return enroll.filter(function(r){return["Dental","PACE","SCAN","Special Project","Primary Care Case Mgmt"].indexOf(r.pt)===-1});
   },[enroll]);
 
-  const monthlyTotal=useMemo(()=>{
+  var monthlyTotal=useMemo(function(){
     if(!plans.length)return[];
-    const g=_.groupBy(plans,"m");
-    return _.sortBy(Object.entries(g).map(([m,rows])=>({m,label:m.slice(2),total:_.sumBy(rows,"c")})),"m");
+    var g=_.groupBy(plans,"m");
+    return _.sortBy(Object.keys(g).map(function(m){return{m:m,label:m.slice(2),total:_.sumBy(g[m],"c")}}),"m");
   },[plans]);
 
-  const counties=useMemo(()=>plans.length?_.uniq(plans.map(r=>r.co)).filter(Boolean).sort():[],[plans]);
+  var counties=useMemo(function(){
+    return plans.length?_.uniq(plans.map(function(r){return r.co})).filter(Boolean).sort():[];
+  },[plans]);
 
-  const countyTrend=useMemo(()=>{
-    const f=plans.filter(r=>r.co===county);
-    const g=_.groupBy(f,"m");
-    return _.sortBy(Object.entries(g).map(([m,rows])=>({m,label:m.slice(2),total:_.sumBy(rows,"c")})),"m");
+  var countyTrend=useMemo(function(){
+    var f=plans.filter(function(r){return r.co===county});
+    var g=_.groupBy(f,"m");
+    return _.sortBy(Object.keys(g).map(function(m){return{m:m,label:m.slice(2),total:_.sumBy(g[m],"c")}}),"m");
   },[plans,county]);
 
-  const countyPlans=useMemo(()=>{
-    const f=plans.filter(r=>r.co===county);
-    const g=_.groupBy(f,"m");
-    return _.sortBy(Object.entries(g).map(([m,rows])=>{
-      const bp=_.groupBy(rows,"p");
-      const obj={m,label:m.slice(2)};
-      Object.entries(bp).forEach(([p,pr])=>{obj[p]=_.sumBy(pr,"c")});
+  var countyPlans=useMemo(function(){
+    var f=plans.filter(function(r){return r.co===county});
+    var g=_.groupBy(f,"m");
+    return _.sortBy(Object.keys(g).map(function(m){
+      var bp=_.groupBy(g[m],"p");
+      var obj={m:m,label:m.slice(2)};
+      Object.keys(bp).forEach(function(p){obj[p]=_.sumBy(bp[p],"c")});
       return obj;
     }),"m");
   },[plans,county]);
 
-  const topPlans=useMemo(()=>{
+  var topPlans=useMemo(function(){
     if(!countyPlans.length)return[];
-    const last=countyPlans[countyPlans.length-1];
-    const ps=Object.keys(last).filter(k=>!["m","label"].includes(k));
-    return _.orderBy(ps.map(p=>({name:p,count:last[p]||0})),"count","desc").slice(0,8);
+    var last=countyPlans[countyPlans.length-1];
+    var ps=Object.keys(last).filter(function(k){return k!=="m"&&k!=="label"});
+    return _.orderBy(ps.map(function(p){return{name:p,count:last[p]||0}}),"count","desc").slice(0,8);
   },[countyPlans]);
 
-  const mohCnc=useMemo(()=>{
+  var mohCnc=useMemo(function(){
     if(!plans.length)return[];
-    const g=_.groupBy(plans,"m");
-    return _.sortBy(Object.entries(g).map(([m,rows])=>({
-      m,label:m.slice(2),
-      Molina:_.sumBy(rows.filter(r=>r.p.toLowerCase().includes("molina")),"c"),
-      "Health Net":_.sumBy(rows.filter(r=>r.p.toLowerCase().includes("health net")),"c")
-    })),"m");
+    var g=_.groupBy(plans,"m");
+    return _.sortBy(Object.keys(g).map(function(m){
+      var rows=g[m];
+      return{m:m,label:m.slice(2),
+        Molina:_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c"),
+        "Health Net":_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c")
+      };
+    }),"m");
   },[plans]);
 
-  const mohCncCounty=useMemo(()=>{
+  var mohCncCounty=useMemo(function(){
     if(!plans.length)return[];
-    const latest=_.maxBy(plans,"m")?.m;
-    const lr=plans.filter(r=>r.m===latest);
-    const bc=_.groupBy(lr,"co");
-    return _.orderBy(Object.entries(bc).map(([co,rows])=>{
-      const mol=_.sumBy(rows.filter(r=>r.p.toLowerCase().includes("molina")),"c");
-      const hn=_.sumBy(rows.filter(r=>r.p.toLowerCase().includes("health net")),"c");
+    var latest=_.maxBy(plans,"m");
+    if(!latest)return[];
+    var lr=plans.filter(function(r){return r.m===latest.m});
+    var bc=_.groupBy(lr,"co");
+    return _.orderBy(Object.keys(bc).map(function(co){
+      var rows=bc[co];
+      var mol=_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("molina")!==-1}),"c");
+      var hn=_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c");
       return{county:co,Molina:mol,"Health Net":hn,total:mol+hn};
-    }).filter(r=>r.total>0),"total","desc").slice(0,15);
+    }).filter(function(r){return r.total>0}),"total","desc").slice(0,15);
   },[plans]);
 
-  const mohCncLA=useMemo(()=>{
-    const la=plans.filter(r=>r.co==="Los Angeles");
-    const g=_.groupBy(la,"m");
-    return _.sortBy(Object.entries(g).map(([m,rows])=>({
-      m,label:m.slice(2),
-      "Health Net":_.sumBy(rows.filter(r=>r.p.toLowerCase().includes("health net")),"c"),
-      "L.A. Care":_.sumBy(rows.filter(r=>r.p.toLowerCase().includes("la care")||r.p.toLowerCase().includes("l.a. care")),"c")
-    })),"m");
+  var mohCncLA=useMemo(function(){
+    var la=plans.filter(function(r){return r.co==="Los Angeles"});
+    var g=_.groupBy(la,"m");
+    return _.sortBy(Object.keys(g).map(function(m){
+      var rows=g[m];
+      return{m:m,label:m.slice(2),
+        "Health Net":_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("health net")!==-1}),"c"),
+        "L.A. Care":_.sumBy(rows.filter(function(r){return r.p.toLowerCase().indexOf("la care")!==-1||r.p.toLowerCase().indexOf("l.a. care")!==-1}),"c")
+      };
+    }),"m");
   },[plans]);
 
-  const langProcessed=useMemo(()=>{
+  var langProcessed=useMemo(function(){
     if(!lang)return null;
-    const laRows=lang.filter(r=>(r.co||"").toLowerCase().includes("los angeles"));
+    var laRows=lang.filter(function(r){return(r.co||"").toLowerCase().indexOf("los angeles")!==-1});
     if(!laRows.length)return null;
-    const months=_.uniq(laRows.map(r=>r.m)).sort();
-    const languages=_.uniq(laRows.map(r=>r.lang)).filter(Boolean);
-    const byML=_.groupBy(laRows,r=>`${r.m}||${r.lang}`);
-    const trend=months.map(m=>{
-      const obj={m,label:m.slice(2)};
-      languages.forEach(l=>{obj[l]=_.sumBy(byML[`${m}||${l}`]||[],"c")});
+    var months=_.uniq(laRows.map(function(r){return r.m})).sort();
+    var languages=_.uniq(laRows.map(function(r){return r.lang})).filter(Boolean);
+    var byML=_.groupBy(laRows,function(r){return r.m+"||"+r.lang});
+    var trend=months.map(function(m){
+      var obj={m:m,label:m.slice(2)};
+      languages.forEach(function(l){obj[l]=_.sumBy(byML[m+"||"+l]||[],"c")});
       return obj;
     });
-    const last=trend[trend.length-1]||{};
-    const totals=_.orderBy(languages.map(l=>({name:l,value:last[l]||0})).filter(r=>r.value>0),"value","desc");
-    const top7=totals.slice(0,7);
-    const otherV=_.sumBy(totals.slice(7),"value");
+    var last=trend[trend.length-1]||{};
+    var totals=_.orderBy(languages.map(function(l){return{name:l,value:last[l]||0}}).filter(function(r){return r.value>0}),"value","desc");
+    var top7=totals.slice(0,7);
+    var otherV=_.sumBy(totals.slice(7),"value");
     if(otherV>0)top7.push({name:"Other",value:otherV});
-    const nonEngTrend=trend.map(t=>{
-      const eng=t["English"]||t["ENGLISH"]||0;
-      const total=languages.reduce((s,l)=>s+(t[l]||0),0);
-      return{m:t.m,label:t.label,english:eng,nonEnglish:total-eng,total,pct:total?(((total-eng)/total)*100).toFixed(1):0};
+    var nonEngTrend=trend.map(function(t){
+      var eng=t["English"]||t["ENGLISH"]||0;
+      var total=languages.reduce(function(s,l){return s+(t[l]||0)},0);
+      return{m:t.m,label:t.label,english:eng,nonEnglish:total-eng,total:total,pct:total?(((total-eng)/total)*100).toFixed(1):0};
     });
-    return{topLangs:top7,nonEngTrend};
+    return{topLangs:top7,nonEngTrend:nonEngTrend};
   },[lang]);
 
-  const latestM=plans.length?_.maxBy(plans,"m")?.m:"";
+  var latestM=plans.length?(_.maxBy(plans,"m")||{}).m:"";
 
-  if(loading)return <div className="loader"><div style={{fontSize:18,fontWeight:600}}>Loading Medi-Cal Data...</div><div className="spinner"/><div style={{fontSize:13,color:"#94a3b8"}}>Reading pre-processed DHCS data files</div></div>;
-
-  if(err)return <div className="loader">
-    <div style={{fontSize:18,fontWeight:600,color:"#ef4444"}}>Data Not Yet Available</div>
-    <div style={{fontSize:13,color:"#94a3b8",marginTop:12,maxWidth:520,textAlign:"center",lineHeight:1.6}}>
-      The data files have not been generated yet.<br/><br/>
-      Go to your GitHub repo &rarr; <strong style={{color:"#e2e8f0"}}>Actions</strong> tab &rarr;
-      click <strong style={{color:"#e2e8f0"}}>"Update Medi-Cal Data"</strong> &rarr;
-      click <strong style={{color:"#e2e8f0"}}>"Run workflow"</strong>.<br/><br/>
-      This fetches live DHCS data and commits the JSON files. The site will work after that completes (~1-2 min).
+  if(loading)return(
+    <div className="loader">
+      <div style={{fontSize:18,fontWeight:600}}>Loading Medi-Cal Data...</div>
+      <div className="spinner"></div>
+      <div style={{fontSize:13,color:"#94a3b8"}}>Reading DHCS data files</div>
     </div>
-  </div>;
+  );
 
-  const mt=monthlyTotal;
-  const lastTotal=mt[mt.length-1]?.total||0;
-  const prevTotal=mt.length>=2?mt[mt.length-2].total:0;
-  const firstTotal=mt[0]?.total||0;
-
-  return <>
-    <div className="header">
-      <h1>California Medi-Cal Managed Care Dashboard</h1>
-      <div className="sub">Source: DHCS Open Data Portal &bull; Data through {latestM} &bull; Last refresh: {lastUpdated} &bull; Auto-updates monthly via GitHub Actions</div>
+  if(err)return(
+    <div className="loader">
+      <div style={{fontSize:18,fontWeight:600,color:"#ef4444"}}>Data Not Yet Available</div>
+      <div style={{fontSize:13,color:"#94a3b8",marginTop:12,maxWidth:520,lineHeight:1.6}}>
+        Go to your GitHub repo Actions tab and run the "Update Medi-Cal Data" workflow.
+      </div>
     </div>
-    <div className="tabs">
-      {TABS.map((t,i)=><button key={i} className={`tab ${tab===i?"active":""}`} onClick={()=>setTab(i)}>{t}</button>)}
-    </div>
-    <div className="content">
+  );
 
-    {tab===0&&<>
-      <div className="kpi-row">
-        <KPI label="Latest Month" value={latestM} color="#6366f1"/>
-        <KPI label="Total Enrollment" value={fmtK(lastTotal)} sub={`${pctChange(lastTotal,prevTotal)}% MoM`} subClass={lastTotal>=prevTotal?"pos":"neg"} color="#10b981"/>
-        <KPI label="3-Year Change" value={`${pctChange(lastTotal,firstTotal)}%`} sub={`${fmtK(firstTotal)} → ${fmtK(lastTotal)}`} subClass={lastTotal>=firstTotal?"pos":"neg"} color="#f59e0b"/>
-        <KPI label="Counties" value={counties.length} color="#8b5cf6"/>
-      </div>
-      <div className="section-title">Total Medi-Cal Managed Care Enrollment (Excl. Dental/PACE)</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={320}>
-          <AreaChart data={mt}>
-            <defs><linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-            <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]} labelFormatter={l=>"20"+l}/>
-            <Area type="monotone" dataKey="total" stroke="#6366f1" fill="url(#gt)" strokeWidth={2}/>
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="section-title">Top 10 Counties — {latestM}</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={(()=>{const lr=plans.filter(r=>r.m===latestM);const bc=_.groupBy(lr,"co");return _.orderBy(Object.entries(bc).map(([c,rows])=>({county:c,total:_.sumBy(rows,"c")})),"total","desc").slice(0,10)})()}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis dataKey="county" tick={{fontSize:10,fill:"#94a3b8"}} angle={-20} textAnchor="end" height={60}/>
-            <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]}/>
-            <Bar dataKey="total" fill="#6366f1" radius={[4,4,0,0]}/>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </>}
+  var mt=monthlyTotal;
+  var lastTotal=mt.length?mt[mt.length-1].total:0;
+  var prevTotal=mt.length>=2?mt[mt.length-2].total:0;
+  var firstTotal=mt.length?mt[0].total:0;
 
-    {tab===1&&<>
-      <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
-        <label style={{fontSize:13,color:"#94a3b8"}}>Select County:</label>
-        <select value={county} onChange={e=>setCounty(e.target.value)}>
-          {counties.map(c=><option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
-      <div className="kpi-row">
-        <KPI label={`${county} Latest`} value={fmtK(countyTrend[countyTrend.length-1]?.total||0)} color="#6366f1"/>
-        <KPI label="3-Year Change" value={countyTrend.length>=2?`${pctChange(countyTrend[countyTrend.length-1].total,countyTrend[0].total)}%`:"—"} color="#f59e0b"/>
-        <KPI label="# Plans" value={topPlans.length} color="#10b981"/>
-      </div>
-      <div className="section-title">Enrollment Trend — {county} County</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={countyTrend}>
-            <defs><linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-            <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]} labelFormatter={l=>"20"+l}/>
-            <Area type="monotone" dataKey="total" stroke="#6366f1" fill="url(#gc)" strokeWidth={2}/>
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="section-title">Plans in {county} — Latest Month</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={Math.max(200,topPlans.length*40)}>
-          <BarChart data={topPlans} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis type="number" tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <YAxis type="category" dataKey="name" tick={{fontSize:10,fill:"#94a3b8"}} width={220}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]}/>
-            <Bar dataKey="count" fill="#8b5cf6" radius={[0,4,4,0]}/>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="section-title">Plan Trends — {county}</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={350}>
-          <LineChart data={countyPlans}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={3}/>
-            <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:11}} formatter={v=>[fmtFull(v),"Enrollees"]} labelFormatter={l=>"20"+l}/>
-            <Legend wrapperStyle={{fontSize:11}}/>
-            {topPlans.slice(0,6).map((p,i)=><Line key={p.name} type="monotone" dataKey={p.name} stroke={COLORS[i%COLORS.length]} strokeWidth={2} dot={false}/>)}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </>}
+  var ttStyle={background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12};
 
-    {tab===2&&<>
-      <div className="note-box">
-        <strong>MOH (Molina Healthcare)</strong> operates as "Molina Healthcare of California" across multiple CA counties.
-        <strong> CNC (Centene)</strong> operates as "Health Net" in California's Medi-Cal managed care program.
-        In LA County, Health Net is the Two-Plan model partner alongside L.A. Care Health Plan.
+  return(
+    <div>
+      <div className="header">
+        <h1>California Medi-Cal Managed Care Dashboard</h1>
+        <div className="sub">Source: DHCS Open Data Portal | Data through {latestM} | Last refresh: {lastUpdated} | Auto-updates monthly via GitHub Actions</div>
       </div>
-      <div className="kpi-row">
-        <KPI label="Molina (Statewide)" value={fmtK(mohCnc[mohCnc.length-1]?.Molina||0)} color={MOLINA_C}/>
-        <KPI label="Health Net (Statewide)" value={fmtK(mohCnc[mohCnc.length-1]?.["Health Net"]||0)} color={HN_C}/>
-        <KPI label="Combined" value={fmtK((mohCnc[mohCnc.length-1]?.Molina||0)+(mohCnc[mohCnc.length-1]?.["Health Net"]||0))} color="#8b5cf6"/>
+      <div className="tabs">
+        {TABS.map(function(t,i){return <button key={i} className={"tab"+(tab===i?" active":"")} onClick={function(){setTab(i)}}>{t}</button>})}
       </div>
-      <div className="section-title">Statewide: Molina vs Health Net (Centene)</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={mohCnc}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-            <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]} labelFormatter={l=>"20"+l}/>
-            <Legend wrapperStyle={{fontSize:12}}/>
-            <Line type="monotone" dataKey="Molina" stroke={MOLINA_C} strokeWidth={2.5} dot={false}/>
-            <Line type="monotone" dataKey="Health Net" stroke={HN_C} strokeWidth={2.5} dot={false}/>
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="section-title">MOH vs CNC by County — Latest Month</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={420}>
-          <BarChart data={mohCncCounty} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis type="number" tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <YAxis type="category" dataKey="county" tick={{fontSize:10,fill:"#94a3b8"}} width={120}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]}/>
-            <Legend wrapperStyle={{fontSize:12}}/>
-            <Bar dataKey="Molina" fill={MOLINA_C} stackId="a"/>
-            <Bar dataKey="Health Net" fill={HN_C} stackId="a" radius={[0,4,4,0]}/>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="section-title">LA County: Health Net vs L.A. Care (Two-Plan Partners)</div>
-      <div className="card">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={mohCncLA}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-            <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-            <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-            <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Enrollees"]} labelFormatter={l=>"20"+l}/>
-            <Legend wrapperStyle={{fontSize:12}}/>
-            <Line type="monotone" dataKey="Health Net" stroke={HN_C} strokeWidth={2.5} dot={false}/>
-            <Line type="monotone" dataKey="L.A. Care" stroke="#6366f1" strokeWidth={2.5} dot={false}/>
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </>}
+      <div className="content">
 
-    {tab===3&&<>
-      <div className="note-box">
-        <strong>Data Source:</strong> DHCS Certified Eligibles by Primary Language, by county and month.
-        Primary language serves as a proxy for immigration patterns — growth in non-English populations
-        (Spanish, Mandarin, Vietnamese, Korean, Armenian, etc.) indicates demographic shifts.
-      </div>
-      {langProcessed?<>
-        <div className="kpi-row">
-          <KPI label="LA County Total" value={fmtK(langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1]?.total||0)} color="#6366f1"/>
-          <KPI label="Non-English" value={fmtK(langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1]?.nonEnglish||0)} color="#f59e0b"/>
-          <KPI label="% Non-English" value={`${langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1]?.pct||0}%`} color="#ef4444"/>
-        </div>
-        <div className="section-title">LA County: Non-English vs English Medi-Cal Population</div>
-        <div className="card">
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={langProcessed.nonEngTrend}>
-              <defs>
-                <linearGradient id="ge" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient>
-                <linearGradient id="gn" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
-              <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
-              <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
-              <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v)]} labelFormatter={l=>"20"+l}/>
-              <Legend wrapperStyle={{fontSize:12}}/>
-              <Area type="monotone" dataKey="english" stroke="#6366f1" fill="url(#ge)" strokeWidth={2} name="English"/>
-              <Area type="monotone" dataKey="nonEnglish" stroke="#f59e0b" fill="url(#gn)" strokeWidth={2} name="Non-English"/>
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="section-title">Language Distribution — LA County (Latest Month)</div>
-        <div className="flex-wrap">
+        {tab===0 && <div>
+          <div className="kpi-row">
+            <KPI label="Latest Month" value={latestM} color="#6366f1"/>
+            <KPI label="Total Enrollment" value={fmtK(lastTotal)} sub={pctChange(lastTotal,prevTotal)+"% MoM"} subClass={lastTotal>=prevTotal?"pos":"neg"} color="#10b981"/>
+            <KPI label="3-Year Change" value={pctChange(lastTotal,firstTotal)+"%"} sub={fmtK(firstTotal)+" to "+fmtK(lastTotal)} subClass={lastTotal>=firstTotal?"pos":"neg"} color="#f59e0b"/>
+            <KPI label="Counties" value={counties.length} color="#8b5cf6"/>
+          </div>
+
+          <div className="section-title">Total Medi-Cal Managed Care Enrollment (Excl. Dental/PACE)</div>
           <div className="card">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={langProcessed.topLangs} cx="50%" cy="50%" outerRadius={100} dataKey="value" nameKey="name"
-                  label={({name,percent})=>`${name} ${(percent*100).toFixed(1)}%`} labelLine={{stroke:"#4b5563"}} style={{fontSize:10}}>
-                  {langProcessed.topLangs.map((e,i)=><Cell key={i} fill={COLORS[i%COLORS.length]}/>)}
-                </Pie>
-                <Tooltip contentStyle={{background:"#1e1e2e",border:"1px solid #3730a3",borderRadius:8,fontSize:12}} formatter={v=>[fmtFull(v),"Eligibles"]}/>
-              </PieChart>
+            <ResponsiveContainer width="100%" height={320}>
+              <AreaChart data={mt}>
+                <defs><linearGradient id="gt" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
+                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
+                <Area type="monotone" dataKey="total" stroke="#6366f1" fill="url(#gt)" strokeWidth={2}/>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="card">
-            <div style={{fontSize:13,fontWeight:600,marginBottom:12}}>Top Languages (Ranked)</div>
-            {langProcessed.topLangs.map((l,i)=>
-              <div key={i} className="lang-row">
-                <span><span className="lang-dot" style={{background:COLORS[i%COLORS.length]}}/>{l.name}</span>
-                <span style={{fontWeight:600}}>{fmtFull(l.value)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </>:<div className="card" style={{textAlign:"center",padding:24}}>
-        <div style={{color:"#f59e0b",marginBottom:8}}>Language data not yet loaded</div>
-        <div style={{fontSize:12,color:"#94a3b8"}}>The GitHub Action may not have been able to fetch the language CSV. Check the Actions log for details.</div>
-      </div>}
-    </>}
 
-    <div className="footer">
-      <strong>Data Sources:</strong> CA DHCS Open Data Portal — Medi-Cal Managed Care Enrollment Report &amp; Certified Eligibles by Primary Language.
-      Auto-refreshes via GitHub Actions monthly cron. MOH = Molina Healthcare (NYSE: MOH). CNC = Centene Corp (NYSE: CNC), operating as Health Net in CA.
+          <div className="section-title">Top 10 Counties - {latestM}</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={function(){var lr=plans.filter(function(r){return r.m===latestM});var bc=_.groupBy(lr,"co");return _.orderBy(Object.keys(bc).map(function(c){return{county:c,total:_.sumBy(bc[c],"c")}}),"total","desc").slice(0,10)}()}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis dataKey="county" tick={{fontSize:10,fill:"#94a3b8"}} angle={-20} textAnchor="end" height={60}/>
+                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}}/>
+                <Bar dataKey="total" fill="#6366f1" radius={[4,4,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>}
+
+        {tab===1 && <div>
+          <div style={{marginBottom:16,display:"flex",alignItems:"center",gap:12}}>
+            <label style={{fontSize:13,color:"#94a3b8"}}>Select County:</label>
+            <select value={county} onChange={function(e){setCounty(e.target.value)}}>
+              {counties.map(function(c){return <option key={c} value={c}>{c}</option>})}
+            </select>
+          </div>
+          <div className="kpi-row">
+            <KPI label={county+" Latest"} value={fmtK(countyTrend.length?countyTrend[countyTrend.length-1].total:0)} color="#6366f1"/>
+            <KPI label="3-Year Change" value={countyTrend.length>=2?pctChange(countyTrend[countyTrend.length-1].total,countyTrend[0].total)+"%":"--"} color="#f59e0b"/>
+            <KPI label="# Plans" value={topPlans.length} color="#10b981"/>
+          </div>
+
+          <div className="section-title">Enrollment Trend - {county} County</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={countyTrend}>
+                <defs><linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
+                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
+                <Area type="monotone" dataKey="total" stroke="#6366f1" fill="url(#gc)" strokeWidth={2}/>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="section-title">Plans in {county} - Latest Month</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={Math.max(200,topPlans.length*40)}>
+              <BarChart data={topPlans} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis type="number" tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <YAxis type="category" dataKey="name" tick={{fontSize:10,fill:"#94a3b8"}} width={220}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}}/>
+                <Bar dataKey="count" fill="#8b5cf6" radius={[0,4,4,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="section-title">Plan Trends - {county}</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={countyPlans}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={3}/>
+                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
+                <Legend wrapperStyle={{fontSize:11}}/>
+                {topPlans.slice(0,6).map(function(p,i){return <Line key={p.name} type="monotone" dataKey={p.name} stroke={COLORS[i%COLORS.length]} strokeWidth={2} dot={false}/>})}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>}
+
+        {tab===2 && <div>
+          <div className="note-box">
+            <strong>MOH (Molina Healthcare)</strong> operates as "Molina Healthcare of California" across multiple CA counties.
+            <strong> CNC (Centene)</strong> operates as "Health Net" in California Medi-Cal managed care.
+            In LA County, Health Net is the Two-Plan model partner alongside L.A. Care Health Plan.
+          </div>
+          <div className="kpi-row">
+            <KPI label="Molina (Statewide)" value={fmtK(mohCnc.length?mohCnc[mohCnc.length-1].Molina:0)} color={MOLINA_C}/>
+            <KPI label="Health Net (Statewide)" value={fmtK(mohCnc.length?mohCnc[mohCnc.length-1]["Health Net"]:0)} color={HN_C}/>
+            <KPI label="Combined" value={fmtK(mohCnc.length?(mohCnc[mohCnc.length-1].Molina+mohCnc[mohCnc.length-1]["Health Net"]):0)} color="#8b5cf6"/>
+          </div>
+
+          <div className="section-title">Statewide: Molina vs Health Net (Centene)</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={mohCnc}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
+                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
+                <Legend wrapperStyle={{fontSize:12}}/>
+                <Line type="monotone" dataKey="Molina" stroke={MOLINA_C} strokeWidth={2.5} dot={false}/>
+                <Line type="monotone" dataKey="Health Net" stroke={HN_C} strokeWidth={2.5} dot={false}/>
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="section-title">MOH vs CNC by County - Latest Month</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={420}>
+              <BarChart data={mohCncCounty} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis type="number" tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <YAxis type="category" dataKey="county" tick={{fontSize:10,fill:"#94a3b8"}} width={120}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}}/>
+                <Legend wrapperStyle={{fontSize:12}}/>
+                <Bar dataKey="Molina" fill={MOLINA_C} stackId="a"/>
+                <Bar dataKey="Health Net" fill={HN_C} stackId="a" radius={[0,4,4,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="section-title">LA County: Health Net vs L.A. Care (Two-Plan Partners)</div>
+          <div className="card">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={mohCncLA}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
+                <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Enrollees"]}} labelFormatter={function(l){return"20"+l}}/>
+                <Legend wrapperStyle={{fontSize:12}}/>
+                <Line type="monotone" dataKey="Health Net" stroke={HN_C} strokeWidth={2.5} dot={false}/>
+                <Line type="monotone" dataKey="L.A. Care" stroke="#6366f1" strokeWidth={2.5} dot={false}/>
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>}
+
+        {tab===3 && <div>
+          <div className="note-box">
+            <strong>Data Source:</strong> DHCS Certified Eligibles by Primary Language, by county and month.
+            Primary language serves as a proxy for immigration patterns. Growth in non-English populations
+            (Spanish, Mandarin, Vietnamese, Korean, Armenian, etc.) indicates demographic shifts.
+          </div>
+          {langProcessed ? <div>
+            <div className="kpi-row">
+              <KPI label="LA County Total" value={fmtK(langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1].total)} color="#6366f1"/>
+              <KPI label="Non-English" value={fmtK(langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1].nonEnglish)} color="#f59e0b"/>
+              <KPI label="% Non-English" value={langProcessed.nonEngTrend[langProcessed.nonEngTrend.length-1].pct+"%"} color="#ef4444"/>
+            </div>
+
+            <div className="section-title">LA County: Non-English vs English Medi-Cal Population</div>
+            <div className="card">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={langProcessed.nonEngTrend}>
+                  <defs>
+                    <linearGradient id="ge" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient>
+                    <linearGradient id="gn" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/><stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/></linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2d2d44"/>
+                  <XAxis dataKey="label" tick={{fontSize:10,fill:"#94a3b8"}} interval={2}/>
+                  <YAxis tick={{fontSize:10,fill:"#94a3b8"}} tickFormatter={fmtK}/>
+                  <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v)]}} labelFormatter={function(l){return"20"+l}}/>
+                  <Legend wrapperStyle={{fontSize:12}}/>
+                  <Area type="monotone" dataKey="english" stroke="#6366f1" fill="url(#ge)" strokeWidth={2} name="English"/>
+                  <Area type="monotone" dataKey="nonEnglish" stroke="#f59e0b" fill="url(#gn)" strokeWidth={2} name="Non-English"/>
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="section-title">Language Distribution - LA County (Latest Month)</div>
+            <div className="flex-wrap">
+              <div className="card">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={langProcessed.topLangs} cx="50%" cy="50%" outerRadius={100} dataKey="value" nameKey="name"
+                      label={function(d){return d.name+" "+(d.percent*100).toFixed(1)+"%"}} labelLine={{stroke:"#4b5563"}} style={{fontSize:10}}>
+                      {langProcessed.topLangs.map(function(e,i){return <Cell key={i} fill={COLORS[i%COLORS.length]}/>})}
+                    </Pie>
+                    <Tooltip contentStyle={ttStyle} formatter={function(v){return[fmtFull(v),"Eligibles"]}}/>
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="card">
+                <div style={{fontSize:13,fontWeight:600,marginBottom:12}}>Top Languages (Ranked)</div>
+                {langProcessed.topLangs.map(function(l,i){
+                  return <div key={i} className="lang-row">
+                    <span><span className="lang-dot" style={{background:COLORS[i%COLORS.length]}}></span>{l.name}</span>
+                    <span style={{fontWeight:600}}>{fmtFull(l.value)}</span>
+                  </div>
+                })}
+              </div>
+            </div>
+          </div> : <div className="card" style={{textAlign:"center",padding:24}}>
+            <div style={{color:"#f59e0b",marginBottom:8}}>Language data not yet loaded</div>
+            <div style={{fontSize:12,color:"#94a3b8"}}>Check the GitHub Actions log for details.</div>
+          </div>}
+        </div>}
+
+        <div className="footer">
+          <strong>Data Sources:</strong> CA DHCS Open Data Portal - Medi-Cal Managed Care Enrollment Report and Certified Eligibles by Primary Language.
+          Auto-refreshes via GitHub Actions monthly. MOH = Molina Healthcare (NYSE: MOH). CNC = Centene Corp (NYSE: CNC), operating as Health Net in CA.
+        </div>
+      </div>
     </div>
-    </div>
-  </>;
+  );
 }
 
-ReactDOM.render(<App/>,document.getElementById("root"));
+ReactDOM.render(React.createElement(App),document.getElementById("root"));
 </script>
 </body>
 </html>
