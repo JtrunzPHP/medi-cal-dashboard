@@ -320,7 +320,12 @@ def process_language_county():
 
 
 def process_eligibles():
-    """Process certified eligibles by county (for penetration rates)."""
+    """Process certified eligibles by county (for penetration rates).
+    
+    The CSV has rows broken out by Age Group and Gender, so we need to
+    aggregate (sum) by Month + County to get county totals.
+    The count column is 'Total Eligibles' (not 'County').
+    """
     print("\n=== Certified Eligibles Data ===")
     if not check_file(EL_CSV, "eligibles.csv"):
         return None
@@ -334,33 +339,45 @@ def process_eligibles():
         headers = [h.strip() for h in (reader.fieldnames or [])]
         print(f"  Columns ({len(headers)}): {headers}")
 
-        # Detect columns
+        # Explicit column detection — prioritize 'Total Eligibles' over 'County'
         moe_col = None
         county_col = None
         count_col = None
 
         for h in headers:
             hl = h.lower()
-            if not moe_col and ("month" in hl and "eligib" in hl):
+            if not moe_col and "month" in hl and "eligib" in hl:
                 moe_col = h
-            elif not moe_col and "month" in hl:
-                moe_col = h
-            if not county_col and "county" in hl:
+            if not county_col and hl == "county":
                 county_col = h
-            if "certified" in hl and "eligible" in hl:
-                count_col = h
-            elif not count_col and ("total" in hl or "count" in hl or "eligible" in hl):
+            if hl == "total eligibles":
                 count_col = h
 
-        if not moe_col and headers:
-            moe_col = headers[0]
-        if not count_col and headers:
-            count_col = headers[-1]
+        if not moe_col:
+            moe_col = headers[0] if headers else None
+        if not county_col:
+            for h in headers:
+                if "county" in h.lower():
+                    county_col = h
+                    break
+
+        # Fallback: if Total Eligibles not found, scan sample rows
+        if not count_col:
+            f.seek(0)
+            sr = csv.DictReader(f)
+            first_row = next(sr, None)
+            if first_row:
+                h = {k.strip(): v for k, v in first_row.items()}
+                for col_name, col_val in h.items():
+                    if col_name.lower() != "county" and parse_int(col_val) > 0:
+                        count_col = col_name
+                        print(f"  Fallback: found numeric column '{count_col}'")
+                        break
 
         print(f"  Using: month='{moe_col}', county='{county_col}', count='{count_col}'")
 
-        if not county_col:
-            print("  ERROR: Cannot detect county column")
+        if not county_col or not count_col:
+            print("  ERROR: Missing required columns")
             return None
 
         # Read sample for debugging
@@ -370,12 +387,13 @@ def process_eligibles():
             if i >= 2:
                 break
             h = {k.strip(): v for k, v in r.items()}
-            print(f"  Sample row {i}: month='{h.get(moe_col,'')}', county='{h.get(county_col,'')}', count='{h.get(count_col,'')}'")
+            print(f"  Sample: month='{h.get(moe_col,'')}', county='{h.get(county_col,'')}', count='{h.get(count_col,'')}' -> {parse_int(h.get(count_col,''))}")
 
-        # Process
+        # Process: read all rows, then aggregate by month+county
         f.seek(0)
         reader3 = csv.DictReader(f)
-        rows = []
+        agg = {}  # key = "month||county" -> sum of counts
+        raw_count = 0
         for r in reader3:
             h = {k.strip(): v for k, v in r.items()}
             month = h.get(moe_col, "").strip() if moe_col else ""
@@ -385,16 +403,28 @@ def process_eligibles():
             count = parse_int(h.get(count_col, "") if count_col else "0")
             if not county:
                 continue
-            rows.append({"m": month, "co": county, "c": count})
+            raw_count += 1
+            key = f"{month}||{county}"
+            agg[key] = agg.get(key, 0) + count
+
+        rows = []
+        for key, total in agg.items():
+            parts = key.split("||")
+            rows.append({"m": parts[0], "co": parts[1], "c": total})
 
     if rows:
         months = sorted(set(r["m"] for r in rows))
         counties = sorted(set(r["co"] for r in rows))
+        nonzero = sum(1 for r in rows if r["c"] > 0)
+        print(f"  Raw rows read: {raw_count}")
+        print(f"  Aggregated to: {len(rows)} month-county pairs")
         print(f"  Date range: {months[0]} to {months[-1]}")
         print(f"  Counties: {len(counties)}")
-        print(f"  Total rows: {len(rows)}")
-        nonzero = sum(1 for r in rows if r["c"] > 0)
         print(f"  Non-zero counts: {nonzero}")
+        # Show sample totals
+        sample = sorted(rows, key=lambda r: -r["c"])[:5]
+        for s in sample:
+            print(f"    {s['m']} | {s['co']} | {s['c']:,}")
     return rows if rows else None
 
 
