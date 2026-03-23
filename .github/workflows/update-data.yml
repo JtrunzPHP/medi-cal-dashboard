@@ -168,5 +168,6 @@ jobs:
             echo "No data changes detected"
           else
             git commit -m "data: update Medi-Cal enrollment & language $(date +%Y-%m-%d)"
+            git pull --rebase origin main
             git push
           fi
