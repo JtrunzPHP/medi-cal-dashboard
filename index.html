@@ -6,51 +6,58 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh}
-.hd{padding:16px 20px 8px;border-bottom:1px solid #1e1e2e}
-.hd h1{font-size:18px;font-weight:700;background:linear-gradient(90deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hd p{font-size:11px;color:#64748b;margin-top:2px}
-.tabs{display:flex;gap:0;overflow-x:auto;border-bottom:1px solid #1e1e2e;padding:0 20px;background:#0a0a14}
-.tb{padding:10px 16px;font-size:11px;background:none;border:none;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
-.tb.a{color:#a5b4fc;font-weight:600;border-bottom-color:#6366f1}.tb:hover{color:#c7d2fe}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8f9fa;color:#1a1a2e;min-height:100vh}
+.hd{padding:16px 20px 8px;background:#1a3a2a;border-bottom:2px solid #2d6a4f}
+.hd h1{font-size:18px;font-weight:700;color:#ffffff;letter-spacing:.3px}
+.hd p{font-size:11px;color:#a7d7c5;margin-top:2px}
+.tabs{display:flex;gap:0;overflow-x:auto;border-bottom:1px solid #dee2e6;padding:0 20px;background:#ffffff}
+.tb{padding:10px 16px;font-size:11px;background:none;border:none;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
+.tb.a{color:#1a3a2a;font-weight:600;border-bottom-color:#2d6a4f}.tb:hover{color:#2d6a4f}
 .W{padding:16px 20px;max-width:1400px;display:none}.W.a{display:block}
 .R{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.K{background:#1e1e2e;border-radius:8px;padding:10px 14px;min-width:120px;flex:1}
-.Kl{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:.6px}
+.K{background:#ffffff;border-radius:8px;padding:10px 14px;min-width:120px;flex:1;border:1px solid #e5e7eb}
+.Kl{font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.6px}
 .Kv{font-size:17px;font-weight:700;margin-top:2px}
-.Ks{font-size:10px;margin-top:1px}.pos{color:#10b981}.neg{color:#ef4444}.neu{color:#f59e0b}
-.C{background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px}
-.C h3{font-size:12px;font-weight:600;margin-bottom:8px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
-.N{background:#1e1e2e;border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:#94a3b8;border-left:3px solid #6366f1;line-height:1.5}
-.N b{color:#e2e8f0}.N .warn{color:#f59e0b}
-select{background:#1e1e2e;color:#e2e8f0;border:1px solid #3730a3;border-radius:5px;padding:5px 10px;font-size:12px;font-family:inherit}
+.Ks{font-size:10px;margin-top:1px}.pos{color:#2d6a4f}.neg{color:#dc2626}.neu{color:#d97706}
+.C{background:#ffffff;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #e5e7eb}
+.C h3{font-size:12px;font-weight:600;margin-bottom:8px;color:#1a3a2a;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e5e7eb;padding-bottom:6px}
+.N{background:#f0fdf4;border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:#374151;border-left:3px solid #2d6a4f;line-height:1.5}
+.N b{color:#1a1a2e}.N .warn{color:#d97706}
+select{background:#ffffff;color:#1a1a2e;border:1px solid #d1d5db;border-radius:5px;padding:5px 10px;font-size:12px;font-family:inherit}
 canvas{max-height:320px}
 table{width:100%;border-collapse:collapse;font-size:11px}
-th{text-align:left;padding:6px 5px;border-bottom:1px solid #3730a3;color:#94a3b8;font-weight:600;font-size:9px;text-transform:uppercase}
-td{padding:5px;border-bottom:1px solid #1a1a2e}tr:hover td{background:#1a1a2e}
+th{text-align:left;padding:6px 5px;border-bottom:2px solid #2d6a4f;color:#1a3a2a;font-weight:600;font-size:9px;text-transform:uppercase}
+td{padding:5px;border-bottom:1px solid #e5e7eb;color:#374151}tr:hover td{background:#f0fdf4}
 .G{display:flex;gap:12px;flex-wrap:wrap}.G>div{flex:1;min-width:280px}
 .dot{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:middle}
-.F{margin-top:24px;padding:12px 0;border-top:1px solid #2d2d44;font-size:9px;color:#64748b;line-height:1.5}
+.F{margin-top:24px;padding:12px 0;border-top:1px solid #d1d5db;font-size:9px;color:#6b7280;line-height:1.5}
 .ld{min-height:80vh;display:flex;align-items:center;justify-content:center;flex-direction:column}
-.sp{width:34px;height:34px;border:3px solid #6366f1;border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;margin:12px 0}
+.sp{width:34px;height:34px;border:3px solid #2d6a4f;border-top-color:transparent;border-radius:50%;animation:sp 1s linear infinite;margin:12px 0}
 @keyframes sp{to{transform:rotate(360deg)}}
-.rs{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}.rs label{font-size:11px;color:#94a3b8}
+.rs{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}.rs label{font-size:11px;color:#6b7280}
 .sig{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
-.sig-g{background:#10b981}.sig-y{background:#f59e0b}.sig-r{background:#ef4444}
+.sig-g{background:#2d6a4f}.sig-y{background:#d97706}.sig-r{background:#dc2626}
 .badge{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;margin-left:4px}
-.badge-rep{background:#2d2d44;color:#94a3b8}.badge-adj{background:#312e81;color:#a5b4fc}
+.badge-rep{background:#e5e7eb;color:#6b7280}.badge-adj{background:#d1fae5;color:#065f46}
 .toggle-row{display:flex;gap:6px;margin-bottom:10px}
-.tog{padding:4px 10px;font-size:10px;border:1px solid #3730a3;border-radius:4px;background:none;color:#94a3b8;cursor:pointer;font-family:inherit}
-.tog.a{background:#312e81;color:#a5b4fc;border-color:#6366f1}
+.tog{padding:4px 10px;font-size:10px;border:1px solid #d1d5db;border-radius:4px;background:#ffffff;color:#6b7280;cursor:pointer;font-family:inherit}
+.tog.a{background:#2d6a4f;color:#ffffff;border-color:#2d6a4f}
+/* === ADDED: earnings commentary panel === */
+.ec{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:11px;line-height:1.5}
+.ec-tk{font-weight:700;font-size:12px;margin-bottom:4px}
+.ec-q{color:#6b7280;font-size:10px;font-style:italic}
+.ec-val{color:#1a1a2e;font-weight:600}
+/* === ADDED: HHI bar styling === */
+.hhi-bar{height:18px;border-radius:3px;display:inline-block;vertical-align:middle}
 </style>
 </head>
 <body>
 <div class="hd">
-<h1>California Medi-Cal — Public MCO Enrollment Intelligence Platform</h1>
-<p id="hsub">Loading...</p>
+<h1>PARKMAN HEALTHCARE PARTNERS</h1>
+<p id="hsub">Medi-Cal Managed Care Enrollment Intelligence Platform — Loading...</p>
 </div>
 <div class="tabs" id="tbar"></div>
-<div id="loader" class="ld"><div style="font-size:16px;font-weight:600">Loading DHCS Data...</div><div class="sp"></div><div style="font-size:11px;color:#64748b">Fetching enrollment.json & language.json</div></div>
+<div id="loader" class="ld"><div style="font-size:16px;font-weight:600;color:#1a3a2a">Loading DHCS Data...</div><div class="sp"></div><div style="font-size:11px;color:#6b7280">Fetching enrollment.json & language.json</div></div>
 
 <!-- T0: SCORECARD -->
 <div class="W" id="t0">
@@ -63,6 +70,8 @@ td{padding:5px;border-bottom:1px solid #1a1a2e}tr:hover td{background:#1a1a2e}
 <div class="C"><h3>Top 10 Plans — Latest Month</h3><div id="tbl-plans"></div></div>
 <div class="C"><h3>Top 10 Counties — Latest Month</h3><div id="tbl-counties"></div></div>
 </div>
+<!-- ADDED: Earnings Commentary -->
+<div class="C"><h3>Management Earnings Commentary — CA Medicaid</h3><div id="earnings-panel"></div></div>
 </div>
 
 <!-- T1: COUNTY DEEP DIVE -->
@@ -115,6 +124,8 @@ td{padding:5px;border-bottom:1px solid #1a1a2e}tr:hover td{background:#1a1a2e}
 <div class="C"><h3>Cumulative Member Change (from Peak)</h3><canvas id="ch-inv-cum"></canvas></div>
 <div class="C"><h3>Quarterly Earnings Impact Estimates</h3><div id="tbl-inv"></div></div>
 </div>
+<!-- ADDED: 3-Month Rolling Momentum -->
+<div class="C"><h3>3-Month Rolling Momentum (MoM Avg)</h3><canvas id="ch-inv-momentum"></canvas></div>
 </div>
 
 <!-- T5: LANGUAGE -->
@@ -129,27 +140,41 @@ td{padding:5px;border-bottom:1px solid #1a1a2e}tr:hover td{background:#1a1a2e}
 <div class="C"><h3>County Language Detail</h3><div id="tbl-lang-co"></div></div>
 <div class="C"><h3>Top Languages Table</h3><div id="tbl-lang"></div></div>
 </div>
+<!-- ADDED: County language trend chart -->
+<div class="C"><h3>County Language Trend Over Time</h3><canvas id="ch-lang-co-trend"></canvas></div>
+</div>
+
+<!-- ADDED: T6: RISK & ANALYTICS -->
+<div class="W" id="t6">
+<div class="N"><b>Risk & Analytics:</b> Competitive displacement since Dec 2023, HHI geographic concentration, and membership trajectory analysis for publicly traded MCOs.</div>
+<div class="C"><h3>Competitive Displacement (Dec 2023 → Latest)</h3><div id="tbl-displacement"></div></div>
+<div class="G">
+<div class="C"><h3>HHI Geographic Concentration</h3><canvas id="ch-hhi"></canvas></div>
+<div class="C"><h3>HHI Detail</h3><div id="tbl-hhi"></div></div>
+</div>
 </div>
 
 <div class="F" style="padding:12px 20px">
 <b>Data Sources:</b> CA DHCS Open Data Portal — Managed Care Enrollment Report (monthly), Primary Language of Newly Eligible (quarterly), Threshold Languages by County (quarterly).<br>
-<b>Tickers:</b> MOH = Molina Healthcare (NYSE: MOH) | CNC = Centene Corp (NYSE: CNC) → Health Net in CA | ELV = Elevance Health (NYSE: ELV) → Anthem Blue Cross in CA.<br>
+<b>Tickers:</b> MOH = Molina Healthcare (NYSE: MOH) | CNC = Centene Corp (NYSE: CNC) → Health Net + CA Health & Wellness + CalViva in CA | ELV = Elevance Health (NYSE: ELV) → Anthem Blue Cross in CA.<br>
 <b>LA Subcontract Note:</b> Post Jan-2024, Health Net (CNC) subcontracts ~50% of LA County membership to Molina. Adjusted view applies 50/50 split. Actual split % may vary.<br>
 Dashboard auto-refreshes via GitHub Actions monthly cron. Last data update: <span id="data-ts">—</span>
 </div>
 
 <script>
 /* ===== GLOBALS ===== */
-var TABS=["Scorecard","County Deep Dive","MOH vs CNC","MCO County Exposure","Investment Signals","Language Proxy"];
-var COLORS=["#6366f1","#f59e0b","#10b981","#ef4444","#8b5cf6","#ec4899","#14b8a6","#f97316","#06b6d4","#84cc16","#a855f7","#e11d48"];
+var TABS=["Scorecard","County Deep Dive","MOH vs CNC","MCO County Exposure","Investment Signals","Language Proxy","Risk & Analytics"];
+var COLORS=["#2d6a4f","#d97706","#0ea5e9","#dc2626","#7c3aed","#db2777","#0d9488","#ea580c","#0891b2","#65a30d","#9333ea","#e11d48"];
 var CH={};
-var ADJ=0; // 0=reported, 1=adjusted
+var ADJ=0;
 var EN=[],LANG=[],LANG_CO=[];
 
-/* MCO matching */
+/* EXPANDED MCO matching — includes CA Health & Wellness, CalViva (both CNC subsidiaries) */
 function mco(p){
   if(/molina/i.test(p))return"MOH";
   if(/health net/i.test(p))return"CNC";
+  if(/california health/i.test(p))return"CNC";
+  if(/calviva/i.test(p))return"CNC";
   if(/anthem/i.test(p))return"ELV";
   return null;
 }
@@ -188,7 +213,6 @@ function initTabs(){
 function adjustData(data,adj){
   if(!adj)return data;
   return data.map(function(r){
-    // Post Jan-2024 LA County: split CNC 50/50 with MOH
     if(r.co==="Los Angeles" && r.m>="2024-01"){
       var t=mco(r.p);
       if(t==="CNC")return{m:r.m,pt:r.pt,co:r.co,p:r.p,c:Math.round(r.c*0.5),_adj:true};
@@ -197,7 +221,6 @@ function adjustData(data,adj){
   });
 }
 function getAdjMOHExtra(data){
-  // Returns extra MOH members from LA adjustment
   var extra={};
   data.forEach(function(r){
     if(r.co==="Los Angeles" && r.m>="2024-01" && mco(r.p)==="CNC"){
@@ -237,9 +260,10 @@ function render(){
   renderExposure();
   renderInvestment();
   renderLanguage();
+  renderRiskAnalytics();
 }
 
-/* ===== T0: SCORECARD ===== */
+/* ===== T0: SCORECARD (unchanged except earnings panel added) ===== */
 function renderScorecard(){
   var months=uniq(EN.map(function(r){return r.m})).sort();
   var latest=months[months.length-1]||"";
@@ -255,21 +279,19 @@ function renderScorecard(){
   var plans=uniq(latD.map(function(r){return r.p})).length;
 
   document.getElementById("sc-kpis").innerHTML=
-    makeKPI("Total Enrollment ("+latest+")",fK(totalLat),chg(totalLat,totalPrev),"#6366f1")+
+    makeKPI("Total Enrollment ("+latest+")",fK(totalLat),chg(totalLat,totalPrev),"#2d6a4f")+
     makeKPI("MoM Change",fK(totalLat-totalPrev),chg(totalLat,totalPrev))+
     makeKPI("YoY Change",yoy?fK(totalLat-totalYoy):"—",yoy?chg(totalLat,totalYoy):null)+
     makeKPI("Counties",counties)+
     makeKPI("Plans",plans)+
-    makeKPI("Latest Month",latest,"","#a5b4fc");
+    makeKPI("Latest Month",latest,"","#2d6a4f");
 
-  // Statewide trend
   var byMonth=groupBy(EN,function(r){return r.m});
   var trendM=months.slice(-24);
   var trendD=trendM.map(function(m){return sumBy(byMonth[m]||[],"c")});
   destroyChart("ch-trend");
-  CH["ch-trend"]=new Chart(document.getElementById("ch-trend"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:[{label:"Total Enrollment",data:trendD,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{display:false}}}});
+  CH["ch-trend"]=new Chart(document.getElementById("ch-trend"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:[{label:"Total Enrollment",data:trendD,borderColor:"#2d6a4f",backgroundColor:"rgba(45,106,79,0.1)",fill:true,tension:0.3,pointRadius:0}]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{display:false}}}});
 
-  // Market share pie - top plans
   var planTotals=groupBy(latD,function(r){return r.p});
   var planArr=Object.keys(planTotals).map(function(p){return{name:p,c:sumBy(planTotals[p],"c")}}).sort(function(a,b){return b.c-a.c});
   var top8=planArr.slice(0,8);
@@ -279,7 +301,6 @@ function renderScorecard(){
   destroyChart("ch-share");
   CH["ch-share"]=new Chart(document.getElementById("ch-share"),{type:"doughnut",data:{labels:top8.map(function(r){return r.name}),datasets:[{data:top8.map(function(r){return r.c}),backgroundColor:COLORS.slice(0,top8.length)}]},options:{responsive:true,plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:12}}}}});
 
-  // Top plans table
   var html='<table><tr><th>#</th><th>Plan</th><th>Ticker</th><th>Enrollment</th><th>Share</th><th>MoM</th></tr>';
   planArr.slice(0,10).forEach(function(p,i){
     var prevPlan=prevD.filter(function(r){return r.p===p.name});
@@ -291,7 +312,6 @@ function renderScorecard(){
   html+='</table>';
   document.getElementById("tbl-plans").innerHTML=html;
 
-  // Top counties table
   var coTotals=groupBy(latD,function(r){return r.co});
   var coArr=Object.keys(coTotals).map(function(co){return{name:co,c:sumBy(coTotals[co],"c")}}).sort(function(a,b){return b.c-a.c});
   html='<table><tr><th>#</th><th>County</th><th>Enrollment</th><th>Share</th><th>MoM</th></tr>';
@@ -303,15 +323,36 @@ function renderScorecard(){
   });
   html+='</table>';
   document.getElementById("tbl-counties").innerHTML=html;
+
+  /* ADDED: Earnings Commentary Panel */
+  var mohTotal=sumBy(latD.filter(function(r){return mco(r.p)==="MOH"}),"c");
+  var cncTotal=sumBy(latD.filter(function(r){return mco(r.p)==="CNC"}),"c");
+  var elvTotal=sumBy(latD.filter(function(r){return mco(r.p)==="ELV"}),"c");
+  var epHtml='<div class="G">';
+  epHtml+='<div class="ec"><div class="ec-tk" style="color:'+MCO_COLORS.MOH+'">MOH — Molina Healthcare</div>';
+  epHtml+='<div>DHCS CA Enrollment: <span class="ec-val">'+fF(mohTotal)+'</span></div>';
+  epHtml+='<div>Mgmt CA Target: <span class="ec-val">~1.2M</span> | Total Medicaid: <span class="ec-val">4.568M</span></div>';
+  epHtml+='<div>FY25 CA Rev: <span class="ec-val">~$3.9B</span> | EPS Guide: <span class="ec-val">$5+</span></div>';
+  epHtml+='<div class="ec-q">CEO Zubretsky: "2025 is a trough year for Medicaid margins" — expects membership stabilization H2 2025</div></div>';
+  epHtml+='<div class="ec"><div class="ec-tk" style="color:'+MCO_COLORS.CNC+'">CNC — Centene (Health Net + CA H&W + CalViva)</div>';
+  epHtml+='<div>DHCS CA Enrollment: <span class="ec-val">'+fF(cncTotal)+'</span></div>';
+  epHtml+='<div>Total Medicaid: <span class="ec-val">12.5M</span> | Expects <span class="neg">5-6% decline</span> from redeterminations</div>';
+  epHtml+='<div>HBR: <span class="ec-val">93%</span> improving | Rate assumption: <span class="ec-val">mid-4%</span> | EPS Guide: <span class="ec-val">$3+</span></div>';
+  epHtml+='<div class="ec-q">Management: "Core benefits cost trend improving" — focused on rate adequacy negotiations</div></div>';
+  epHtml+='<div class="ec"><div class="ec-tk" style="color:'+MCO_COLORS.ELV+'">ELV — Elevance (Anthem Blue Cross)</div>';
+  epHtml+='<div>DHCS CA Enrollment: <span class="ec-val">'+fF(elvTotal)+'</span></div>';
+  epHtml+='<div>Major county exits in 2024 — strategic pivot to Carelon services</div>';
+  epHtml+='<div class="ec-q">Reduced CA Medicaid footprint is intentional — focus on profitable markets only</div></div>';
+  epHtml+='</div>';
+  document.getElementById("earnings-panel").innerHTML=epHtml;
 }
 
-/* ===== T1: COUNTY DEEP DIVE ===== */
+/* ===== T1: COUNTY DEEP DIVE (unchanged) ===== */
 function renderCounty(){
   var counties=uniq(EN.map(function(r){return r.co})).sort();
   var sel=document.getElementById("sel-county");
   sel.innerHTML="";
   counties.forEach(function(co){var o=document.createElement("option");o.value=co;o.textContent=co;sel.appendChild(o);});
-  // Default to LA
   if(counties.indexOf("Los Angeles")>=0)sel.value="Los Angeles";
 
   var pts=uniq(EN.map(function(r){return r.pt})).sort();
@@ -343,11 +384,9 @@ function updateCounty(){
     makeKPI("MoM",fK(totalLat-totalPrev),chg(totalLat,totalPrev))+
     makeKPI("Largest Plan",planArr.length?planArr[0].name:"—");
 
-  // Plan bar chart
   destroyChart("ch-co-plans");
   CH["ch-co-plans"]=new Chart(document.getElementById("ch-co-plans"),{type:"bar",data:{labels:planArr.map(function(r){return r.name.length>25?r.name.slice(0,22)+"...":r.name}),datasets:[{label:"Enrollment",data:planArr.map(function(r){return r.c}),backgroundColor:planArr.map(function(r,i){var t=mco(r.name);return t?MCO_COLORS[t]:COLORS[i%COLORS.length];})}]},options:{responsive:true,indexAxis:"y",scales:{x:{ticks:{callback:fK}}},plugins:{legend:{display:false}}}});
 
-  // Trend: top 5 plans over time
   var top5=planArr.slice(0,5).map(function(r){return r.name});
   var trendM=months.slice(-24);
   var datasets=top5.map(function(pn,i){
@@ -357,7 +396,6 @@ function updateCounty(){
   destroyChart("ch-co-trend");
   CH["ch-co-trend"]=new Chart(document.getElementById("ch-co-trend"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:datasets},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}}});
 
-  // Detail table
   var html='<table><tr><th>Plan</th><th>Ticker</th><th>Type</th><th>Enrollment</th><th>Share</th><th>MoM Δ</th></tr>';
   planArr.forEach(function(p){
     var prevPlan=prevD.filter(function(r){return r.p===p.name});
@@ -370,7 +408,7 @@ function updateCounty(){
   document.getElementById("tbl-co-detail").innerHTML=html;
 }
 
-/* ===== T2: MOH vs CNC ===== */
+/* ===== T2: MOH vs CNC (unchanged) ===== */
 function setAdj(v){
   ADJ=v;
   document.querySelectorAll(".tog").forEach(function(b,i){b.classList.toggle("a",i===v);});
@@ -385,7 +423,6 @@ function renderVS(){
   function getMCO(ticker,month){
     var base=sumBy(EN.filter(function(r){return r.m===month&&mco(r.p)===ticker}),"c");
     if(ADJ&&ticker==="CNC"){
-      // Subtract 50% of LA CNC
       var laCNC=sumBy(EN.filter(function(r){return r.m===month&&r.co==="Los Angeles"&&mco(r.p)==="CNC"}),"c");
       if(month>="2024-01")base-=Math.round(laCNC*0.5);
     }
@@ -407,20 +444,17 @@ function renderVS(){
     makeKPI("MOH/CNC Ratio",(cncLat?(mohLat/cncLat).toFixed(2):"—"))+
     makeKPI("View",ADJ?"Adjusted (LA 50/50)":"Reported (Raw)","","#f59e0b");
 
-  // Trend lines
   var trendM=months.slice(-24);
   var mohData=trendM.map(function(m){return getMCO("MOH",m)});
   var cncData=trendM.map(function(m){return getMCO("CNC",m)});
   destroyChart("ch-vs-trend");
   CH["ch-vs-trend"]=new Chart(document.getElementById("ch-vs-trend"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:[{label:"MOH (Molina)",data:mohData,borderColor:MCO_COLORS.MOH,tension:0.3,pointRadius:0},{label:"CNC (Health Net)",data:cncData,borderColor:MCO_COLORS.CNC,tension:0.3,pointRadius:0}]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{position:"bottom"}}}});
 
-  // Share % trend
   var mohPctD=trendM.map(function(m,i){var t=mohData[i]+cncData[i];return t?(mohData[i]/t*100):0});
   var cncPctD=trendM.map(function(m,i){var t=mohData[i]+cncData[i];return t?(cncData[i]/t*100):0});
   destroyChart("ch-vs-pct");
   CH["ch-vs-pct"]=new Chart(document.getElementById("ch-vs-pct"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:[{label:"MOH %",data:mohPctD,borderColor:MCO_COLORS.MOH,tension:0.3,pointRadius:0},{label:"CNC %",data:cncPctD,borderColor:MCO_COLORS.CNC,tension:0.3,pointRadius:0}]},options:{responsive:true,scales:{y:{min:0,max:100,ticks:{callback:function(v){return v+"%"}}}},plugins:{legend:{position:"bottom"}}}});
 
-  // County table
   var counties=uniq(EN.filter(function(r){return r.m===latest}).map(function(r){return r.co})).sort();
   var rows=[];
   counties.forEach(function(co){
@@ -439,7 +473,6 @@ function renderVS(){
   html+='</table>';
   document.getElementById("tbl-vs-county").innerHTML=html;
 
-  // LA Detail
   var laRawCNC=sumBy(EN.filter(function(r){return r.m===latest&&r.co==="Los Angeles"&&mco(r.p)==="CNC"}),"c");
   var laRawMOH=sumBy(EN.filter(function(r){return r.m===latest&&r.co==="Los Angeles"&&mco(r.p)==="MOH"}),"c");
   document.getElementById("la-detail").innerHTML=
@@ -449,7 +482,7 @@ function renderVS(){
     'Members moved: <b>'+fF(Math.round(laRawCNC*0.5))+'</b> (from CNC to MOH under subcontract)</div>';
 }
 
-/* ===== T3: MCO COUNTY EXPOSURE ===== */
+/* ===== T3: MCO COUNTY EXPOSURE (unchanged) ===== */
 function renderExposure(){
   document.getElementById("sel-mco").onchange=updateExposure;
   updateExposure();
@@ -458,12 +491,9 @@ function updateExposure(){
   var selMCO=document.getElementById("sel-mco").value;
   var months=uniq(EN.map(function(r){return r.m})).sort();
   var latest=months[months.length-1]||"";
-  var prev=months[months.length-2]||"";
   var latD=EN.filter(function(r){return r.m===latest});
-
   var tickers=selMCO==="ALL"?["MOH","CNC","ELV"]:[selMCO];
 
-  // Build county totals per MCO
   function getCountyData(ticker){
     var d=latD.filter(function(r){return mco(r.p)===ticker});
     var byC=groupBy(d,function(r){return r.co});
@@ -477,7 +507,6 @@ function updateExposure(){
     mcoData[t].forEach(function(r){allCounties.add(r.co)});
   });
 
-  // KPIs
   var kpiHtml="";
   tickers.forEach(function(t){
     var total=sumBy(mcoData[t],"c");
@@ -489,7 +518,6 @@ function updateExposure(){
   });
   document.getElementById("exp-kpis").innerHTML=kpiHtml;
 
-  // Bar chart - top 15 counties
   var allCoArr=Array.from(allCounties);
   var coTotals={};
   allCoArr.forEach(function(co){
@@ -507,7 +535,6 @@ function updateExposure(){
   destroyChart("ch-exp-bar");
   CH["ch-exp-bar"]=new Chart(document.getElementById("ch-exp-bar"),{type:"bar",data:{labels:sortedCo,datasets:datasets},options:{responsive:true,scales:{x:{stacked:false},y:{ticks:{callback:fK}}},plugins:{legend:{position:"top"}}}});
 
-  // Concentration pie per MCO
   destroyChart("ch-exp-conc");
   if(tickers.length===1){
     var t=tickers[0];
@@ -517,11 +544,9 @@ function updateExposure(){
     var vals=top5.map(function(r){return r.c});vals.push(rest);
     CH["ch-exp-conc"]=new Chart(document.getElementById("ch-exp-conc"),{type:"doughnut",data:{labels:lbls,datasets:[{data:vals,backgroundColor:COLORS.slice(0,lbls.length)}]},options:{responsive:true,plugins:{legend:{position:"right",labels:{font:{size:9}}}}}});
   } else {
-    // Stacked bar showing top-5 concentration per MCO
     CH["ch-exp-conc"]=new Chart(document.getElementById("ch-exp-conc"),{type:"bar",data:{labels:tickers,datasets:[{label:"Top 5 Counties",data:tickers.map(function(t){return sumBy(mcoData[t].slice(0,5),"c")}),backgroundColor:"#6366f1"},{label:"All Other",data:tickers.map(function(t){return sumBy(mcoData[t].slice(5),"c")}),backgroundColor:"#2d2d44"}]},options:{responsive:true,scales:{x:{stacked:true},y:{stacked:true,ticks:{callback:fK}}}}});
   }
 
-  // Full table
   var html='<table style="max-height:300px;overflow-y:auto;display:block"><tr><th>County</th>';
   tickers.forEach(function(t){html+='<th style="color:'+MCO_COLORS[t]+'">'+t+'</th>';});
   html+='<th>Total</th></tr>';
@@ -538,19 +563,17 @@ function updateExposure(){
   document.getElementById("tbl-exp").innerHTML=html;
 }
 
-/* ===== T4: INVESTMENT SIGNALS ===== */
+/* ===== T4: INVESTMENT SIGNALS (existing + momentum added) ===== */
 function renderInvestment(){
   var months=uniq(EN.map(function(r){return r.m})).sort();
   var tickers=["MOH","CNC","ELV"];
   var trendM=months.slice(-24);
 
-  // Monthly totals per MCO
   var mcoMonthly={};
   tickers.forEach(function(t){
     mcoMonthly[t]=trendM.map(function(m){return sumBy(EN.filter(function(r){return r.m===m&&mco(r.p)===t}),"c")});
   });
 
-  // KPIs - latest
   var latest=trendM[trendM.length-1],prev=trendM[trendM.length-2];
   var kpiHtml="";
   tickers.forEach(function(t){
@@ -559,7 +582,6 @@ function renderInvestment(){
     var sig=c.c==="pos"?"sig-g":c.c==="neg"?"sig-r":"sig-y";
     kpiHtml+=makeKPI(t+" ("+latest+")",fK(cur),{v:'<span class="sig '+sig+'"></span>'+c.v,c:c.c},MCO_COLORS[t]);
   });
-  // Peak enrollment per MCO
   tickers.forEach(function(t){
     var peak=Math.max.apply(null,mcoMonthly[t]);
     var cur=mcoMonthly[t][trendM.length-1];
@@ -568,7 +590,6 @@ function renderInvestment(){
   });
   document.getElementById("inv-kpis").innerHTML=kpiHtml;
 
-  // MoM growth rate
   var momDS=tickers.map(function(t){
     var data=mcoMonthly[t].map(function(v,i){
       if(i===0)return null;
@@ -580,7 +601,6 @@ function renderInvestment(){
   destroyChart("ch-inv-mom");
   CH["ch-inv-mom"]=new Chart(document.getElementById("ch-inv-mom"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:momDS},options:{responsive:true,scales:{y:{ticks:{callback:function(v){return v.toFixed(1)+"%"}}}},plugins:{legend:{position:"bottom"}}}});
 
-  // YoY growth rate
   var yoyDS=tickers.map(function(t){
     var allM=months;
     var data=trendM.map(function(m){
@@ -595,7 +615,6 @@ function renderInvestment(){
   destroyChart("ch-inv-yoy");
   CH["ch-inv-yoy"]=new Chart(document.getElementById("ch-inv-yoy"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:yoyDS},options:{responsive:true,scales:{y:{ticks:{callback:function(v){return v.toFixed(1)+"%"}}}},plugins:{legend:{position:"bottom"}}}});
 
-  // Cumulative from peak
   var cumDS=tickers.map(function(t){
     var peak=Math.max.apply(null,mcoMonthly[t]);
     return{label:t+" (from peak)",data:mcoMonthly[t].map(function(v){return v-peak}),borderColor:MCO_COLORS[t],tension:0.3,pointRadius:0,fill:false};
@@ -603,13 +622,12 @@ function renderInvestment(){
   destroyChart("ch-inv-cum");
   CH["ch-inv-cum"]=new Chart(document.getElementById("ch-inv-cum"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:cumDS},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{position:"bottom"}}}});
 
-  // Earnings impact table (rough: $200-350 PMPM CA Medicaid revenue)
   var html='<table><tr><th>MCO</th><th>Peak Enrollment</th><th>Current</th><th>Lost Members</th><th>Est. Quarterly Revenue Impact</th><th>Signal</th></tr>';
   tickers.forEach(function(t){
     var peak=Math.max.apply(null,mcoMonthly[t]);
     var cur=mcoMonthly[t][trendM.length-1];
     var lost=cur-peak;
-    var pmpm=t==="MOH"?300:t==="CNC"?280:320; // rough PMPM
+    var pmpm=t==="MOH"?300:t==="CNC"?280:320;
     var qImpact=lost*pmpm*3;
     var sig=lost>=0?'<span class="sig sig-g"></span>Growing':lost>-50000?'<span class="sig sig-y"></span>Moderate Loss':'<span class="sig sig-r"></span>Significant Loss';
     html+='<tr><td style="color:'+MCO_COLORS[t]+'"><b>'+t+'</b></td><td>'+fF(peak)+'</td><td>'+fF(cur)+'</td><td class="'+(lost>=0?"pos":"neg")+'">'+fF(lost)+'</td><td class="'+(qImpact>=0?"pos":"neg")+'">$'+fK(Math.abs(qImpact))+(qImpact<0?" headwind":" tailwind")+'</td><td>'+sig+'</td></tr>';
@@ -617,23 +635,38 @@ function renderInvestment(){
   html+='</table>';
   html+='<div style="font-size:9px;color:#64748b;margin-top:6px">* Revenue impact is illustrative using est. CA Medicaid PMPM ($280-$320). Actual varies by acuity mix, risk corridors, and contract terms.</div>';
   document.getElementById("tbl-inv").innerHTML=html;
+
+  /* ADDED: 3-Month Rolling Momentum */
+  var momRollDS=tickers.map(function(t){
+    var momRaw=mcoMonthly[t].map(function(v,i){
+      if(i===0)return null;
+      var p=mcoMonthly[t][i-1];
+      return p?((v-p)/p*100):null;
+    });
+    var rolling=momRaw.map(function(v,i){
+      if(i<3)return null;
+      var sum=0,cnt=0;
+      for(var j=i-2;j<=i;j++){if(momRaw[j]!==null){sum+=momRaw[j];cnt++;}}
+      return cnt?sum/cnt:null;
+    });
+    return{label:t+" (3m avg)",data:rolling,borderColor:MCO_COLORS[t],tension:0.3,pointRadius:2,fill:false,borderWidth:2};
+  });
+  destroyChart("ch-inv-momentum");
+  CH["ch-inv-momentum"]=new Chart(document.getElementById("ch-inv-momentum"),{type:"line",data:{labels:trendM.map(function(m){return m.slice(2)}),datasets:momRollDS},options:{responsive:true,scales:{y:{ticks:{callback:function(v){return v.toFixed(2)+"%"}}}},plugins:{legend:{position:"bottom"},annotation:false}}});
 }
 
-/* ===== T5: LANGUAGE ===== */
+/* ===== T5: LANGUAGE (existing + county trend chart added) ===== */
 function renderLanguage(){
-  // Statewide newly eligible language (from language.json)
   if(LANG.length>0){
     var periods=uniq(LANG.map(function(r){return r.q})).sort();
     var langs=uniq(LANG.map(function(r){return r.lang})).sort();
 
-    // Trend: English vs Non-English
     var engData=periods.map(function(q){return sumBy(LANG.filter(function(r){return r.q===q&&/english/i.test(r.lang)}),"c")});
     var nonEngData=periods.map(function(q){return sumBy(LANG.filter(function(r){return r.q===q&&!/english/i.test(r.lang)}),"c")});
 
     destroyChart("ch-lang-trend");
     CH["ch-lang-trend"]=new Chart(document.getElementById("ch-lang-trend"),{type:"line",data:{labels:periods,datasets:[{label:"English",data:engData,borderColor:"#6366f1",backgroundColor:"rgba(99,102,241,0.1)",fill:true,tension:0.3,pointRadius:2},{label:"Non-English",data:nonEngData,borderColor:"#f59e0b",backgroundColor:"rgba(245,158,11,0.1)",fill:true,tension:0.3,pointRadius:2}]},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{position:"bottom"}}}});
 
-    // Pie - latest quarter
     var latQ=periods[periods.length-1];
     var langTotals=langs.map(function(l){return{name:l,c:sumBy(LANG.filter(function(r){return r.q===latQ&&r.lang===l}),"c")}}).filter(function(r){return r.c>0}).sort(function(a,b){return b.c-a.c});
     var top7=langTotals.slice(0,7);
@@ -643,7 +676,6 @@ function renderLanguage(){
     destroyChart("ch-lang-pie");
     CH["ch-lang-pie"]=new Chart(document.getElementById("ch-lang-pie"),{type:"doughnut",data:{labels:top7.map(function(r){return r.name}),datasets:[{data:top7.map(function(r){return r.c}),backgroundColor:COLORS.slice(0,top7.length)}]},options:{responsive:true,plugins:{legend:{position:"right",labels:{font:{size:9}}}}}});
 
-    // Table
     var html='<table><tr><th>#</th><th>Language</th><th>Count ('+latQ+')</th><th>Share</th></tr>';
     var total=sumBy(langTotals,"c");
     langTotals.forEach(function(l,i){
@@ -655,7 +687,6 @@ function renderLanguage(){
     document.getElementById("ch-lang-trend").parentElement.innerHTML='<h3>Statewide Language Data</h3><div style="color:#64748b;font-size:11px">language.json not loaded. Run the GitHub Action to fetch data.</div>';
   }
 
-  // County threshold language (from language_county.json)
   var sel=document.getElementById("sel-lang-co");
   sel.innerHTML='<option value="">— Select County —</option>';
   if(LANG_CO.length>0){
@@ -685,6 +716,102 @@ function updateLangCounty(){
   });
   html+='</table>';
   document.getElementById("tbl-lang-co").innerHTML=html;
+
+  /* ADDED: County language trend chart */
+  var topLangs=langs.slice(0,5).map(function(r){return r.name});
+  var trendMonths=months.slice(-12);
+  if(trendMonths.length>1){
+    var langDS=topLangs.map(function(lang,i){
+      return{label:lang,data:trendMonths.map(function(m){
+        var found=coData.filter(function(r){return r.m===m&&r.lang===lang});
+        return found.length?found[0].c:0;
+      }),borderColor:COLORS[i%COLORS.length],tension:0.3,pointRadius:2,fill:false};
+    });
+    destroyChart("ch-lang-co-trend");
+    CH["ch-lang-co-trend"]=new Chart(document.getElementById("ch-lang-co-trend"),{type:"line",data:{labels:trendMonths.map(function(m){return m.slice(2)}),datasets:langDS},options:{responsive:true,scales:{y:{ticks:{callback:fK}}},plugins:{legend:{position:"bottom",labels:{font:{size:9}}}}}});
+  }
+}
+
+/* ===== T6: RISK & ANALYTICS (NEW TAB) ===== */
+function renderRiskAnalytics(){
+  var months=uniq(EN.map(function(r){return r.m})).sort();
+  var latest=months[months.length-1]||"";
+  var tickers=["MOH","CNC","ELV"];
+
+  /* --- Competitive Displacement: Dec 2023 vs Latest --- */
+  var baseMonth="2023-12";
+  var baseExists=months.indexOf(baseMonth)>=0;
+  if(!baseExists){
+    // Find closest month to Dec 2023
+    for(var i=months.length-1;i>=0;i--){if(months[i]<="2023-12"){baseMonth=months[i];baseExists=true;break;}}
+  }
+
+  var dispHtml='<div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Comparing <b>'+baseMonth+'</b> → <b>'+latest+'</b> (counties with >1,000 member change)</div>';
+  if(baseExists){
+    dispHtml+='<table><tr><th>County</th>';
+    tickers.forEach(function(t){dispHtml+='<th style="color:'+MCO_COLORS[t]+'">'+t+' ('+baseMonth.slice(2)+')</th><th style="color:'+MCO_COLORS[t]+'">'+t+' ('+latest.slice(2)+')</th><th>Δ</th>';});
+    dispHtml+='</tr>';
+    var counties=uniq(EN.filter(function(r){return r.m===latest||r.m===baseMonth}).map(function(r){return r.co})).sort();
+    var dispRows=[];
+    counties.forEach(function(co){
+      var row={co:co,hasChange:false};
+      tickers.forEach(function(t){
+        var baseC=sumBy(EN.filter(function(r){return r.m===baseMonth&&r.co===co&&mco(r.p)===t}),"c");
+        var latC=sumBy(EN.filter(function(r){return r.m===latest&&r.co===co&&mco(r.p)===t}),"c");
+        var delta=latC-baseC;
+        row[t+"_base"]=baseC;row[t+"_lat"]=latC;row[t+"_delta"]=delta;
+        if(Math.abs(delta)>1000)row.hasChange=true;
+      });
+      if(row.hasChange)dispRows.push(row);
+    });
+    dispRows.sort(function(a,b){
+      var aTotal=Math.abs(a.MOH_delta||0)+Math.abs(a.CNC_delta||0)+Math.abs(a.ELV_delta||0);
+      var bTotal=Math.abs(b.MOH_delta||0)+Math.abs(b.CNC_delta||0)+Math.abs(b.ELV_delta||0);
+      return bTotal-aTotal;
+    });
+    dispRows.forEach(function(row){
+      dispHtml+='<tr><td><b>'+row.co+'</b></td>';
+      tickers.forEach(function(t){
+        var d=row[t+"_delta"]||0;
+        dispHtml+='<td>'+fF(row[t+"_base"]||0)+'</td><td>'+fF(row[t+"_lat"]||0)+'</td><td class="'+(d>=0?"pos":"neg")+'">'+(d>0?"+":"")+fF(d)+'</td>';
+      });
+      dispHtml+='</tr>';
+    });
+    dispHtml+='</table>';
+  } else {
+    dispHtml+='<div style="color:#64748b">Dec 2023 data not available in current dataset.</div>';
+  }
+  document.getElementById("tbl-displacement").innerHTML=dispHtml;
+
+  /* --- HHI Geographic Concentration --- */
+  var latD=EN.filter(function(r){return r.m===latest});
+  var hhiData=tickers.map(function(t){
+    var d=latD.filter(function(r){return mco(r.p)===t});
+    var total=sumBy(d,"c");
+    var byC=groupBy(d,function(r){return r.co});
+    var hhi=0;
+    var coShares=Object.keys(byC).map(function(co){
+      var c=sumBy(byC[co],"c");
+      var share=total?(c/total*100):0;
+      hhi+=share*share;
+      return{co:co,c:c,share:share};
+    }).sort(function(a,b){return b.c-a.c});
+    var top1=coShares.length?coShares[0].share:0;
+    var top3=coShares.slice(0,3).reduce(function(s,r){return s+r.share},0);
+    return{t:t,hhi:Math.round(hhi),total:total,top1co:coShares.length?coShares[0].co:"—",top1pct:top1.toFixed(1),top3pct:top3.toFixed(1),risk:hhi>2500?"High":hhi>1500?"Moderate":"Low",counties:coShares.filter(function(r){return r.c>0}).length};
+  });
+
+  destroyChart("ch-hhi");
+  CH["ch-hhi"]=new Chart(document.getElementById("ch-hhi"),{type:"bar",data:{labels:hhiData.map(function(r){return r.t}),datasets:[{label:"HHI Score",data:hhiData.map(function(r){return r.hhi}),backgroundColor:hhiData.map(function(r){return MCO_COLORS[r.t]})}]},options:{responsive:true,indexAxis:"y",scales:{x:{min:0,max:5000}},plugins:{legend:{display:false},annotation:false}}});
+
+  var hhiHtml='<table><tr><th>MCO</th><th>HHI</th><th>Risk</th><th>Counties</th><th>#1 County</th><th>Top-1 %</th><th>Top-3 %</th></tr>';
+  hhiData.forEach(function(r){
+    var riskColor=r.risk==="High"?"#ef4444":r.risk==="Moderate"?"#f59e0b":"#10b981";
+    hhiHtml+='<tr><td style="color:'+MCO_COLORS[r.t]+'"><b>'+r.t+'</b></td><td><b>'+fF(r.hhi)+'</b></td><td style="color:'+riskColor+'">'+r.risk+'</td><td>'+r.counties+'</td><td>'+r.top1co+'</td><td>'+r.top1pct+'%</td><td>'+r.top3pct+'%</td></tr>';
+  });
+  hhiHtml+='</table>';
+  hhiHtml+='<div style="font-size:9px;color:#64748b;margin-top:6px">HHI: <2500 = diversified geographic book. >2500 = concentrated risk. Calculated as sum of squared county share percentages (0-10,000 scale).</div>';
+  document.getElementById("tbl-hhi").innerHTML=hhiHtml;
 }
 
 /* ===== INIT ===== */
