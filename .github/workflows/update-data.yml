@@ -28,135 +28,114 @@ jobs:
       - name: Create tmp directory
         run: mkdir -p tmp
 
-      # Step 1: Use CKAN API to discover current CSV download URLs
       - name: Discover CSV URLs via CKAN API
         id: discover
         run: |
-          echo "=== Discovering enrollment CSV URL ==="
-          ENROLL_META=$(curl -sS -L \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-            -H "Accept: application/json" \
-            "https://data.chhs.ca.gov/api/3/action/package_show?id=medi-cal-managed-care-enrollment-report")
-          
-          ENROLL_URL=$(echo "$ENROLL_META" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          resources = data.get('result', {}).get('resources', [])
-          for r in resources:
-              if r.get('format', '').upper() == 'CSV':
-                  print(r['url'])
-                  break
-          ")
-          echo "Enrollment URL: $ENROLL_URL"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+          echo "=== Enrollment ==="
+          ENROLL_URL=$(curl -sS -L -H "User-Agent: $UA" -H "Accept: application/json" \
+            "https://data.chhs.ca.gov/api/3/action/package_show?id=medi-cal-managed-care-enrollment-report" | \
+            python3 -c "import sys,json;d=json.load(sys.stdin);[print(r['url']) for r in d.get('result',{}).get('resources',[]) if r.get('format','').upper()=='CSV']" | head -1)
+          echo "URL: $ENROLL_URL"
           echo "enroll_url=$ENROLL_URL" >> "$GITHUB_OUTPUT"
 
-          echo ""
-          echo "=== Discovering language CSV URL ==="
-          LANG_META=$(curl -sS -L \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-            -H "Accept: application/json" \
-            "https://data.chhs.ca.gov/api/3/action/package_show?id=primary-language-of-newly-medi-cal-eligible-individuals")
-          
-          LANG_URL=$(echo "$LANG_META" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          resources = data.get('result', {}).get('resources', [])
-          for r in resources:
-              if r.get('format', '').upper() == 'CSV':
-                  print(r['url'])
-                  break
-          ")
-          echo "Language URL: $LANG_URL"
+          echo "=== Language (statewide) ==="
+          LANG_URL=$(curl -sS -L -H "User-Agent: $UA" -H "Accept: application/json" \
+            "https://data.chhs.ca.gov/api/3/action/package_show?id=primary-language-of-newly-medi-cal-eligible-individuals" | \
+            python3 -c "import sys,json;d=json.load(sys.stdin);[print(r['url']) for r in d.get('result',{}).get('resources',[]) if r.get('format','').upper()=='CSV']" | head -1)
+          echo "URL: $LANG_URL"
           echo "lang_url=$LANG_URL" >> "$GITHUB_OUTPUT"
 
-          echo ""
-          echo "=== Discovering threshold language by county CSV URL ==="
-          LANGCO_META=$(curl -sS -L \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-            -H "Accept: application/json" \
-            "https://data.chhs.ca.gov/api/3/action/package_show?id=quarterly-certified-eligible-counts-by-month-of-eligibility-county-and-threshold-language")
-          
-          LANGCO_URL=$(echo "$LANGCO_META" | python3 -c "
-          import sys, json
-          data = json.load(sys.stdin)
-          resources = data.get('result', {}).get('resources', [])
-          for r in resources:
-              if r.get('format', '').upper() == 'CSV':
-                  print(r['url'])
-                  break
-          ")
-          echo "Language County URL: $LANGCO_URL"
+          echo "=== Language (county threshold) ==="
+          LANGCO_URL=$(curl -sS -L -H "User-Agent: $UA" -H "Accept: application/json" \
+            "https://data.chhs.ca.gov/api/3/action/package_show?id=quarterly-certified-eligible-counts-by-month-of-eligibility-county-and-threshold-language" | \
+            python3 -c "import sys,json;d=json.load(sys.stdin);[print(r['url']) for r in d.get('result',{}).get('resources',[]) if r.get('format','').upper()=='CSV']" | head -1)
+          echo "URL: $LANGCO_URL"
           echo "langco_url=$LANGCO_URL" >> "$GITHUB_OUTPUT"
 
-      # Step 2: Download CSVs with curl (browser-like headers bypass 403)
+          echo "=== Certified Eligibles (by county) ==="
+          ELIG_URL=$(curl -sS -L -H "User-Agent: $UA" -H "Accept: application/json" \
+            "https://data.chhs.ca.gov/api/3/action/package_show?id=medi-cal-certified-eligibles-with-demographics-by-month" | \
+            python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          resources=d.get('result',{}).get('resources',[])
+          for r in resources:
+              name=(r.get('name','') or '').lower()
+              desc=(r.get('description','') or '').lower()
+              fmt=r.get('format','').upper()
+              # Look for the aid category file (has county-level totals)
+              if fmt=='CSV' and ('aid' in name or 'aid' in desc or 'category' in name):
+                  print(r['url'])
+                  break
+          else:
+              # Fallback: first CSV
+              for r in resources:
+                  if r.get('format','').upper()=='CSV':
+                      print(r['url'])
+                      break
+          ")
+          echo "URL: $ELIG_URL"
+          echo "elig_url=$ELIG_URL" >> "$GITHUB_OUTPUT"
+
       - name: Download enrollment CSV
         run: |
-          echo "Downloading enrollment from: ${{ steps.discover.outputs.enroll_url }}"
           curl -L -o tmp/enrollment.csv \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-            -H "Accept: text/csv,text/plain,*/*" \
-            -H "Accept-Language: en-US,en;q=0.9" \
-            -H "Referer: https://data.chhs.ca.gov/" \
-            --retry 3 \
-            --retry-delay 5 \
-            --max-time 300 \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            -H "Accept: text/csv,*/*" -H "Referer: https://data.chhs.ca.gov/" \
+            --retry 3 --retry-delay 5 --max-time 300 \
             "${{ steps.discover.outputs.enroll_url }}"
-          echo "Enrollment CSV size:"
           ls -lh tmp/enrollment.csv
-          echo "First line:"
           head -1 tmp/enrollment.csv
 
       - name: Download language CSV (statewide)
         continue-on-error: true
         run: |
           if [ -n "${{ steps.discover.outputs.lang_url }}" ]; then
-            echo "Downloading language from: ${{ steps.discover.outputs.lang_url }}"
             curl -L -o tmp/language.csv \
-              -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-              -H "Accept: text/csv,text/plain,*/*" \
-              -H "Accept-Language: en-US,en;q=0.9" \
-              -H "Referer: https://data.chhs.ca.gov/" \
-              --retry 3 \
-              --retry-delay 5 \
-              --max-time 300 \
+              -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+              -H "Accept: text/csv,*/*" -H "Referer: https://data.chhs.ca.gov/" \
+              --retry 3 --retry-delay 5 --max-time 300 \
               "${{ steps.discover.outputs.lang_url }}"
-            echo "Language CSV size:"
             ls -lh tmp/language.csv
-            echo "First line:"
             head -1 tmp/language.csv
-          else
-            echo "No language URL found, skipping"
           fi
 
       - name: Download threshold language by county CSV
         continue-on-error: true
         run: |
           if [ -n "${{ steps.discover.outputs.langco_url }}" ]; then
-            echo "Downloading language-county from: ${{ steps.discover.outputs.langco_url }}"
             curl -L -o tmp/language_county.csv \
-              -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36" \
-              -H "Accept: text/csv,text/plain,*/*" \
-              -H "Accept-Language: en-US,en;q=0.9" \
-              -H "Referer: https://data.chhs.ca.gov/" \
-              --retry 3 \
-              --retry-delay 5 \
-              --max-time 300 \
+              -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+              -H "Accept: text/csv,*/*" -H "Referer: https://data.chhs.ca.gov/" \
+              --retry 3 --retry-delay 5 --max-time 300 \
               "${{ steps.discover.outputs.langco_url }}"
-            echo "Language County CSV size:"
             ls -lh tmp/language_county.csv
-            echo "First line:"
             head -1 tmp/language_county.csv
-          else
-            echo "No language-county URL found, skipping"
+            echo "First 3 data rows:"
+            head -4 tmp/language_county.csv | tail -3
           fi
 
-      # Step 3: Process CSVs into JSON
+      - name: Download certified eligibles CSV
+        continue-on-error: true
+        run: |
+          if [ -n "${{ steps.discover.outputs.elig_url }}" ]; then
+            curl -L -o tmp/eligibles.csv \
+              -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+              -H "Accept: text/csv,*/*" -H "Referer: https://data.chhs.ca.gov/" \
+              --retry 3 --retry-delay 5 --max-time 300 \
+              "${{ steps.discover.outputs.elig_url }}"
+            ls -lh tmp/eligibles.csv
+            head -1 tmp/eligibles.csv
+          fi
+
       - name: Process data with Python
         run: python scripts/fetch_data.py
 
       - name: List output files
         run: |
-          echo "=== data/ directory ==="
+          echo "=== data/ ==="
           ls -lh data/ || echo "No data directory"
 
       - name: Commit updated data files
