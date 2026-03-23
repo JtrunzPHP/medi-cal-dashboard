@@ -3,15 +3,17 @@
 Process DHCS Medi-Cal CSV files (downloaded by curl in GitHub Action) into
 compact JSON for the dashboard.
 
-Expected input files in tmp/:
-  - enrollment.csv    (Managed Care Enrollment Report)
-  - language.csv      (Primary Language of Newly Eligible — statewide quarterly)
-  - language_county.csv (Threshold Languages by County — quarterly)
+Input files in tmp/ (downloaded by curl):
+  - enrollment.csv          (Managed Care Enrollment Report)
+  - language.csv            (Primary Language of Newly Eligible — statewide quarterly)
+  - language_county.csv     (Threshold Languages by County — quarterly)
+  - eligibles.csv           (Certified Eligibles by County — for penetration rates)
 
 Output files in data/:
   - enrollment.json
   - language.json
   - language_county.json
+  - eligibles.json
 """
 
 import csv
@@ -29,14 +31,15 @@ OUT_DIR = os.path.join(REPO_DIR, "data")
 E_CSV = os.path.join(TMP_DIR, "enrollment.csv")
 L_CSV = os.path.join(TMP_DIR, "language.csv")
 LC_CSV = os.path.join(TMP_DIR, "language_county.csv")
+EL_CSV = os.path.join(TMP_DIR, "eligibles.csv")
 
 
 def parse_int(val):
-    """Parse integer from messy CSV value like ' 293,311 ' or '12345.0'."""
+    """Parse integer from messy CSV value like ' 293,311 ' or '12345.0' or '*'."""
     if not val:
         return 0
     cleaned = re.sub(r"[\s,\"\u00a0]", "", str(val).strip())
-    if cleaned in ("", "None", "N/A", "*", "-"):
+    if cleaned in ("", "None", "N/A", "*", "-", "null", "0.0"):
         return 0
     try:
         return int(cleaned)
@@ -48,30 +51,18 @@ def parse_int(val):
 
 
 def check_file(path, label):
-    """Check if a CSV file exists and has content. Returns True if valid."""
+    """Check if a CSV file exists and has content."""
     if not os.path.exists(path):
-        print(f"  ⚠ {label}: file not found at {path}")
+        print(f"  WARNING: {label}: file not found at {path}")
         return False
     size = os.path.getsize(path)
     if size < 100:
-        print(f"  ⚠ {label}: file too small ({size} bytes), likely an error page")
-        # Print contents for debugging
+        print(f"  WARNING: {label}: file too small ({size} bytes)")
         with open(path, "r", errors="replace") as f:
             print(f"     Contents: {f.read(500)}")
         return False
-    size_mb = size / (1024 * 1024)
-    print(f"  ✓ {label}: {size_mb:.2f} MB")
+    print(f"  OK: {label}: {size / (1024*1024):.2f} MB")
     return True
-
-
-def detect_column(headers, *keywords):
-    """Find the first header containing any of the keywords (case-insensitive)."""
-    for h in headers:
-        hl = h.lower()
-        for kw in keywords:
-            if kw in hl:
-                return h
-    return None
 
 
 def process_enrollment():
@@ -81,31 +72,29 @@ def process_enrollment():
         return None
 
     with open(E_CSV, "r", encoding="utf-8-sig") as f:
-        # Read first line to show header
         first_line = f.readline().strip()
-        print(f"  Header: {first_line[:150]}...")
+        print(f"  Header: {first_line[:200]}")
         f.seek(0)
 
         reader = csv.DictReader(f)
         headers = [h.strip() for h in (reader.fieldnames or [])]
         print(f"  Columns ({len(headers)}): {headers}")
 
-        # Detect count column
-        count_col = detect_column(headers, "count of enrollee", "enrollee count", "count_of")
+        # Find count column
+        count_col = None
+        for h in headers:
+            if "count" in h.lower() and "enrollee" in h.lower():
+                count_col = h
+                break
         if not count_col:
-            # Fallback: last column that looks numeric
             count_col = headers[-1] if headers else None
         print(f"  Count column: '{count_col}'")
 
         rows = []
-        skipped = 0
         for r in reader:
             h = {k.strip(): v for k, v in r.items()}
             month = h.get("Enrollment Month", "").strip()
-            if not month:
-                skipped += 1
-                continue
-            if month < "2020-01":
+            if not month or month < "2020-01":
                 continue
             rows.append({
                 "m": month,
@@ -115,44 +104,28 @@ def process_enrollment():
                 "c": parse_int(h.get(count_col, "") if count_col else "0"),
             })
 
-    print(f"  Parsed {len(rows)} records (2020-01+), skipped {skipped} bad rows")
-
-    if not rows:
-        print("  ERROR: Zero rows parsed!")
-        return None
-
-    # Debug diagnostics
-    plans = sorted(set(r["p"] for r in rows))
-    latest_m = max(r["m"] for r in rows)
-    counties = sorted(set(r["co"] for r in rows if r["m"] == latest_m))
-    print(f"  Latest month: {latest_m}")
-    print(f"  Total unique plans: {len(plans)}")
-    print(f"  Counties in latest month: {len(counties)}")
-
-    for kw in ["molina", "health net", "anthem", "la care", "kaiser", "inland", "caloptima"]:
-        hits = sorted([p for p in plans if kw in p.lower()])
-        if hits:
-            print(f"    '{kw}' → {hits}")
-
-    for kw in ["molina", "health net", "anthem"]:
-        ctys = sorted(set(
-            r["co"] for r in rows
-            if r["m"] == latest_m and kw in r["p"].lower()
-        ))
-        print(f"    {kw} counties ({latest_m}): {len(ctys)} — {ctys[:10]}{'...' if len(ctys) > 10 else ''}")
-
+    print(f"  Parsed {len(rows)} records (2020-01+)")
+    if rows:
+        latest_m = max(r["m"] for r in rows)
+        plans = sorted(set(r["p"] for r in rows))
+        print(f"  Latest month: {latest_m}")
+        print(f"  Unique plans: {len(plans)}")
+        for kw in ["molina", "health net", "anthem", "kaiser", "calviva", "california health", "wellcare", "community health plan", "blue shield"]:
+            hits = [p for p in plans if kw in p.lower()]
+            if hits:
+                print(f"    '{kw}' -> {hits}")
     return rows
 
 
 def process_language():
-    """Process primary language of newly eligible individuals (statewide quarterly)."""
-    print("\n=== Language Data (Statewide Newly Eligible) ===")
+    """Process primary language of newly eligible (statewide quarterly)."""
+    print("\n=== Language Data (Statewide) ===")
     if not check_file(L_CSV, "language.csv"):
         return None
 
     with open(L_CSV, "r", encoding="utf-8-sig") as f:
         first_line = f.readline().strip()
-        print(f"  Header: {first_line[:150]}...")
+        print(f"  Header: {first_line[:200]}")
         f.seek(0)
 
         reader = csv.DictReader(f)
@@ -160,16 +133,25 @@ def process_language():
         print(f"  Columns ({len(headers)}): {headers}")
 
         # Detect columns
-        period_col = detect_column(headers, "period", "quarter", "reporting")
+        period_col = None
+        lang_col = None
+        count_col = None
+        for h in headers:
+            hl = h.lower()
+            if not period_col and ("period" in hl or "quarter" in hl or "reporting" in hl):
+                period_col = h
+            if not lang_col and "language" in hl:
+                lang_col = h
+            if not count_col and ("number" in hl or "eligible" in hl or "count" in hl or "individual" in hl):
+                count_col = h
+
         if not period_col:
             period_col = headers[0] if headers else None
-        lang_col = detect_column(headers, "language")
-        count_col = detect_column(headers, "number", "eligible", "count", "individual")
         if not count_col:
             count_col = headers[-1] if headers else None
 
         if not lang_col:
-            print("  ⚠ Cannot detect language column, skipping")
+            print("  WARNING: Cannot detect language column, skipping")
             return None
 
         print(f"  Using: period='{period_col}', lang='{lang_col}', count='{count_col}'")
@@ -185,54 +167,126 @@ def process_language():
             rows.append({"q": period, "lang": lang, "c": count})
 
     if rows:
-        periods = sorted(set(r["q"] for r in rows))
-        langs = sorted(set(r["lang"] for r in rows))
-        print(f"  Periods: {periods}")
-        print(f"  Languages ({len(langs)}): {langs[:12]}{'...' if len(langs) > 12 else ''}")
+        print(f"  Periods: {sorted(set(r['q'] for r in rows))}")
+        print(f"  Languages: {sorted(set(r['lang'] for r in rows))}")
         print(f"  Total: {len(rows)} records")
-    else:
-        print("  ⚠ No rows parsed")
-
+        print(f"  Sample values: {[r['c'] for r in rows[:5]]}")
     return rows if rows else None
 
 
 def process_language_county():
-    """Process threshold languages by county (quarterly)."""
-    print("\n=== Language Data (County Threshold Languages) ===")
+    """Process threshold languages by county (quarterly).
+    
+    CRITICAL FIX: Previous version was outputting 0 for all counts.
+    This version prints extensive debug info and tries multiple column
+    detection strategies.
+    """
+    print("\n=== Language Data (County Threshold) ===")
     if not check_file(LC_CSV, "language_county.csv"):
         return None
 
     with open(LC_CSV, "r", encoding="utf-8-sig") as f:
         first_line = f.readline().strip()
-        print(f"  Header: {first_line[:200]}...")
+        print(f"  Header: {first_line[:300]}")
         f.seek(0)
 
         reader = csv.DictReader(f)
-        headers = [h.strip() for h in (reader.fieldnames or [])]
-        print(f"  Columns ({len(headers)}): {headers}")
+        raw_headers = reader.fieldnames or []
+        headers = [h.strip() for h in raw_headers]
+        print(f"  Raw columns ({len(raw_headers)}): {raw_headers}")
+        print(f"  Stripped columns ({len(headers)}): {headers}")
 
-        # Detect columns
-        moe_col = detect_column(headers, "month of eligibility", "month_of_eligibility", "eligibility_month")
-        if not moe_col:
-            moe_col = detect_column(headers, "month", "date", "period")
-        if not moe_col:
-            moe_col = headers[0] if headers else None
+        # Read first 3 rows for debugging
+        f.seek(0)
+        reader2 = csv.DictReader(f)
+        sample_rows = []
+        for i, r in enumerate(reader2):
+            if i >= 3:
+                break
+            sample_rows.append({k.strip(): v for k, v in r.items()})
+        print(f"  Sample row 1: {sample_rows[0] if sample_rows else 'NONE'}")
+        if len(sample_rows) > 1:
+            print(f"  Sample row 2: {sample_rows[1]}")
 
-        county_col = detect_column(headers, "county")
-        lang_col = detect_column(headers, "language")
-        count_col = detect_column(headers, "certified eligible", "eligible count", "count")
+        # Detect columns with multiple strategies
+        moe_col = None
+        county_col = None
+        lang_col = None
+        count_col = None
+
+        for h in headers:
+            hl = h.lower()
+            # Month column
+            if not moe_col and ("month" in hl and "eligib" in hl):
+                moe_col = h
+            elif not moe_col and ("month_of_elig" in hl):
+                moe_col = h
+            elif not moe_col and hl in ("month of eligibility", "month_of_eligibility", "moe"):
+                moe_col = h
+            # County column
+            if not county_col and "county" in hl:
+                county_col = h
+            # Language column
+            if not lang_col and "language" in hl:
+                lang_col = h
+            # Count column - try specific first, then general
+            if "certified" in hl and ("eligible" in hl or "count" in hl):
+                count_col = h
+            elif not count_col and ("eligible" in hl and "count" in hl):
+                count_col = h
+
+        # Fallback: if count_col still not found, try any column with "count" or "number"
         if not count_col:
-            # Try to find the last numeric-looking column
-            count_col = headers[-1] if headers else None
+            for h in headers:
+                hl = h.lower()
+                if "count" in hl or "number" in hl or "total" in hl:
+                    count_col = h
+                    break
+
+        # Fallback: if still not found, try the last column (often the numeric one)
+        if not count_col and len(headers) >= 4:
+            count_col = headers[-1]
+
+        # Fallback for month column
+        if not moe_col:
+            for h in headers:
+                if "month" in h.lower() or "date" in h.lower() or "period" in h.lower():
+                    moe_col = h
+                    break
+            if not moe_col and headers:
+                moe_col = headers[0]
+
+        print(f"  Detected: month='{moe_col}', county='{county_col}', lang='{lang_col}', count='{count_col}'")
 
         if not all([county_col, lang_col]):
-            print(f"  ⚠ Cannot detect required columns. county={county_col}, lang={lang_col}")
+            print(f"  ERROR: Missing required columns")
             return None
 
-        print(f"  Using: month='{moe_col}', county='{county_col}', lang='{lang_col}', count='{count_col}'")
+        # Test parsing on sample rows
+        if sample_rows:
+            for i, sr in enumerate(sample_rows):
+                raw_count = sr.get(count_col, "MISSING")
+                parsed = parse_int(raw_count)
+                print(f"  Test row {i}: count_col='{count_col}' -> raw='{raw_count}' -> parsed={parsed}")
+                # If the detected count column gives 0, try ALL columns for numeric values
+                if parsed == 0:
+                    print(f"    Checking all columns for numeric values:")
+                    for col_name, col_val in sr.items():
+                        pv = parse_int(col_val)
+                        if pv > 0:
+                            print(f"      '{col_name}' = '{col_val}' -> {pv} *** FOUND NON-ZERO ***")
+                            count_col = col_name
+                            print(f"    Switching count_col to '{count_col}'")
+                            break
 
+        print(f"  Final count column: '{count_col}'")
+
+        # Re-read and process all rows
+        f.seek(0)
+        reader3 = csv.DictReader(f)
         rows = []
-        for r in reader:
+        nonzero_count = 0
+        for r in reader3:
             h = {k.strip(): v for k, v in r.items()}
             month = h.get(moe_col, "").strip() if moe_col else ""
             if not month or month < "2020-01":
@@ -242,6 +296,8 @@ def process_language_county():
             count = parse_int(h.get(count_col, "") if count_col else "0")
             if not county or not lang:
                 continue
+            if count > 0:
+                nonzero_count += 1
             rows.append({
                 "m": month,
                 "co": county,
@@ -249,17 +305,96 @@ def process_language_county():
                 "c": count,
             })
 
+    print(f"  Total rows: {len(rows)}, Non-zero counts: {nonzero_count}")
     if rows:
         counties = sorted(set(r["co"] for r in rows))
         langs = sorted(set(r["lang"] for r in rows))
         months = sorted(set(r["m"] for r in rows))
         print(f"  Date range: {months[0]} to {months[-1]}")
-        print(f"  Counties: {len(counties)} — {counties[:8]}...")
-        print(f"  Languages ({len(langs)}): {langs[:10]}{'...' if len(langs) > 10 else ''}")
-        print(f"  Total: {len(rows)} records")
-    else:
-        print("  ⚠ No rows parsed")
+        print(f"  Counties: {len(counties)} — {counties[:5]}...")
+        print(f"  Languages: {langs}")
+    if nonzero_count == 0:
+        print("  WARNING: All counts are zero! The count column detection may have failed.")
+        print("  Returning data anyway (zeros) — check CSV structure manually.")
+    return rows if rows else None
 
+
+def process_eligibles():
+    """Process certified eligibles by county (for penetration rates)."""
+    print("\n=== Certified Eligibles Data ===")
+    if not check_file(EL_CSV, "eligibles.csv"):
+        return None
+
+    with open(EL_CSV, "r", encoding="utf-8-sig") as f:
+        first_line = f.readline().strip()
+        print(f"  Header: {first_line[:300]}")
+        f.seek(0)
+
+        reader = csv.DictReader(f)
+        headers = [h.strip() for h in (reader.fieldnames or [])]
+        print(f"  Columns ({len(headers)}): {headers}")
+
+        # Detect columns
+        moe_col = None
+        county_col = None
+        count_col = None
+
+        for h in headers:
+            hl = h.lower()
+            if not moe_col and ("month" in hl and "eligib" in hl):
+                moe_col = h
+            elif not moe_col and "month" in hl:
+                moe_col = h
+            if not county_col and "county" in hl:
+                county_col = h
+            if "certified" in hl and "eligible" in hl:
+                count_col = h
+            elif not count_col and ("total" in hl or "count" in hl or "eligible" in hl):
+                count_col = h
+
+        if not moe_col and headers:
+            moe_col = headers[0]
+        if not count_col and headers:
+            count_col = headers[-1]
+
+        print(f"  Using: month='{moe_col}', county='{county_col}', count='{count_col}'")
+
+        if not county_col:
+            print("  ERROR: Cannot detect county column")
+            return None
+
+        # Read sample for debugging
+        f.seek(0)
+        reader2 = csv.DictReader(f)
+        for i, r in enumerate(reader2):
+            if i >= 2:
+                break
+            h = {k.strip(): v for k, v in r.items()}
+            print(f"  Sample row {i}: month='{h.get(moe_col,'')}', county='{h.get(county_col,'')}', count='{h.get(count_col,'')}'")
+
+        # Process
+        f.seek(0)
+        reader3 = csv.DictReader(f)
+        rows = []
+        for r in reader3:
+            h = {k.strip(): v for k, v in r.items()}
+            month = h.get(moe_col, "").strip() if moe_col else ""
+            if not month or month < "2023-01":
+                continue
+            county = h.get(county_col, "").strip() if county_col else ""
+            count = parse_int(h.get(count_col, "") if count_col else "0")
+            if not county:
+                continue
+            rows.append({"m": month, "co": county, "c": count})
+
+    if rows:
+        months = sorted(set(r["m"] for r in rows))
+        counties = sorted(set(r["co"] for r in rows))
+        print(f"  Date range: {months[0]} to {months[-1]}")
+        print(f"  Counties: {len(counties)}")
+        print(f"  Total rows: {len(rows)}")
+        nonzero = sum(1 for r in rows if r["c"] > 0)
+        print(f"  Non-zero counts: {nonzero}")
     return rows if rows else None
 
 
@@ -268,47 +403,54 @@ def main():
     now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
     errors = []
 
-    # 1. Enrollment (required — script fails if this is missing)
+    # 1. Enrollment (required)
     enrollment = process_enrollment()
     if enrollment:
         path = os.path.join(OUT_DIR, "enrollment.json")
         with open(path, "w") as f:
             json.dump({"updated": now, "data": enrollment}, f)
-        size_mb = os.path.getsize(path) / (1024 * 1024)
-        print(f"\n  ✓ Wrote enrollment.json ({size_mb:.1f} MB, {len(enrollment)} records)")
+        print(f"\n  OK Wrote enrollment.json ({os.path.getsize(path)/(1024*1024):.1f} MB, {len(enrollment)} records)")
     else:
         errors.append("enrollment")
-        print("\n  ✗ FAILED: No enrollment data processed")
+        print("\n  FAILED: No enrollment data")
 
-    # 2. Language — statewide newly eligible (optional)
+    # 2. Language statewide (optional)
     language = process_language()
     if language:
         path = os.path.join(OUT_DIR, "language.json")
         with open(path, "w") as f:
             json.dump({"updated": now, "data": language}, f)
-        size_mb = os.path.getsize(path) / (1024 * 1024)
-        print(f"  ✓ Wrote language.json ({size_mb:.2f} MB, {len(language)} records)")
+        print(f"  OK Wrote language.json ({os.path.getsize(path)/(1024*1024):.2f} MB, {len(language)} records)")
     else:
-        print("  ⚠ Skipped language.json (data unavailable or unparseable)")
+        print("  SKIP language.json")
 
-    # 3. Language — county threshold (optional)
+    # 3. Language county (optional)
     lang_county = process_language_county()
     if lang_county:
         path = os.path.join(OUT_DIR, "language_county.json")
         with open(path, "w") as f:
             json.dump({"updated": now, "data": lang_county}, f)
-        size_mb = os.path.getsize(path) / (1024 * 1024)
-        print(f"  ✓ Wrote language_county.json ({size_mb:.1f} MB, {len(lang_county)} records)")
+        nonzero = sum(1 for r in lang_county if r["c"] > 0)
+        print(f"  OK Wrote language_county.json ({os.path.getsize(path)/(1024*1024):.2f} MB, {len(lang_county)} records, {nonzero} non-zero)")
     else:
-        print("  ⚠ Skipped language_county.json (data unavailable or unparseable)")
+        print("  SKIP language_county.json")
 
-    # Summary
+    # 4. Certified eligibles (optional)
+    eligibles = process_eligibles()
+    if eligibles:
+        path = os.path.join(OUT_DIR, "eligibles.json")
+        with open(path, "w") as f:
+            json.dump({"updated": now, "data": eligibles}, f)
+        print(f"  OK Wrote eligibles.json ({os.path.getsize(path)/(1024*1024):.2f} MB, {len(eligibles)} records)")
+    else:
+        print("  SKIP eligibles.json")
+
     print(f"\n{'='*50}")
     if errors:
         print(f"CRITICAL ERRORS: {errors}")
         sys.exit(1)
     else:
-        print("Done! All critical data processed successfully.")
+        print("Done!")
 
 
 if __name__ == "__main__":
