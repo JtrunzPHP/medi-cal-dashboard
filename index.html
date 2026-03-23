@@ -4,23 +4,23 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Parkman Healthcare Partners</title>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.13.3/umd/Recharts.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,sans-serif;background:#f5f7f5;color:#2D3B2F;font-size:13px}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#f5f7f5;color:#2D3B2F;font-size:13px}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script>
-(function(){
-var e=React.createElement;
-var useState=React.useState;
-var RC=Recharts;
+// ── TEST: If you see the dashboard header but no charts,
+// ── open browser console (F12) and look for errors.
+// ── If you see NOTHING, the CDN scripts failed to load.
 
-var MOH="#1565C0",CNC="#F57C00",GRN="#1B5E20",GS="#4CAF50",RED="#D32F2F",OR="#F57C00",PU="#7B1FA2",TL="#00897B";
+var e=React.createElement, us=React.useState, RC=Recharts;
+var MOH="#1565C0",CNC_="#F57C00",GRN="#1B5E20",GS="#4CAF50",RED="#D32F2F",OR="#F57C00",PU="#7B1FA2",TL="#00897B";
 
 var QD=[
 {q:"Q1'23",mR:8050,cR:36400,mM:87.6,cH:87.0,mE:5.71,cE:2.11,mP:310,cP:68,enr:14900},
@@ -34,339 +34,145 @@ var QD=[
 {q:"Q1'25",mR:10600,cR:44700,mM:89.2,cH:87.5,mE:5.45,cE:1.42,mP:330,cP:60,enr:13100},
 {q:"Q2'25",mR:10868,cR:48200,mM:90.4,cH:93.0,mE:4.75,cE:-3.88,mP:280,cP:42,enr:13000},
 {q:"Q3'25",mR:10841,cR:50100,mM:92.6,cH:91.5,mE:1.51,cE:4.34,mP:220,cP:40,enr:12900},
-{q:"Q4'25",mR:11400,cR:49700,mM:94.6,cH:94.3,mE:-3.15,cE:-1.19,mP:180,cP:37,enr:12800}
-];
+{q:"Q4'25",mR:11400,cR:49700,mM:94.6,cH:94.3,mE:-3.15,cE:-1.19,mP:180,cP:37,enr:12800}];
 
-var LAD=[
-{mo:"Jan'24",hn:1050,la:2380},{mo:"Apr'24",hn:1020,la:2310},{mo:"Jul'24",hn:990,la:2250},
-{mo:"Oct'24",hn:970,la:2210},{mo:"Jan'25",hn:960,la:2190},{mo:"Apr'25",hn:945,la:2160},
-{mo:"Jul'25",hn:930,la:2140},{mo:"Oct'25",hn:920,la:2120},{mo:"Jan'26",hn:910,la:2100},{mo:"Feb'26",hn:905,la:2090}
-];
+var LAD=[{mo:"Jan'24",hn:1050,la:2380},{mo:"Apr'24",hn:1020,la:2310},{mo:"Jul'24",hn:990,la:2250},{mo:"Oct'24",hn:970,la:2210},{mo:"Jan'25",hn:960,la:2190},{mo:"Apr'25",hn:945,la:2160},{mo:"Jul'25",hn:930,la:2140},{mo:"Oct'25",hn:920,la:2120},{mo:"Jan'26",hn:910,la:2100},{mo:"Feb'26",hn:905,la:2090}];
 
-var AQ=[
-{q:"Q1'24",mRx:12.5,cRx:11.8,bh:8.2},{q:"Q2'24",mRx:13.1,cRx:12.4,bh:8.8},
-{q:"Q3'24",mRx:13.8,cRx:13.0,bh:9.5},{q:"Q4'24",mRx:14.2,cRx:13.5,bh:10.1},
-{q:"Q1'25",mRx:14.8,cRx:14.1,bh:10.8},{q:"Q2'25",mRx:15.5,cRx:14.9,bh:11.5},
-{q:"Q3'25",mRx:16.0,cRx:15.4,bh:12.0},{q:"Q4'25",mRx:16.3,cRx:15.8,bh:12.3}
-];
+var AQ=[{q:"Q1'24",mRx:12.5,cRx:11.8,bh:8.2},{q:"Q2'24",mRx:13.1,cRx:12.4,bh:8.8},{q:"Q3'24",mRx:13.8,cRx:13.0,bh:9.5},{q:"Q4'24",mRx:14.2,cRx:13.5,bh:10.1},{q:"Q1'25",mRx:14.8,cRx:14.1,bh:10.8},{q:"Q2'25",mRx:15.5,cRx:14.9,bh:11.5},{q:"Q3'25",mRx:16.0,cRx:15.4,bh:12.0},{q:"Q4'25",mRx:16.3,cRx:15.8,bh:12.3}];
 
 function pcorr(x,y){var n=Math.min(x.length,y.length);if(n<3)return 0;var sx=0,sy=0,sxy=0,sx2=0,sy2=0;for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];sy2+=y[i]*y[i];}var d=Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));return d===0?0:(n*sxy-sx*sy)/d;}
 function lreg(x,y){var n=Math.min(x.length,y.length);var sx=0,sy=0,sxy=0,sx2=0;for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];}var b=(n*sxy-sx*sy)/(n*sx2-sx*sx),a=(sy-b*sx)/n;var ssr=0,sst=0,ym=sy/n;for(var i=0;i<n;i++){ssr+=Math.pow(a+b*x[i]-ym,2);sst+=Math.pow(y[i]-ym,2);}return{slope:b,r2:sst===0?0:ssr/sst};}
 
-var mP=QD.map(function(d){return d.mP}),cP=QD.map(function(d){return d.cP}),en=QD.map(function(d){return d.enr});
-var mRet=mP.slice(1).map(function(p,i){return(p-mP[i])/mP[i]*100});
-var cRet=cP.slice(1).map(function(p,i){return(p-cP[i])/cP[i]*100});
-var eChg=en.slice(1).map(function(e,i){return(e-en[i])/en[i]*100});
+var mPr=QD.map(function(d){return d.mP}),cPr=QD.map(function(d){return d.cP}),enA=QD.map(function(d){return d.enr});
+var mRet=mPr.slice(1).map(function(p,i){return(p-mPr[i])/mPr[i]*100});
+var cRet=cPr.slice(1).map(function(p,i){return(p-cPr[i])/cPr[i]*100});
+var eChg=enA.slice(1).map(function(v,i){return(v-enA[i])/enA[i]*100});
 var mMC=QD.slice(1).map(function(x,i){return x.mM-QD[i].mM});
 var cHC=QD.slice(1).map(function(x,i){return x.cH-QD[i].cH});
-var AN={
-  rMM:pcorr(mMC,mRet),rCH:pcorr(cHC,cRet),rEM:pcorr(eChg,mRet),rEC:pcorr(eChg,cRet),
-  regMM:lreg(QD.slice(1).map(function(x){return x.mM}),mRet),
-  regCH:lreg(QD.slice(1).map(function(x){return x.cH}),cRet),
-  regEN:lreg(eChg,mRet),
-  sMOH:QD.slice(1).map(function(x,i){return{mcr:x.mM,ret:mRet[i],q:x.q}}),
-  sCNC:QD.slice(1).map(function(x,i){return{hbr:x.cH,ret:cRet[i],q:x.q}})
-};
+var AN={rMM:pcorr(mMC,mRet),rCH:pcorr(cHC,cRet),rEM:pcorr(eChg,mRet),rEC:pcorr(eChg,cRet),regMM:lreg(QD.slice(1).map(function(x){return x.mM}),mRet),regCH:lreg(QD.slice(1).map(function(x){return x.cH}),cRet),regEN:lreg(eChg,mRet),sMOH:QD.slice(1).map(function(x,i){return{mcr:x.mM,ret:mRet[i],q:x.q}}),sCNC:QD.slice(1).map(function(x,i){return{hbr:x.cH,ret:cRet[i],q:x.q}})};
 var L=QD[QD.length-1];
-
 function pct(n){return n!=null?n.toFixed(1)+"%":"--";}
 
-// Styles as objects
-var sCard={background:"#fff",borderRadius:8,border:"1px solid #E0E7E0",padding:12,marginBottom:10,boxShadow:"0 1px 2px rgba(0,0,0,.04)"};
-var sCt={fontSize:13,fontWeight:700,color:GRN,marginBottom:3};
-var sCd={fontSize:11,color:"#5A6B5C",lineHeight:"1.5",marginBottom:10};
-var sKpi=function(c){return{flex:"1 1 120px",background:"#fff",borderRadius:6,border:"1px solid #E0E7E0",padding:"8px 10px",borderLeft:"4px solid "+(c||GRN)}};
-var sTh={textAlign:"left",padding:"6px 7px",borderBottom:"2px solid #C8E6C9",color:GRN,fontWeight:700,fontSize:9,textTransform:"uppercase"};
-var sTd={padding:"5px 7px",borderBottom:"1px solid #E0E7E0"};
-var sG2={display:"grid",gridTemplateColumns:"1fr 1fr",gap:10};
-
-function chart(type,props,children){return e(RC.ResponsiveContainer,{width:"100%",height:props.h||220},e(RC[type],{data:props.data},
-  e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),
-  e(RC.XAxis,Object.assign({dataKey:props.xKey||"q",tick:{fontSize:9}},props.xProps||{})),
-  e(RC.YAxis,Object.assign({tick:{fontSize:9}},props.yProps||{})),
-  e(RC.Tooltip,{contentStyle:{fontSize:10}}),
-  props.legend?e(RC.Legend,{wrapperStyle:{fontSize:9}}):null,
-  children
-));}
+var sc={background:"#fff",borderRadius:8,border:"1px solid #E0E7E0",padding:12,marginBottom:10};
+var sct={fontSize:13,fontWeight:700,color:GRN,marginBottom:3};
+var scd={fontSize:11,color:"#5A6B5C",lineHeight:"1.5",marginBottom:10};
+var skp=function(c){return{flex:"1 1 120px",background:"#fff",borderRadius:6,border:"1px solid #E0E7E0",padding:"8px 10px",borderLeft:"4px solid "+(c||GRN)}};
+var sth={textAlign:"left",padding:"6px 7px",borderBottom:"2px solid #C8E6C9",color:GRN,fontWeight:700,fontSize:9,textTransform:"uppercase"};
+var std={padding:"5px 7px",borderBottom:"1px solid #E0E7E0"};
 
 var TABS=["Summary","Enrollment","Fundamentals","Correlations","Acuity","Disenrollment","Scenarios","Peers","Signals"];
 
 function App(){
-  var s=useState(0),tab=s[0],setTab=s[1];
-
-  // Header
-  var header=e("div",{style:{background:"linear-gradient(135deg,#1B5E20,#2E7D32)",color:"#fff",padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
-    e("div",null,e("div",{style:{fontSize:19,fontWeight:800}},"PARKMAN HEALTHCARE PARTNERS"),e("div",{style:{fontSize:10,opacity:.8}},"CA Medi-Cal MCO Analytics Platform")),
-    e("div",{style:{textAlign:"right",fontSize:10,opacity:.8}},"March 2026 | DHCS, SEC, CMS")
-  );
-
-  // Tabs
-  var tabs=e("div",{style:{display:"flex",gap:1,background:"#fff",borderBottom:"2px solid #C8E6C9",padding:"0 10px",overflowX:"auto"}},
-    TABS.map(function(t,i){return e("div",{key:i,onClick:function(){setTab(i)},style:{padding:"8px 11px",cursor:"pointer",fontSize:10,fontWeight:tab===i?700:500,color:tab===i?GRN:"#5A6B5C",borderBottom:tab===i?"3px solid #4CAF50":"3px solid transparent",whiteSpace:"nowrap"}},t)})
-  );
-
-  var content;
-  if(tab===0) content=T0();
-  else if(tab===1) content=T1();
-  else if(tab===2) content=T2();
-  else if(tab===3) content=T3();
-  else if(tab===4) content=T4();
-  else if(tab===5) content=T5();
-  else if(tab===6) content=T6();
-  else if(tab===7) content=T7();
-  else content=T8();
-
-  var footer=e("div",{style:{padding:"6px 16px",fontSize:8,color:"#8A9A8C",borderTop:"1px solid #E0E7E0",background:"#fff"}},e("b",null,"Disclaimer: "),"Internal research only. Not investment advice. MOH=Molina, CNC=Centene/Health Net, ELV=Elevance, UNH=UnitedHealth, HUM=Humana.");
-
-  return e("div",null,header,tabs,e("div",{style:{padding:"12px 16px"}},content),footer);
+  var s=us(0),tab=s[0],setTab=s[1];
+  var header=e("div",{style:{background:"linear-gradient(135deg,#1B5E20,#2E7D32)",color:"#fff",padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}},e("div",null,e("div",{style:{fontSize:19,fontWeight:800}},"PARKMAN HEALTHCARE PARTNERS"),e("div",{style:{fontSize:10,opacity:.8}},"CA Medi-Cal MCO Analytics Platform")),e("div",{style:{textAlign:"right",fontSize:10,opacity:.8}},"March 2026 | DHCS, SEC, CMS"));
+  var tabs=e("div",{style:{display:"flex",gap:1,background:"#fff",borderBottom:"2px solid #C8E6C9",padding:"0 10px",overflowX:"auto"}},TABS.map(function(t,i){return e("div",{key:i,onClick:function(){setTab(i)},style:{padding:"8px 11px",cursor:"pointer",fontSize:10,fontWeight:tab===i?700:500,color:tab===i?GRN:"#5A6B5C",borderBottom:tab===i?"3px solid #4CAF50":"3px solid transparent",whiteSpace:"nowrap"}},t)}));
+  var views=[T0,T1,T2,T3,T4,T5,T6,T7,T8];
+  var footer=e("div",{style:{padding:"6px 16px",fontSize:8,color:"#8A9A8C",borderTop:"1px solid #E0E7E0",background:"#fff"}},e("b",null,"Disclaimer: "),"Internal research only. Not investment advice.");
+  return e("div",null,header,tabs,e("div",{style:{padding:"12px 16px"}},e(views[tab])),footer);
 }
 
-// ═══ T0 SUMMARY ═══
 function T0(){
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Dashboard Overview"),e("div",{style:sCd},"This platform tracks CA Medi-Cal managed care enrollment alongside financials and stock performance of Molina Healthcare (MOH) and Centene/Health Net (CNC), with peer benchmarking against UNH, ELV, and HUM. The thesis: enrollment composition changes are leading indicators of MCO earnings quality. The post-pandemic redetermination unwinding removed ~1.8M CA members, leaving a sicker pool that compressed margins industry-wide.")),
+    e("div",{style:sc},e("div",{style:sct},"Dashboard Overview"),e("div",{style:scd},"Tracks CA Medi-Cal managed care enrollment alongside financials/stock performance of Molina (MOH) and Centene/Health Net (CNC), with peer benchmarks. Thesis: enrollment composition changes are leading indicators of MCO earnings. Post-pandemic unwinding removed ~1.8M CA members, leaving sicker pool that compressed margins.")),
     e("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}},
-      e("div",{style:sKpi(MOH)},e("div",{style:{fontSize:9,color:"#5A6B5C",fontWeight:600}},"MOH STOCK"),e("div",{style:{fontSize:17,fontWeight:800,color:MOH}},"$"+L.mP),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"MCR: "+pct(L.mM)+" | 52wk: $121-$360")),
-      e("div",{style:sKpi(CNC)},e("div",{style:{fontSize:9,color:"#5A6B5C",fontWeight:600}},"CNC STOCK"),e("div",{style:{fontSize:17,fontWeight:800,color:CNC}},"$"+L.cP),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"HBR: "+pct(L.cH)+" | 52wk: $25-$66")),
-      e("div",{style:sKpi(GRN)},e("div",{style:{fontSize:9,color:"#5A6B5C",fontWeight:600}},"CA MEDI-CAL"),e("div",{style:{fontSize:17,fontWeight:800,color:GRN}},(L.enr/1000).toFixed(1)+"M"),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"Peak 15.0M, down "+((1-L.enr/QD[0].enr)*100).toFixed(1)+"%"))
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Key Correlations (Pearson rho)"),e("div",{style:sCd},"Strong inverse = rising MCR predicts stock decline."),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,e("th",{style:sTh},"Pair"),e("th",{style:sTh},"rho"),e("th",{style:sTh},"Signal"))),
-        e("tbody",null,
-          [["MOH MCR chg > Return",AN.rMM],["CNC HBR chg > Return",AN.rCH],["Enrollment chg > MOH",AN.rEM],["Enrollment chg > CNC",AN.rEC]].map(function(r,i){
-            return e("tr",{key:i},e("td",{style:sTd},r[0]),e("td",{style:sTd},e("b",null,r[1].toFixed(3))),e("td",{style:sTd},r[1]<-0.5?"Strong Inverse":r[1]<-0.2?"Moderate Inverse":"Weak"));
-          })
-        )
-      )
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Stock Price vs MCR/HBR"),e("div",{style:sCd},"As MCR/HBR crossed ~90%, stocks accelerated down. Q4'25 spikes = earnings misses."),
-      e(RC.ResponsiveContainer,{width:"100%",height:250},
-        e(RC.ComposedChart,{data:QD},
-          e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),
-          e(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:1}),
-          e(RC.YAxis,{yAxisId:"p",tick:{fontSize:9}}),
-          e(RC.YAxis,{yAxisId:"m",orientation:"right",tick:{fontSize:9},domain:[85,96]}),
-          e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),
-          e(RC.Line,{yAxisId:"p",dataKey:"mP",stroke:MOH,strokeWidth:2,name:"MOH $",dot:{r:2}}),
-          e(RC.Line,{yAxisId:"p",dataKey:"cP",stroke:CNC,strokeWidth:2,name:"CNC $",dot:{r:2}}),
-          e(RC.Line,{yAxisId:"m",dataKey:"mM",stroke:MOH,strokeWidth:2,strokeDasharray:"5 5",name:"MOH MCR"}),
-          e(RC.Line,{yAxisId:"m",dataKey:"cH",stroke:CNC,strokeWidth:2,strokeDasharray:"5 5",name:"CNC HBR"})
-        )
-      )
-    )
+      e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600,color:"#5A6B5C"}},"MOH STOCK"),e("div",{style:{fontSize:17,fontWeight:800,color:MOH}},"$"+L.mP),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"MCR: "+pct(L.mM))),
+      e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600,color:"#5A6B5C"}},"CNC STOCK"),e("div",{style:{fontSize:17,fontWeight:800,color:CNC_}},"$"+L.cP),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"HBR: "+pct(L.cH))),
+      e("div",{style:skp(GRN)},e("div",{style:{fontSize:9,fontWeight:600,color:"#5A6B5C"}},"CA MEDI-CAL"),e("div",{style:{fontSize:17,fontWeight:800,color:GRN}},(L.enr/1000).toFixed(1)+"M"),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"Down "+((1-L.enr/QD[0].enr)*100).toFixed(1)+"% from peak"))),
+    e("div",{style:sc},e("div",{style:sct},"Key Correlations"),
+      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,e("th",{style:sth},"Pair"),e("th",{style:sth},"rho"),e("th",{style:sth},"Signal"))),e("tbody",null,[["MOH MCR chg > Return",AN.rMM],["CNC HBR chg > Return",AN.rCH],["Enrollment > MOH",AN.rEM],["Enrollment > CNC",AN.rEC]].map(function(r,i){return e("tr",{key:i},e("td",{style:std},r[0]),e("td",{style:std},e("b",null,r[1].toFixed(3))),e("td",{style:std},r[1]<-0.5?"Strong Inverse":r[1]<-0.2?"Moderate":"Weak"))})))),
+    e("div",{style:sc},e("div",{style:sct},"Stock vs MCR/HBR"),e("div",{style:scd},"As MCR crossed ~90%, stocks fell sharply. Q4'25 spikes = earnings misses."),
+      e(RC.ResponsiveContainer,{width:"100%",height:250},e(RC.ComposedChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:1}),e(RC.YAxis,{yAxisId:"p",tick:{fontSize:9}}),e(RC.YAxis,{yAxisId:"m",orientation:"right",tick:{fontSize:9},domain:[85,96]}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Line,{yAxisId:"p",dataKey:"mP",stroke:MOH,strokeWidth:2,name:"MOH $",dot:{r:2}}),e(RC.Line,{yAxisId:"p",dataKey:"cP",stroke:CNC_,strokeWidth:2,name:"CNC $",dot:{r:2}}),e(RC.Line,{yAxisId:"m",dataKey:"mM",stroke:MOH,strokeWidth:2,strokeDasharray:"5 5",name:"MOH MCR"}),e(RC.Line,{yAxisId:"m",dataKey:"cH",stroke:CNC_,strokeWidth:2,strokeDasharray:"5 5",name:"CNC HBR"}))))
   );
 }
 
-// ═══ T1 ENROLLMENT ═══
 function T1(){
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"CA Medi-Cal Enrollment"),e("div",{style:sCd},"Each member = PMPM revenue. Unwinding removed ~1.8M healthy members. Watch floor at ~12.8M given 2026 asset limit reinstatement ($130K) and immigration restrictions."),
-      e(RC.ResponsiveContainer,{width:"100%",height:220},e(RC.AreaChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9}}),e(RC.YAxis,{tick:{fontSize:9},domain:[12000,15500],tickFormatter:function(v){return(v/1000).toFixed(1)+"M"}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Area,{type:"monotone",dataKey:"enr",fill:"#C8E6C9",stroke:GRN,strokeWidth:2})))
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"LA County: Health Net (CNC) vs L.A. Care"),e("div",{style:sCd},"LA = 23% of CA Medi-Cal. Two-Plan model: only Health Net (CNC) and L.A. Care. Molina has NO LA exposure."),
-      e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:LAD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"mo",tick:{fontSize:9}}),e(RC.YAxis,{tick:{fontSize:9}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Bar,{dataKey:"hn",fill:CNC,name:"Health Net",stackId:"a"}),e(RC.Bar,{dataKey:"la",fill:GS,name:"L.A. Care",stackId:"a"})))
-    )
+    e("div",{style:sc},e("div",{style:sct},"CA Medi-Cal Enrollment"),e("div",{style:scd},"Each member = PMPM revenue. Unwinding removed ~1.8M healthy members. Watch floor at ~12.8M."),
+      e(RC.ResponsiveContainer,{width:"100%",height:220},e(RC.AreaChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9}}),e(RC.YAxis,{tick:{fontSize:9},domain:[12000,15500],tickFormatter:function(v){return(v/1000).toFixed(1)+"M"}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Area,{type:"monotone",dataKey:"enr",fill:"#C8E6C9",stroke:GRN,strokeWidth:2})))),
+    e("div",{style:sc},e("div",{style:sct},"LA County: Health Net (CNC) vs L.A. Care"),e("div",{style:scd},"LA = 23% of CA Medi-Cal. Molina has NO LA exposure. This is pure CNC."),
+      e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:LAD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"mo",tick:{fontSize:9}}),e(RC.YAxis,{tick:{fontSize:9}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Bar,{dataKey:"hn",fill:CNC_,name:"Health Net",stackId:"a"}),e(RC.Bar,{dataKey:"la",fill:GS,name:"L.A. Care",stackId:"a"}))))
   );
 }
 
-// ═══ T2 FUNDAMENTALS ═══
 function T2(){
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Quarterly Financials"),e("div",{style:sCd},"When both MCR/HBR move together = systemic. In 2025 both rose = industry-wide pressure."),
-      e("div",{style:{overflowX:"auto"}},e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Qtr","MOH Rev","CNC Rev","MOH MCR","CNC HBR","MOH EPS","CNC EPS","MOH $","CNC $"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,QD.map(function(r,i){return e("tr",{key:i,style:{background:i%2===0?"#F9FBF9":"transparent"}},
-          e("td",{style:Object.assign({},sTd,{fontWeight:700})},r.q),
-          e("td",{style:sTd},"$"+(r.mR/1000).toFixed(1)+"B"),e("td",{style:sTd},"$"+(r.cR/1000).toFixed(1)+"B"),
-          e("td",{style:Object.assign({},sTd,{color:r.mM>91?RED:r.mM>89?OR:GS,fontWeight:700})},pct(r.mM)),
-          e("td",{style:Object.assign({},sTd,{color:r.cH>91?RED:r.cH>89?OR:GS,fontWeight:700})},pct(r.cH)),
-          e("td",{style:Object.assign({},sTd,{color:r.mE<0?RED:"#2D3B2F",fontWeight:700})},"$"+r.mE.toFixed(2)),
-          e("td",{style:Object.assign({},sTd,{color:r.cE<0?RED:"#2D3B2F",fontWeight:700})},"$"+r.cE.toFixed(2)),
-          e("td",{style:sTd},"$"+r.mP),e("td",{style:sTd},"$"+r.cP)
-        )}))
-      ))
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"EPS Trajectory"),e("div",{style:sCd},"MOH: ~$5.50/qtr to Q4'25 loss. 2026 guide: ~$5 adj. CNC: >$3. Beats = relief rallies."),
-      e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.ComposedChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:2}),e(RC.YAxis,{tick:{fontSize:9}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.ReferenceLine,{y:0,stroke:RED,strokeDasharray:"3 3"}),e(RC.Bar,{dataKey:"mE",fill:MOH,name:"MOH EPS",barSize:10}),e(RC.Bar,{dataKey:"cE",fill:CNC,name:"CNC EPS",barSize:10})))
-    )
+    e("div",{style:sc},e("div",{style:sct},"Quarterly Financials"),e("div",{style:scd},"Both MCR/HBR rising together in 2025 = systemic pressure, not company-specific."),
+      e("div",{style:{overflowX:"auto"}},e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Qtr","MOH Rev","CNC Rev","MOH MCR","CNC HBR","MOH EPS","CNC EPS","MOH $","CNC $"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,QD.map(function(r,i){return e("tr",{key:i,style:{background:i%2===0?"#F9FBF9":"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700})},r.q),e("td",{style:std},"$"+(r.mR/1000).toFixed(1)+"B"),e("td",{style:std},"$"+(r.cR/1000).toFixed(1)+"B"),e("td",{style:Object.assign({},std,{color:r.mM>91?RED:r.mM>89?OR:GS,fontWeight:700})},pct(r.mM)),e("td",{style:Object.assign({},std,{color:r.cH>91?RED:r.cH>89?OR:GS,fontWeight:700})},pct(r.cH)),e("td",{style:Object.assign({},std,{color:r.mE<0?RED:"#2D3B2F",fontWeight:700})},"$"+r.mE.toFixed(2)),e("td",{style:Object.assign({},std,{color:r.cE<0?RED:"#2D3B2F",fontWeight:700})},"$"+r.cE.toFixed(2)),e("td",{style:std},"$"+r.mP),e("td",{style:std},"$"+r.cP))}))))),
+    e("div",{style:sc},e("div",{style:sct},"EPS Trajectory"),
+      e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.ComposedChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:2}),e(RC.YAxis,{tick:{fontSize:9}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.ReferenceLine,{y:0,stroke:RED,strokeDasharray:"3 3"}),e(RC.Bar,{dataKey:"mE",fill:MOH,name:"MOH EPS",barSize:10}),e(RC.Bar,{dataKey:"cE",fill:CNC_,name:"CNC EPS",barSize:10}))))
   );
 }
 
-// ═══ T3 CORRELATIONS ═══
 function T3(){
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"MCR/HBR to Stock Return (Core Signal)"),e("div",{style:sCd},"Most actionable. MOH rho = "+AN.rMM.toFixed(3)+". Slope: +1pp MCR = "+AN.regMM.slope.toFixed(1)+"% stock. R2 = "+AN.regMM.r2.toFixed(3)+"."),
-      e("div",{style:sG2},
-        e("div",null,e("div",{style:{fontSize:10,fontWeight:700,color:MOH,marginBottom:4}},"MOH: rho = "+AN.rMM.toFixed(3)),
-          e(RC.ResponsiveContainer,{width:"100%",height:190},e(RC.ScatterChart,null,e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",dataKey:"mcr",tick:{fontSize:8},domain:[85,96]}),e(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:8}}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Scatter,{data:AN.sMOH,fill:MOH,r:4}),e(RC.ReferenceLine,{y:0,stroke:"#8A9A8C",strokeDasharray:"3 3"})))),
-        e("div",null,e("div",{style:{fontSize:10,fontWeight:700,color:CNC,marginBottom:4}},"CNC: rho = "+AN.rCH.toFixed(3)),
-          e(RC.ResponsiveContainer,{width:"100%",height:190},e(RC.ScatterChart,null,e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",dataKey:"hbr",tick:{fontSize:8},domain:[85,96]}),e(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:8}}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Scatter,{data:AN.sCNC,fill:CNC,r:4}),e(RC.ReferenceLine,{y:0,stroke:"#8A9A8C",strokeDasharray:"3 3"}))))
-      )
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Regression Summary"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Model","Slope","R2","Read"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,
-          e("tr",null,e("td",{style:sTd},"MOH MCR>Ret"),e("td",{style:Object.assign({},sTd,{fontWeight:700})},AN.regMM.slope.toFixed(3)),e("td",{style:sTd},AN.regMM.r2.toFixed(3)),e("td",{style:sTd},"+1pp MCR = "+AN.regMM.slope.toFixed(1)+"% stock")),
-          e("tr",null,e("td",{style:sTd},"CNC HBR>Ret"),e("td",{style:Object.assign({},sTd,{fontWeight:700})},AN.regCH.slope.toFixed(3)),e("td",{style:sTd},AN.regCH.r2.toFixed(3)),e("td",{style:sTd},"+1pp HBR = "+AN.regCH.slope.toFixed(1)+"% stock")),
-          e("tr",null,e("td",{style:sTd},"Enrollment>MOH"),e("td",{style:Object.assign({},sTd,{fontWeight:700})},AN.regEN.slope.toFixed(3)),e("td",{style:sTd},AN.regEN.r2.toFixed(3)),e("td",{style:sTd},"-1% enroll = "+Math.abs(AN.regEN.slope).toFixed(1)+"% decline"))
-        )
-      )
-    )
+    e("div",{style:sc},e("div",{style:sct},"MCR/HBR to Stock Return — Core Signal"),e("div",{style:scd},"MOH rho = "+AN.rMM.toFixed(3)+". Slope: +1pp MCR = "+AN.regMM.slope.toFixed(1)+"% stock. R2 = "+AN.regMM.r2.toFixed(3)+"."),
+      e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+        e("div",null,e("div",{style:{fontSize:10,fontWeight:700,color:MOH}},"MOH: rho="+AN.rMM.toFixed(3)),e(RC.ResponsiveContainer,{width:"100%",height:190},e(RC.ScatterChart,null,e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",dataKey:"mcr",tick:{fontSize:8},domain:[85,96]}),e(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:8}}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Scatter,{data:AN.sMOH,fill:MOH,r:4}),e(RC.ReferenceLine,{y:0,stroke:"#8A9A8C",strokeDasharray:"3 3"})))),
+        e("div",null,e("div",{style:{fontSize:10,fontWeight:700,color:CNC_}},"CNC: rho="+AN.rCH.toFixed(3)),e(RC.ResponsiveContainer,{width:"100%",height:190},e(RC.ScatterChart,null,e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",dataKey:"hbr",tick:{fontSize:8},domain:[85,96]}),e(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:8}}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Scatter,{data:AN.sCNC,fill:CNC_,r:4}),e(RC.ReferenceLine,{y:0,stroke:"#8A9A8C",strokeDasharray:"3 3"})))))),
+    e("div",{style:sc},e("div",{style:sct},"Regression Summary"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Model","Slope","R2","Read"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,e("tr",null,e("td",{style:std},"MOH MCR>Ret"),e("td",{style:Object.assign({},std,{fontWeight:700})},AN.regMM.slope.toFixed(3)),e("td",{style:std},AN.regMM.r2.toFixed(3)),e("td",{style:std},"+1pp = "+AN.regMM.slope.toFixed(1)+"% stock")),e("tr",null,e("td",{style:std},"CNC HBR>Ret"),e("td",{style:Object.assign({},std,{fontWeight:700})},AN.regCH.slope.toFixed(3)),e("td",{style:std},AN.regCH.r2.toFixed(3)),e("td",{style:std},"+1pp = "+AN.regCH.slope.toFixed(1)+"% stock")),e("tr",null,e("td",{style:std},"Enroll>MOH"),e("td",{style:Object.assign({},std,{fontWeight:700})},AN.regEN.slope.toFixed(3)),e("td",{style:std},AN.regEN.r2.toFixed(3)),e("td",{style:std},"-1% = "+Math.abs(AN.regEN.slope).toFixed(1)+"% decline")))))
   );
 }
 
-// ═══ T4 ACUITY ═══
 function T4(){
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Acuity Proxy Analysis"),e("div",{style:sCd},"Acuity = member sickness. Proxies: specialty Rx (GLP-1s), behavioral health (#1 cost driver 2025). Flywheel: healthy leave > acuity rises > MCR up > rates lag 12-18mo > margin crush. Now in rates catching up phase.")),
-    e("div",{style:sG2},
-      e("div",{style:sCard},e("div",{style:sCt},"Specialty Rx PMPM"),
-        e(RC.ResponsiveContainer,{width:"100%",height:170},e(RC.LineChart,{data:AQ},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:8}}),e(RC.YAxis,{tick:{fontSize:8},domain:[10,18]}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Line,{dataKey:"mRx",stroke:MOH,strokeWidth:2,name:"MOH",dot:{r:2}}),e(RC.Line,{dataKey:"cRx",stroke:CNC,strokeWidth:2,name:"CNC",dot:{r:2}})))),
-      e("div",{style:sCard},e("div",{style:sCt},"Behavioral Health Index"),
-        e(RC.ResponsiveContainer,{width:"100%",height:170},e(RC.AreaChart,{data:AQ},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:8}}),e(RC.YAxis,{tick:{fontSize:8},domain:[6,14]}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Area,{dataKey:"bh",fill:"#E1BEE7",stroke:PU,strokeWidth:2}))))
-    )
+    e("div",{style:sc},e("div",{style:sct},"Acuity Proxies"),e("div",{style:scd},"Specialty Rx (GLP-1s), behavioral health (#1 driver). Flywheel: healthy leave > acuity rises > MCR up > rates lag > margin crush. Now in rate catch-up phase.")),
+    e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+      e("div",{style:sc},e("div",{style:sct},"Specialty Rx PMPM"),e(RC.ResponsiveContainer,{width:"100%",height:170},e(RC.LineChart,{data:AQ},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:8}}),e(RC.YAxis,{tick:{fontSize:8},domain:[10,18]}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Line,{dataKey:"mRx",stroke:MOH,strokeWidth:2,name:"MOH",dot:{r:2}}),e(RC.Line,{dataKey:"cRx",stroke:CNC_,strokeWidth:2,name:"CNC",dot:{r:2}})))),
+      e("div",{style:sc},e("div",{style:sct},"Behavioral Health"),e(RC.ResponsiveContainer,{width:"100%",height:170},e(RC.AreaChart,{data:AQ},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:8}}),e(RC.YAxis,{tick:{fontSize:8},domain:[6,14]}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Area,{dataKey:"bh",fill:"#E1BEE7",stroke:PU,strokeWidth:2})))))
   );
 }
 
-// ═══ T5 DISENROLLMENT ═══
 function T5(){
-  var tl=[["Pre-Unwinding Q1'23","14.9M","87.6%","87.0%","$310","$68","Baseline",false],["Peak Disenroll Q1'24","13.8M","88.6%","87.6%","$395","$72","Stocks at HIGHS",false],["Collapse Q2'25","13.0M","90.4%","93.0%","$280","$42","CNC massive loss",true],["Trough Q4'25","12.8M","94.6%","94.3%","$180","$37","Both post losses",true]];
+  var rows=[["Pre-Unwinding Q1'23","14.9M","87.6%","87.0%","$310","$68","Baseline",""],["Peak Disenroll Q1'24","13.8M","88.6%","87.6%","$395","$72","Stocks at HIGHS",""],["Collapse Q2'25","13.0M","90.4%","93.0%","$280","$42","CNC loss","#FFF3E0"],["Trough Q4'25","12.8M","94.6%","94.3%","$180","$37","Both post losses","#FFF3E0"]];
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Disenrollment > Earnings Timeline"),e("div",{style:sCd},"The paradox: in early 2024 when disenrollment peaked, Wall Street was BULLISH. MOH hit ATH ($420) Mar 2024. Market missed that healthy members were leaving. Lesson: monitor WHO leaves, not how many."),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Phase","Enroll","MOH MCR","CNC HBR","MOH $","CNC $","Context"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,tl.map(function(r,i){return e("tr",{key:i,style:{background:r[7]?"#FFF3E0":"transparent"}},r.slice(0,7).map(function(c,j){return e("td",{key:j,style:Object.assign({},sTd,j===0?{fontWeight:700,fontSize:10}:{},j===6?{fontSize:9}:{})},c)}))}))
-      )
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Framework"),e("div",{style:sCd},"Bearish disenrollment: healthy members leave (adverse selection, MCR rises 3-4 qtr lag). Bullish: MCOs exit unprofitable markets (MOH cut ACA counties 20%, CNC raised premiums 30%). Classify every change as voluntary exit (bullish) vs involuntary attrition (bearish)."))
+    e("div",{style:sc},e("div",{style:sct},"Disenrollment > Earnings Timeline"),e("div",{style:scd},"Paradox: In early 2024, disenrollment peaked but stocks were at HIGHS. Market missed that healthy members were leaving. Lesson: monitor WHO leaves, not how many."),
+      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Phase","Enroll","MOH MCR","CNC HBR","MOH $","CNC $","Context"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,rows.map(function(r,i){return e("tr",{key:i,style:{background:r[7]||"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700,fontSize:10})},r[0]),e("td",{style:std},r[1]),e("td",{style:std},r[2]),e("td",{style:std},r[3]),e("td",{style:std},r[4]),e("td",{style:std},r[5]),e("td",{style:Object.assign({},std,{fontSize:9})},r[6]))})))),
+    e("div",{style:sc},e("div",{style:sct},"Framework"),e("div",{style:scd},"Bearish: healthy leave (adverse selection). Bullish: MCOs exit unprofitable markets (MOH cut ACA 20%, CNC raised premiums 30%). Classify: voluntary exit (bullish) vs involuntary attrition (bearish)."))
   );
 }
 
-// ═══ T6 SCENARIOS ═══
 function T6(){
-  var s=useState("base"),sc=s[0],setSc=s[1];
-  var MS={bull:{l:"Bull",c:GS,mcr:89.5,eps:8.50,px:153,pb:20,d:"Rates catch up 6%+. MCR below 90% by H2'26."},base:{l:"Base",c:"#FFD600",mcr:91.0,eps:5.00,px:80,pb:50,d:"Delivers $5 adj EPS. MCR ~91%. Flat enrollment."},bear:{l:"Bear",c:RED,mcr:93.0,eps:2.00,px:24,pb:30,d:"Cost trend accelerates. Another guidance cut."}};
-  var CS={bull:{l:"Bull",c:GS,hbr:90.0,eps:5.50,px:66,pb:20,d:"ACA repricing works. HBR below 91%."},base:{l:"Base",c:"#FFD600",hbr:92.0,eps:3.00,px:33,pb:50,d:"Delivers >$3 EPS. Medicaid down 5-6%."},bear:{l:"Bear",c:RED,hbr:94.5,eps:0.50,px:4,pb:30,d:"ACA subsidy loss worse. Balance sheet stress."}};
-  var wM=MS.bull.px*.2+MS.base.px*.5+MS.bear.px*.3;
-  var wC=CS.bull.px*.2+CS.base.px*.5+CS.bear.px*.3;
-  var m=MS[sc],c=CS[sc];
-  var sens=[[88,"+$4.50","Pre-2025 norm"],[89,"+$2.80","Strong recovery"],[90,"+$1.20","Modest improve"],[91,"$0.00","Baseline"],[92,"-$1.50","Pressure"],[93,"-$3.00","Severe"],[94,"-$4.50","Crisis"]];
-
+  var s=us("base"),scn=s[0],setSc=s[1];
+  var MS={bull:{l:"Bull",c:GS,mcr:89.5,eps:8.50,px:153,pb:20,d:"Rates 6%+. MCR<90% H2'26."},base:{l:"Base",c:"#FFD600",mcr:91.0,eps:5.00,px:80,pb:50,d:"$5 adj EPS. MCR ~91%. Flat."},bear:{l:"Bear",c:RED,mcr:93.0,eps:2.00,px:24,pb:30,d:"Cost accelerates. Guidance cut."}};
+  var CS={bull:{l:"Bull",c:GS,hbr:90.0,eps:5.50,px:66,pb:20,d:"ACA repricing works. HBR<91%."},base:{l:"Base",c:"#FFD600",hbr:92.0,eps:3.00,px:33,pb:50,d:">$3 EPS. Medicaid -5-6%."},bear:{l:"Bear",c:RED,hbr:94.5,eps:0.50,px:4,pb:30,d:"Subsidy loss. Balance sheet stress."}};
+  var wM=MS.bull.px*.2+MS.base.px*.5+MS.bear.px*.3, wC=CS.bull.px*.2+CS.base.px*.5+CS.bear.px*.3;
+  var m=MS[scn],c=CS[scn];
+  var sens=[[88,"+$4.50"],[89,"+$2.80"],[90,"+$1.20"],[91,"$0.00"],[92,"-$1.50"],[93,"-$3.00"],[94,"-$4.50"]];
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Scenario Analysis"),e("div",{style:sCd},"Bull/Base/Bear per MCO. Every 100bps MCR = ~$1.50 EPS for MOH. Probability-weighted EV vs current price shows asymmetry.")),
-    e("div",{style:{display:"flex",gap:6,marginBottom:10}},["bull","base","bear"].map(function(k){var v=MS[k];return e("div",{key:k,onClick:function(){setSc(k)},style:{flex:1,padding:8,borderRadius:6,border:"2px solid "+(sc===k?v.c:"#E0E7E0"),cursor:"pointer",textAlign:"center"}},e("div",{style:{fontSize:12,fontWeight:700,color:sc===k?v.c:"#5A6B5C"}},v.l+" Case"),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"Prob: "+v.pb+"%"))})),
-    e("div",{style:sG2},
-      e("div",{style:sCard},e("div",{style:Object.assign({},sCt,{color:MOH})},"MOH - "+m.l),e("div",{style:sCd},m.d),
-        e("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
-          e("div",{style:sKpi(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"MCR"),e("div",{style:{fontSize:15,fontWeight:800,color:m.mcr>91?RED:OR}},pct(m.mcr))),
-          e("div",{style:sKpi(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"EPS"),e("div",{style:{fontSize:15,fontWeight:800,color:m.eps<1?RED:GRN}},"$"+m.eps)),
-          e("div",{style:sKpi(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"PRICE"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+m.px),e("div",{style:{fontSize:9,color:"#8A9A8C"}},((m.px-180)/180*100).toFixed(0)+"% vs $180"))
-        )
-      ),
-      e("div",{style:sCard},e("div",{style:Object.assign({},sCt,{color:CNC})},"CNC - "+c.l),e("div",{style:sCd},c.d),
-        e("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},
-          e("div",{style:sKpi(CNC)},e("div",{style:{fontSize:9,fontWeight:600}},"HBR"),e("div",{style:{fontSize:15,fontWeight:800,color:c.hbr>91?RED:OR}},pct(c.hbr))),
-          e("div",{style:sKpi(CNC)},e("div",{style:{fontSize:9,fontWeight:600}},"EPS"),e("div",{style:{fontSize:15,fontWeight:800,color:c.eps<1?RED:GRN}},"$"+c.eps)),
-          e("div",{style:sKpi(CNC)},e("div",{style:{fontSize:9,fontWeight:600}},"PRICE"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+c.px),e("div",{style:{fontSize:9,color:"#8A9A8C"}},((c.px-37)/37*100).toFixed(0)+"% vs $37"))
-        )
-      )
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Probability-Weighted Valuation"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Scenario","Prob","MOH EPS","MOH Px","vs Now","CNC EPS","CNC Px","vs Now"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,
-          ["bull","base","bear"].map(function(k){var mv=MS[k],cv=CS[k];return e("tr",{key:k},e("td",{style:Object.assign({},sTd,{fontWeight:700})},mv.l),e("td",{style:sTd},mv.pb+"%"),e("td",{style:sTd},"$"+mv.eps),e("td",{style:sTd},"$"+mv.px),e("td",{style:Object.assign({},sTd,{color:mv.px>180?GS:RED,fontWeight:700})},((mv.px-180)/180*100).toFixed(0)+"%"),e("td",{style:sTd},"$"+cv.eps),e("td",{style:sTd},"$"+cv.px),e("td",{style:Object.assign({},sTd,{color:cv.px>37?GS:RED,fontWeight:700})},((cv.px-37)/37*100).toFixed(0)+"%"))}),
-          e("tr",{style:{background:"#E8F5E9",fontWeight:700}},e("td",{style:sTd},"Weighted EV"),e("td",{style:sTd},"100%"),e("td",{style:sTd}),e("td",{style:Object.assign({},sTd,{fontSize:14})},"$"+wM.toFixed(0)),e("td",{style:Object.assign({},sTd,{color:wM>180?GS:RED})},((wM-180)/180*100).toFixed(0)+"%"),e("td",{style:sTd}),e("td",{style:Object.assign({},sTd,{fontSize:14})},"$"+wC.toFixed(0)),e("td",{style:Object.assign({},sTd,{color:wC>37?GS:RED})},((wC-37)/37*100).toFixed(0)+"%"))
-        )
-      )
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"MOH MCR Sensitivity (per 100bps = ~$1.50 EPS)"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["MCR","EPS Impact","Implied EPS","At 16x","Note"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,sens.map(function(r,i){return e("tr",{key:i,style:{background:r[0]===91?"#E8F5E9":r[0]>92?"#FFF3E0":"transparent"}},e("td",{style:Object.assign({},sTd,{fontWeight:700,color:r[0]>92?RED:r[0]<90?GS:"#2D3B2F"})},pct(r[0])),e("td",{style:Object.assign({},sTd,{fontWeight:700})},r[1]),e("td",{style:sTd},"$"+(5+parseFloat(r[1].replace(/[+$]/g,""))).toFixed(2)),e("td",{style:sTd},"$"+((5+parseFloat(r[1].replace(/[+$]/g,"")))*16).toFixed(0)),e("td",{style:Object.assign({},sTd,{fontSize:10})},r[2]))}))
-      )
-    )
+    e("div",{style:sc},e("div",{style:sct},"Scenario Analysis"),e("div",{style:scd},"Every 100bps MCR = ~$1.50 EPS for MOH. Click scenarios below.")),
+    e("div",{style:{display:"flex",gap:6,marginBottom:10}},["bull","base","bear"].map(function(k){var v=MS[k];return e("div",{key:k,onClick:function(){setSc(k)},style:{flex:1,padding:8,borderRadius:6,border:"2px solid "+(scn===k?v.c:"#E0E7E0"),cursor:"pointer",textAlign:"center"}},e("div",{style:{fontSize:12,fontWeight:700,color:scn===k?v.c:"#5A6B5C"}},v.l),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"Prob: "+v.pb+"%"))})),
+    e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+      e("div",{style:sc},e("div",{style:Object.assign({},sct,{color:MOH})},"MOH - "+m.l),e("div",{style:scd},m.d),e("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"MCR"),e("div",{style:{fontSize:15,fontWeight:800,color:m.mcr>91?RED:OR}},pct(m.mcr))),e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"EPS"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+m.eps)),e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"PRICE"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+m.px)))),
+      e("div",{style:sc},e("div",{style:Object.assign({},sct,{color:CNC_})},"CNC - "+c.l),e("div",{style:scd},c.d),e("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600}},"HBR"),e("div",{style:{fontSize:15,fontWeight:800,color:c.hbr>91?RED:OR}},pct(c.hbr))),e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600}},"EPS"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+c.eps)),e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600}},"PRICE"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+c.px))))),
+    e("div",{style:sc},e("div",{style:sct},"Weighted Valuation"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Scenario","Prob","MOH EPS","MOH Px","vs Now","CNC EPS","CNC Px","vs Now"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,["bull","base","bear"].map(function(k){var mv=MS[k],cv=CS[k];return e("tr",{key:k},e("td",{style:Object.assign({},std,{fontWeight:700})},mv.l),e("td",{style:std},mv.pb+"%"),e("td",{style:std},"$"+mv.eps),e("td",{style:std},"$"+mv.px),e("td",{style:Object.assign({},std,{color:mv.px>180?GS:RED,fontWeight:700})},((mv.px-180)/180*100).toFixed(0)+"%"),e("td",{style:std},"$"+cv.eps),e("td",{style:std},"$"+cv.px),e("td",{style:Object.assign({},std,{color:cv.px>37?GS:RED,fontWeight:700})},((cv.px-37)/37*100).toFixed(0)+"%"))}),e("tr",{style:{background:"#E8F5E9",fontWeight:700}},e("td",{style:std},"Weighted EV"),e("td",{style:std},"100%"),e("td",{style:std},""),e("td",{style:std},"$"+wM.toFixed(0)),e("td",{style:Object.assign({},std,{color:wM>180?GS:RED})},((wM-180)/180*100).toFixed(0)+"%"),e("td",{style:std},""),e("td",{style:std},"$"+wC.toFixed(0)),e("td",{style:Object.assign({},std,{color:wC>37?GS:RED})},((wC-37)/37*100).toFixed(0)+"%"))))),
+    e("div",{style:sc},e("div",{style:sct},"MCR Sensitivity (per 100bps = ~$1.50 EPS)"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["MCR","EPS Impact","Implied EPS","At 16x P/E"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,sens.map(function(r,i){var v=parseFloat(r[1].replace(/[+$]/g,""));return e("tr",{key:i,style:{background:r[0]===91?"#E8F5E9":r[0]>92?"#FFF3E0":"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700,color:r[0]>92?RED:r[0]<90?GS:"#2D3B2F"})},pct(r[0])),e("td",{style:Object.assign({},std,{fontWeight:700})},r[1]),e("td",{style:std},"$"+(5+v).toFixed(2)),e("td",{style:std},"$"+((5+v)*16).toFixed(0)))}))))
   );
 }
 
-// ═══ T7 PEERS ═══
 function T7(){
-  var P=[
-    {tk:"UNH",cl:TL,px:276,mc:"$250B",ae:26.0,eg:17.0,mlr:88.9,md:16,ma:30,aca:5,pe:16.2,dd:45,ca:"Low",nt:"Largest MCO. Optum diversification. $439B rev guide 2026."},
-    {tk:"ELV",cl:PU,px:345,mc:"$79B",ae:30.29,eg:22.30,mlr:90.0,md:25,ma:20,aca:8,pe:13.5,dd:42,ca:"High",nt:"Blue Cross 14 states. Carelon. $25.50 adj EPS guide."},
-    {tk:"HUM",cl:RED,px:170,mc:"$20B",ae:17.14,eg:9.00,mlr:90.4,md:7,ma:85,aca:3,pe:18.9,dd:68,ca:"Min",nt:"MA pure-play 85%. Star decline = $3.5B headwind."},
-    {tk:"MOH",cl:MOH,px:148,mc:"$7.7B",ae:11.03,eg:3.20,mlr:91.7,md:86,ma:4,aca:10,pe:29.6,dd:65,ca:"V.High",nt:"Pure Medicaid 86%. Highest MCR. Removed from S&P 500."},
-    {tk:"CNC",cl:CNC,px:35,mc:"$17B",ae:2.08,eg:3.00,mlr:91.9,md:45,ma:15,aca:20,pe:11.7,dd:65,ca:"V.High",nt:"Largest Medicaid MCO 12.5M. $6.7B loss 2025. >$3 guide."}
-  ];
+  var P=[{tk:"UNH",cl:TL,px:276,ae:26.0,eg:17.0,mlr:88.9,md:16,ma:30,pe:16.2,dd:45,nt:"Largest MCO. Optum diversification. $439B rev guide 2026."},{tk:"ELV",cl:PU,px:345,ae:30.29,eg:22.30,mlr:90.0,md:25,ma:20,pe:13.5,dd:42,nt:"Blue Cross 14 states. Carelon. $25.50 adj EPS guide."},{tk:"HUM",cl:RED,px:170,ae:17.14,eg:9.00,mlr:90.4,md:7,ma:85,pe:18.9,dd:68,nt:"MA pure-play 85%. Star decline $3.5B headwind."},{tk:"MOH",cl:MOH,px:148,ae:11.03,eg:3.20,mlr:91.7,md:86,ma:4,pe:29.6,dd:65,nt:"Pure Medicaid 86%. Highest MCR. Removed from S&P 500."},{tk:"CNC",cl:CNC_,px:35,ae:2.08,eg:3.00,mlr:91.9,md:45,ma:15,pe:11.7,dd:65,nt:"Largest Medicaid MCO 12.5M. $6.7B loss 2025."}];
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Peer Comparison"),e("div",{style:sCd},"Entire sector pressured. Pure Medicaid (MOH) and mixed (CNC) hardest hit. MA-heavy (HUM) Star problems. Diversified (UNH, ELV) more resilient.")),
-    e("div",{style:sCard},
-      e("div",{style:{overflowX:"auto"}},e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Ticker","Price","MCap","Adj EPS'25","EPS'26G","MLR'25","P/E","Mcaid%","MA%","From Hi","CA"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,P.map(function(p,i){return e("tr",{key:i,style:{background:i%2===0?"#F9FBF9":"transparent"}},
-          e("td",{style:Object.assign({},sTd,{fontWeight:700,color:p.cl})},p.tk),e("td",{style:sTd},"$"+p.px),e("td",{style:sTd},p.mc),
-          e("td",{style:Object.assign({},sTd,{fontWeight:700})},"$"+p.ae),e("td",{style:Object.assign({},sTd,{fontWeight:700,color:p.eg<p.ae?RED:GS})},"$"+p.eg),
-          e("td",{style:Object.assign({},sTd,{fontWeight:700,color:p.mlr>91?RED:p.mlr>89?OR:GS})},pct(p.mlr)),e("td",{style:sTd},p.pe+"x"),
-          e("td",{style:Object.assign({},sTd,{fontWeight:p.md>40?700:400})},p.md+"%"),e("td",{style:sTd},p.ma+"%"),
-          e("td",{style:Object.assign({},sTd,{color:RED,fontWeight:700})},"-"+p.dd+"%"),e("td",{style:sTd},p.ca)
-        )}))
-      ))
-    ),
-    e("div",{style:sG2},
-      e("div",{style:sCard},e("div",{style:sCt},"Business Mix"),
-        e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:P.map(function(p){return{nm:p.tk,Medicaid:p.md,MA:p.ma,ACA:p.aca,Other:Math.max(0,100-p.md-p.ma-p.aca)}}),layout:"vertical"},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",tick:{fontSize:8},domain:[0,100]}),e(RC.YAxis,{type:"category",dataKey:"nm",tick:{fontSize:10},width:32}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Bar,{dataKey:"Medicaid",stackId:"a",fill:MOH}),e(RC.Bar,{dataKey:"MA",stackId:"a",fill:PU}),e(RC.Bar,{dataKey:"ACA",stackId:"a",fill:TL}),e(RC.Bar,{dataKey:"Other",stackId:"a",fill:"#8A9A8C"})))),
-      e("div",{style:sCard},e("div",{style:sCt},"FY2025 MLR"),
-        e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:P.map(function(p){return{nm:p.tk,mlr:p.mlr}})},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"nm",tick:{fontSize:10}}),e(RC.YAxis,{tick:{fontSize:9},domain:[85,95]}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.ReferenceLine,{y:88,stroke:GS,strokeDasharray:"5 5"}),e(RC.ReferenceLine,{y:91,stroke:RED,strokeDasharray:"5 5"}),e(RC.Bar,{dataKey:"mlr",name:"MLR"},P.map(function(p,i){return e(RC.Cell,{key:i,fill:p.cl})})))))
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Peer Notes"),
-      P.map(function(p,i){return e("div",{key:i,style:{padding:8,borderLeft:"4px solid "+p.cl,marginBottom:6,background:"#F9FBF9",borderRadius:"0 6px 6px 0"}},e("div",{style:{fontWeight:700,color:p.cl,fontSize:11}},p.tk+" ",e("span",{style:{fontSize:9,color:"#8A9A8C",fontWeight:400}},"| $"+p.px+" | "+p.pe+"x")),e("div",{style:{fontSize:10,color:"#5A6B5C",marginTop:2}},p.nt))})
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Pair Trade Ideas"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Trade","Long","Short","Thesis"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,
-          [["Medicaid Recovery","CNC","MOH","CNC lower P/E, more diversification."],["Diversified vs Pure","ELV","MOH","ELV Carelon buffer, 75% non-Medicaid."],["Anti-MA","CNC","HUM","Medicaid recovers faster than MA Stars."]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},sTd,{fontWeight:700})},r[0]),e("td",{style:Object.assign({},sTd,{color:GS,fontWeight:700})},r[1]),e("td",{style:Object.assign({},sTd,{color:RED,fontWeight:700})},r[2]),e("td",{style:Object.assign({},sTd,{fontSize:10})},r[3]))})
-        )
-      )
-    )
+    e("div",{style:sc},e("div",{style:sct},"Peer Comparison"),e("div",{style:scd},"Entire sector pressured. Pure Medicaid (MOH), mixed (CNC) hardest hit. MA-heavy (HUM) has Star problems. Diversified (UNH,ELV) more resilient.")),
+    e("div",{style:sc},e("div",{style:{overflowX:"auto"}},e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Ticker","Price","Adj EPS'25","EPS'26G","MLR'25","P/E","Mcaid%","MA%","From Hi"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,P.map(function(p,i){return e("tr",{key:i,style:{background:i%2===0?"#F9FBF9":"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700,color:p.cl})},p.tk),e("td",{style:std},"$"+p.px),e("td",{style:Object.assign({},std,{fontWeight:700})},"$"+p.ae),e("td",{style:Object.assign({},std,{fontWeight:700,color:p.eg<p.ae?RED:GS})},"$"+p.eg),e("td",{style:Object.assign({},std,{fontWeight:700,color:p.mlr>91?RED:p.mlr>89?OR:GS})},pct(p.mlr)),e("td",{style:std},p.pe+"x"),e("td",{style:std},p.md+"%"),e("td",{style:std},p.ma+"%"),e("td",{style:Object.assign({},std,{color:RED,fontWeight:700})},"-"+p.dd+"%"))}))))),
+    e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
+      e("div",{style:sc},e("div",{style:sct},"Business Mix"),e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:P.map(function(p){return{nm:p.tk,Medicaid:p.md,MA:p.ma,Other:Math.max(0,100-p.md-p.ma)}}),layout:"vertical"},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",tick:{fontSize:8},domain:[0,100]}),e(RC.YAxis,{type:"category",dataKey:"nm",tick:{fontSize:10},width:32}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Bar,{dataKey:"Medicaid",stackId:"a",fill:MOH}),e(RC.Bar,{dataKey:"MA",stackId:"a",fill:PU}),e(RC.Bar,{dataKey:"Other",stackId:"a",fill:"#8A9A8C"})))),
+      e("div",{style:sc},e("div",{style:sct},"FY2025 MLR"),e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:P.map(function(p){return{nm:p.tk,mlr:p.mlr}})},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"nm",tick:{fontSize:10}}),e(RC.YAxis,{tick:{fontSize:9},domain:[85,95]}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.ReferenceLine,{y:88,stroke:GS,strokeDasharray:"5 5"}),e(RC.ReferenceLine,{y:91,stroke:RED,strokeDasharray:"5 5"}),e(RC.Bar,{dataKey:"mlr",name:"MLR"},P.map(function(p,i){return e(RC.Cell,{key:i,fill:p.cl})})))))),
+    e("div",{style:sc},e("div",{style:sct},"Peer Notes"),P.map(function(p,i){return e("div",{key:i,style:{padding:8,borderLeft:"4px solid "+p.cl,marginBottom:6,background:"#F9FBF9",borderRadius:"0 6px 6px 0"}},e("div",{style:{fontWeight:700,color:p.cl,fontSize:11}},p.tk," ",e("span",{style:{fontSize:9,color:"#8A9A8C",fontWeight:400}},"$"+p.px+" | "+p.pe+"x")),e("div",{style:{fontSize:10,color:"#5A6B5C",marginTop:2}},p.nt))})),
+    e("div",{style:sc},e("div",{style:sct},"Pair Trades"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Trade","Long","Short","Thesis"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,[["Medicaid Recovery","CNC","MOH","CNC lower P/E, more levers."],["Diversified vs Pure","ELV","MOH","ELV Carelon buffer."],["Anti-MA","CNC","HUM","Medicaid recovers faster than Stars."]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},std,{fontWeight:700})},r[0]),e("td",{style:Object.assign({},std,{color:GS,fontWeight:700})},r[1]),e("td",{style:Object.assign({},std,{color:RED,fontWeight:700})},r[2]),e("td",{style:Object.assign({},std,{fontSize:10})},r[3]))}))))
   );
 }
 
-// ═══ T8 SIGNALS ═══
 function T8(){
-  var sigs=[["MCR/HBR Trajectory","bearish","bearish","Both >91%. 2-qtr rising >1pp."],["Enrollment Velocity","neutral","neutral","CA stabilizing ~12.8M. Floor holding."],["Valuation Floor","bullish","bullish","MOH $148 RSI 21. CNC $35 decade low."],["Rate Cycle","bullish","bullish","Medicaid +4.5-5.5%. ACA +30%."],["Policy Risk","bearish","bearish","Flat MA 2027. ACA subsidies expired. Fed cuts."],["Earnings","neutral","neutral","MOH Apr 22, CNC Apr 24. Q1'26 proof point."]];
-  function sigStyle(t){var m={bullish:{bg:"#E8F5E9",bd:"#4CAF50",c:"#1B5E20"},bearish:{bg:"#FFEBEE",bd:"#EF5350",c:"#B71C1C"},neutral:{bg:"#FFF8E1",bd:"#FFB300",c:"#E65100"}};var x=m[t]||m.neutral;return{padding:8,borderRadius:6,border:"1px solid "+x.bd,background:x.bg,color:x.c};}
-
+  var sigs=[["MCR/HBR","bearish","bearish","Both >91%. Rising >1pp over 2 qtrs."],["Enrollment","neutral","neutral","CA stabilizing ~12.8M."],["Valuation","bullish","bullish","MOH $148 RSI 21. CNC $35 decade low."],["Rate Cycle","bullish","bullish","Medicaid +4.5-5.5%. ACA +30%."],["Policy Risk","bearish","bearish","Flat MA 2027. ACA expired. Fed cuts."],["Earnings","neutral","neutral","MOH Apr 22, CNC Apr 24."]];
+  function sb(t){var m={bullish:{bg:"#E8F5E9",bd:"#4CAF50",co:"#1B5E20"},bearish:{bg:"#FFEBEE",bd:"#EF5350",co:"#B71C1C"},neutral:{bg:"#FFF8E1",bd:"#FFB300",co:"#E65100"}};var x=m[t]||m.neutral;return{padding:8,borderRadius:6,border:"1px solid "+x.bd,background:x.bg,color:x.co};}
   return e("div",null,
-    e("div",{style:sCard},e("div",{style:sCt},"Trading Signals"),e("div",{style:sCd},"Weight of signals matters. Best 4-8 weeks pre-earnings. Current: enrollment stable, stocks at lows, policy overhang caps multiples.")),
-    sigs.map(function(s,i){var worst=s[1]==="bearish"||s[2]==="bearish"?"bearish":s[1]==="bullish"&&s[2]==="bullish"?"bullish":"neutral";return e("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 60px 60px",gap:4,marginBottom:5}},
-      e("div",{style:sigStyle(worst)},e("div",{style:{fontWeight:700,fontSize:11,marginBottom:1}},s[0]),e("div",{style:{fontSize:10}},s[3])),
-      e("div",{style:Object.assign({},sigStyle(s[1]),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},e("div",{style:{fontSize:8,fontWeight:600}},"MOH"),e("div",{style:{fontSize:10,fontWeight:800,textTransform:"uppercase"}},s[1])),
-      e("div",{style:Object.assign({},sigStyle(s[2]),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},e("div",{style:{fontSize:8,fontWeight:600}},"CNC"),e("div",{style:{fontSize:10,fontWeight:800,textTransform:"uppercase"}},s[2]))
-    )}),
-    e("div",{style:sCard},e("div",{style:sCt},"Catalysts"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Date","Event","Impact"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,
-          [["Apr 21","UNH Q1'26","Sets sector tone."],["Apr 22","MOH Q1'26","MCR <91% = very bullish."],["Apr 24","CNC Q1'26","HBR <92% = positive."],["Jul 1","CA Rate Updates",">5% = supportive."],["Ongoing","Fed Medicaid","Cuts = negative MOH/CNC."]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},sTd,{fontWeight:700})},r[0]),e("td",{style:Object.assign({},sTd,{fontWeight:600})},r[1]),e("td",{style:Object.assign({},sTd,{fontSize:10})},r[2]))})
-        )
-      )
-    ),
-    e("div",{style:sCard},e("div",{style:sCt},"Data Monitoring (The Edge: monthly enrollment vs quarterly earnings)"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},
-        e("thead",null,e("tr",null,["Source","Freq","What to Watch"].map(function(h,i){return e("th",{key:i,style:sTh},h)}))),
-        e("tbody",null,
-          [["DHCS Managed Care","Monthly","Plan splits by county, Health Net vs L.A. Care"],["DHCS Language Data","Monthly","Non-English share as immigration proxy"],["CMS Enrollment","Monthly","National Medicaid by state"],["SEC 10-Q/K","Quarterly","MCR by segment, PMPM, acuity commentary"],["Earnings Calls","Quarterly","Tone on cost trends, rate adequacy"]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},sTd,{fontWeight:600})},r[0]),e("td",{style:sTd},r[1]),e("td",{style:Object.assign({},sTd,{fontSize:10})},r[2]))})
-        )
-      )
-    )
+    e("div",{style:sc},e("div",{style:sct},"Trading Signals"),e("div",{style:scd},"Weight of signals, not any single one. Best 4-8 weeks pre-earnings.")),
+    sigs.map(function(s,i){var w=s[1]==="bearish"||s[2]==="bearish"?"bearish":s[1]==="bullish"&&s[2]==="bullish"?"bullish":"neutral";return e("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 60px 60px",gap:4,marginBottom:5}},e("div",{style:sb(w)},e("div",{style:{fontWeight:700,fontSize:11}},s[0]),e("div",{style:{fontSize:10}},s[3])),e("div",{style:Object.assign({},sb(s[1]),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},e("div",{style:{fontSize:8,fontWeight:600}},"MOH"),e("div",{style:{fontSize:10,fontWeight:800,textTransform:"uppercase"}},s[1])),e("div",{style:Object.assign({},sb(s[2]),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},e("div",{style:{fontSize:8,fontWeight:600}},"CNC"),e("div",{style:{fontSize:10,fontWeight:800,textTransform:"uppercase"}},s[2])))}),
+    e("div",{style:sc},e("div",{style:sct},"Catalysts"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Date","Event","Impact"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,[["Apr 21","UNH Q1'26","Sets sector tone."],["Apr 22","MOH Q1'26","MCR <91% = very bullish."],["Apr 24","CNC Q1'26","HBR <92% = positive."],["Jul 1","CA Rates",">5% = supportive."],["Ongoing","Fed Medicaid","Cuts = negative."]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},std,{fontWeight:700})},r[0]),e("td",{style:Object.assign({},std,{fontWeight:600})},r[1]),e("td",{style:Object.assign({},std,{fontSize:10})},r[2]))}))))
   );
 }
 
 ReactDOM.render(e(App),document.getElementById("root"));
-})();
 </script>
 </body>
 </html>
