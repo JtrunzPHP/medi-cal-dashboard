@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Parkman Healthcare Partners — CA Medi-Cal MCO Analytics</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -11,219 +11,382 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#F9FBF9;color:#2D3B2F;font-size:13px}
-::-webkit-scrollbar{height:6px;width:6px}
-::-webkit-scrollbar-thumb{background:#8A9A8C;border-radius:3px}
+.hdr{background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.hdr h1{font-size:19px;font-weight:800;letter-spacing:-0.5px}
+.hdr .sub{font-size:10px;opacity:0.8;margin-top:2px}
+.tabs{display:flex;gap:1px;background:#fff;border-bottom:2px solid #C8E6C9;padding:0 10px;overflow-x:auto}
+.tab{padding:8px 11px;cursor:pointer;font-size:10px;font-weight:500;color:#5A6B5C;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.on{font-weight:700;color:#1B5E20;border-bottom-color:#4CAF50}
+.tab:hover{color:#1B5E20}
+.sect{padding:12px 16px}
+.card{background:#fff;border-radius:8px;border:1px solid #E0E7E0;padding:12px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.ct{font-size:13px;font-weight:700;color:#1B5E20;margin-bottom:3px}
+.cd{font-size:11px;color:#5A6B5C;line-height:1.5;margin-bottom:10px}
+.kr{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.kpi{flex:1 1 120px;background:#fff;border-radius:6px;border:1px solid #E0E7E0;padding:8px 10px}
+.kpi .l{font-size:9px;color:#5A6B5C;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.kpi .v{font-size:17px;font-weight:800;margin-top:1px}
+.kpi .s{font-size:9px;color:#8A9A8C;margin-top:1px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;padding:6px 7px;border-bottom:2px solid #C8E6C9;color:#1B5E20;font-weight:700;font-size:9px;text-transform:uppercase}
+td{padding:5px 7px;border-bottom:1px solid #E0E7E0}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sb{padding:8px;border-radius:6px;margin-bottom:6px;border:1px solid}
+.sb.bull{background:#E8F5E9;border-color:#4CAF50;color:#1B5E20}
+.sb.bear{background:#FFEBEE;border-color:#EF5350;color:#B71C1C}
+.sb.neut{background:#FFF8E1;border-color:#FFB300;color:#E65100}
+.bd{display:inline-block;padding:2px 6px;border-radius:8px;font-size:9px;font-weight:600}
+.footer{padding:6px 16px;font-size:8px;color:#8A9A8C;border-top:1px solid #E0E7E0;background:#fff}
+@media(max-width:700px){.g2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useMemo,Fragment}=React;
+const {useState,useMemo}=React;
 const {LineChart,Line,BarChart,Bar,AreaChart,Area,XAxis,YAxis,CartesianGrid,Tooltip,Legend,ResponsiveContainer,ComposedChart,ScatterChart,Scatter,ReferenceLine,Cell}=Recharts;
 
-const P={green:"#1B5E20",gl:"#2E7D32",gs:"#4CAF50",gp:"#C8E6C9",gb:"#E8F5E9",w:"#FFF",g50:"#F9FBF9",g200:"#E0E7E0",g400:"#8A9A8C",g600:"#5A6B5C",g800:"#2D3B2F",red:"#D32F2F",rl:"#FFCDD2",or:"#F57C00",ol:"#FFE0B2",bl:"#1565C0",bll:"#BBDEFB",pu:"#7B1FA2",pl:"#E1BEE7",tl:"#00897B",gold:"#FFD600",moh:"#1565C0",cnc:"#F57C00",elv:"#7B1FA2",unh:"#00897B",hum:"#D32F2F"};
-const pct=(n,d=1)=>n!=null?n.toFixed(d)+"%":"—";
+const C={moh:"#1565C0",cnc:"#F57C00",elv:"#7B1FA2",unh:"#00897B",hum:"#D32F2F",grn:"#1B5E20",gs:"#4CAF50",gp:"#C8E6C9",gb:"#E8F5E9",red:"#D32F2F",or:"#F57C00",g200:"#E0E7E0",g400:"#8A9A8C",g600:"#5A6B5C",g800:"#2D3B2F",bl:"#BBDEFB",ol:"#FFE0B2",rl:"#FFCDD2",gold:"#FFD600",pu:"#7B1FA2",pl:"#E1BEE7"};
+const pct=(n,d=1)=>n!=null?n.toFixed(d)+"%":"--";
 
 const QD=[
-{q:"Q1'23",mR:8050,cR:36400,mM:87.6,cH:87.0,mE:5.71,cE:2.11,mMb:5200,cMb:14800,mP:310,cP:68,enr:14900},
-{q:"Q2'23",mR:8300,cR:37200,mM:88.0,cH:87.2,mE:5.85,cE:2.25,mMb:5250,cMb:14600,mP:335,cP:65,enr:14700},
-{q:"Q3'23",mR:8600,cR:38100,mM:88.4,cH:87.5,mE:5.50,cE:2.15,mMb:5300,cMb:14200,mP:350,cP:62,enr:14400},
-{q:"Q4'23",mR:9100,cR:39500,mM:88.8,cH:87.8,mE:5.20,cE:1.95,mMb:5350,cMb:13900,mP:370,cP:60,enr:14100},
-{q:"Q1'24",mR:9446,cR:40200,mM:88.6,cH:87.6,mE:5.19,cE:2.36,mMb:5400,cMb:13600,mP:395,cP:72,enr:13800},
-{q:"Q2'24",mR:9700,cR:40800,mM:88.8,cH:88.0,mE:5.25,cE:1.65,mMb:5500,cMb:13300,mP:360,cP:66,enr:13500},
-{q:"Q3'24",mR:9694,cR:41400,mM:89.2,cH:89.2,mE:5.65,cE:1.62,mMb:5550,cMb:13100,mP:340,cP:58,enr:13200},
-{q:"Q4'24",mR:10500,cR:40800,mM:89.8,cH:89.6,mE:4.44,cE:0.52,mMb:5533,cMb:12900,mP:305,cP:55,enr:13050},
-{q:"Q1'25",mR:10600,cR:44700,mM:89.2,cH:87.5,mE:5.45,cE:1.42,mMb:5600,cMb:13000,mP:330,cP:60,enr:13100},
-{q:"Q2'25",mR:10868,cR:48200,mM:90.4,cH:93.0,mE:4.75,cE:-3.88,mMb:5700,cMb:12800,mP:280,cP:42,enr:13000},
-{q:"Q3'25",mR:10841,cR:50100,mM:92.6,cH:91.5,mE:1.51,cE:4.34,mMb:5650,cMb:12600,mP:220,cP:40,enr:12900},
-{q:"Q4'25",mR:11400,cR:49700,mM:94.6,cH:94.3,mE:-3.15,cE:-1.19,mMb:5600,cMb:12500,mP:180,cP:37,enr:12800}
+{q:"Q1'23",mR:8050,cR:36400,mM:87.6,cH:87.0,mE:5.71,cE:2.11,mP:310,cP:68,enr:14900},
+{q:"Q2'23",mR:8300,cR:37200,mM:88.0,cH:87.2,mE:5.85,cE:2.25,mP:335,cP:65,enr:14700},
+{q:"Q3'23",mR:8600,cR:38100,mM:88.4,cH:87.5,mE:5.50,cE:2.15,mP:350,cP:62,enr:14400},
+{q:"Q4'23",mR:9100,cR:39500,mM:88.8,cH:87.8,mE:5.20,cE:1.95,mP:370,cP:60,enr:14100},
+{q:"Q1'24",mR:9446,cR:40200,mM:88.6,cH:87.6,mE:5.19,cE:2.36,mP:395,cP:72,enr:13800},
+{q:"Q2'24",mR:9700,cR:40800,mM:88.8,cH:88.0,mE:5.25,cE:1.65,mP:360,cP:66,enr:13500},
+{q:"Q3'24",mR:9694,cR:41400,mM:89.2,cH:89.2,mE:5.65,cE:1.62,mP:340,cP:58,enr:13200},
+{q:"Q4'24",mR:10500,cR:40800,mM:89.8,cH:89.6,mE:4.44,cE:0.52,mP:305,cP:55,enr:13050},
+{q:"Q1'25",mR:10600,cR:44700,mM:89.2,cH:87.5,mE:5.45,cE:1.42,mP:330,cP:60,enr:13100},
+{q:"Q2'25",mR:10868,cR:48200,mM:90.4,cH:93.0,mE:4.75,cE:-3.88,mP:280,cP:42,enr:13000},
+{q:"Q3'25",mR:10841,cR:50100,mM:92.6,cH:91.5,mE:1.51,cE:4.34,mP:220,cP:40,enr:12900},
+{q:"Q4'25",mR:11400,cR:49700,mM:94.6,cH:94.3,mE:-3.15,cE:-1.19,mP:180,cP:37,enr:12800}
 ];
-const LA=[{mo:"Jan'24",hn:1050,la:2380},{mo:"Apr'24",hn:1020,la:2310},{mo:"Jul'24",hn:990,la:2250},{mo:"Oct'24",hn:970,la:2210},{mo:"Jan'25",hn:960,la:2190},{mo:"Apr'25",hn:945,la:2160},{mo:"Jul'25",hn:930,la:2140},{mo:"Oct'25",hn:920,la:2120},{mo:"Jan'26",hn:910,la:2100},{mo:"Feb'26",hn:905,la:2090}];
-const AQ=[{q:"Q1'24",mRx:12.5,cRx:11.8,bh:8.2},{q:"Q2'24",mRx:13.1,cRx:12.4,bh:8.8},{q:"Q3'24",mRx:13.8,cRx:13.0,bh:9.5},{q:"Q4'24",mRx:14.2,cRx:13.5,bh:10.1},{q:"Q1'25",mRx:14.8,cRx:14.1,bh:10.8},{q:"Q2'25",mRx:15.5,cRx:14.9,bh:11.5},{q:"Q3'25",mRx:16.0,cRx:15.4,bh:12.0},{q:"Q4'25",mRx:16.3,cRx:15.8,bh:12.3}];
 
-function pcorr(x,y){const n=Math.min(x.length,y.length);if(n<3)return 0;let sx=0,sy=0,sxy=0,sx2=0,sy2=0;for(let i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];sy2+=y[i]*y[i];}const d=Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));return d===0?0:(n*sxy-sx*sy)/d;}
-function lreg(x,y){const n=Math.min(x.length,y.length);let sx=0,sy=0,sxy=0,sx2=0;for(let i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];}const b=(n*sxy-sx*sy)/(n*sx2-sx*sx),a=(sy-b*sx)/n;let ssr=0,sst=0;const ym=sy/n;for(let i=0;i<n;i++){ssr+=(a+b*x[i]-ym)**2;sst+=(y[i]-ym)**2;}return{slope:b,r2:sst===0?0:ssr/sst};}
+const LA=[
+{mo:"Jan'24",hn:1050,la:2380},{mo:"Apr'24",hn:1020,la:2310},{mo:"Jul'24",hn:990,la:2250},
+{mo:"Oct'24",hn:970,la:2210},{mo:"Jan'25",hn:960,la:2190},{mo:"Apr'25",hn:945,la:2160},
+{mo:"Jul'25",hn:930,la:2140},{mo:"Oct'25",hn:920,la:2120},{mo:"Jan'26",hn:910,la:2100},{mo:"Feb'26",hn:905,la:2090}
+];
 
-function useAn(){return useMemo(()=>{const mP=QD.map(d=>d.mP),cP=QD.map(d=>d.cP),en=QD.map(d=>d.enr);const mR=mP.slice(1).map((p,i)=>(p-mP[i])/mP[i]*100),cR=cP.slice(1).map((p,i)=>(p-cP[i])/cP[i]*100),eC=en.slice(1).map((e,i)=>(e-en[i])/en[i]*100),mC=QD.slice(1).map((x,i)=>x.mM-QD[i].mM),hC=QD.slice(1).map((x,i)=>x.cH-QD[i].cH);return{rMM:pcorr(mC,mR),rCH:pcorr(hC,cR),rEM:pcorr(eC,mR),rEC:pcorr(eC,cR),rgMM:lreg(QD.slice(1).map(x=>x.mM),mR),rgCH:lreg(QD.slice(1).map(x=>x.cH),cR),rgEN:lreg(eC,mR),sMOH:QD.slice(1).map((x,i)=>({mcr:x.mM,ret:mR[i],q:x.q})),sCNC:QD.slice(1).map((x,i)=>({hbr:x.cH,ret:cR[i],q:x.q}))};},[]);}
+const AQ=[
+{q:"Q1'24",mRx:12.5,cRx:11.8,bh:8.2},{q:"Q2'24",mRx:13.1,cRx:12.4,bh:8.8},
+{q:"Q3'24",mRx:13.8,cRx:13.0,bh:9.5},{q:"Q4'24",mRx:14.2,cRx:13.5,bh:10.1},
+{q:"Q1'25",mRx:14.8,cRx:14.1,bh:10.8},{q:"Q2'25",mRx:15.5,cRx:14.9,bh:11.5},
+{q:"Q3'25",mRx:16.0,cRx:15.4,bh:12.0},{q:"Q4'25",mRx:16.3,cRx:15.8,bh:12.3}
+];
 
-const S={
-  page:{minHeight:"100vh"},
-  hdr:{background:"linear-gradient(135deg,#1B5E20,#2E7D32)",color:"#fff",padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"},
-  tabs:{display:"flex",gap:1,background:"#fff",borderBottom:"2px solid #C8E6C9",padding:"0 10px",overflowX:"auto"},
-  tab:(a)=>({padding:"8px 10px",cursor:"pointer",fontSize:10,fontWeight:a?700:500,color:a?"#1B5E20":"#5A6B5C",borderBottom:a?"3px solid #4CAF50":"3px solid transparent",whiteSpace:"nowrap"}),
-  s:{padding:"12px 16px"},
-  c:{background:"#fff",borderRadius:8,border:"1px solid #E0E7E0",padding:12,marginBottom:10,boxShadow:"0 1px 2px rgba(0,0,0,0.04)"},
-  ct:{fontSize:13,fontWeight:700,color:"#1B5E20",marginBottom:3},
-  cd:{fontSize:11,color:"#5A6B5C",lineHeight:1.5,marginBottom:10},
-  kr:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10},
-  k:(c)=>({flex:"1 1 120px",background:"#fff",borderRadius:6,border:"1px solid #E0E7E0",padding:"8px 10px",borderLeft:"4px solid "+(c||"#1B5E20")}),
-  kl:{fontSize:9,color:"#5A6B5C",textTransform:"uppercase",letterSpacing:"0.5px",fontWeight:600},
-  kv:{fontSize:17,fontWeight:800,marginTop:1},
-  ks:{fontSize:9,color:"#8A9A8C",marginTop:1},
-  t:{width:"100%",borderCollapse:"collapse",fontSize:11},
-  th:{textAlign:"left",padding:"6px 7px",borderBottom:"2px solid #C8E6C9",color:"#1B5E20",fontWeight:700,fontSize:9,textTransform:"uppercase"},
-  td:{padding:"5px 7px",borderBottom:"1px solid #E0E7E0"},
-  cb:(v)=>({display:"inline-block",padding:"2px 6px",borderRadius:4,background:v>0.5?"#4CAF50":v>0?"#C8E6C9":v>-0.5?"#FFE0B2":"#FFCDD2",fontWeight:700,fontSize:11}),
-  sb:(t)=>{const m={bullish:{bg:"#E8F5E9",bd:"#4CAF50",c:"#1B5E20"},bearish:{bg:"#FFEBEE",bd:"#EF5350",c:"#B71C1C"},neutral:{bg:"#FFF8E1",bd:"#FFB300",c:"#E65100"}};const x=m[t]||m.neutral;return{padding:8,borderRadius:6,border:"1px solid "+x.bd,background:x.bg,color:x.c,marginBottom:6}},
-  g2:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10},
-  bd:(bg)=>({display:"inline-block",padding:"2px 6px",borderRadius:8,background:bg,fontSize:9,fontWeight:600}),
-};
+function pcorr(x,y){var n=Math.min(x.length,y.length);if(n<3)return 0;var sx=0,sy=0,sxy=0,sx2=0,sy2=0;for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];sy2+=y[i]*y[i];}var d=Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));return d===0?0:(n*sxy-sx*sy)/d;}
+function lreg(x,y){var n=Math.min(x.length,y.length);var sx=0,sy=0,sxy=0,sx2=0;for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];}var b=(n*sxy-sx*sy)/(n*sx2-sx*sx);var a=(sy-b*sx)/n;var ssr=0,sst=0,ym=sy/n;for(var i=0;i<n;i++){ssr+=(a+b*x[i]-ym)*(a+b*x[i]-ym);sst+=(y[i]-ym)*(y[i]-ym);}return{slope:b,r2:sst===0?0:ssr/sst};}
 
-const TABS=["Summary","Enrollment","Fundamentals","Correlations","Acuity","Disenrollment","Scenarios","Peers","Signals"];
-
-function App(){
-  const[tab,setTab]=useState(0);
-  const an=useAn();
-  const L=QD[QD.length-1];
-  return React.createElement("div",{style:S.page},
-    React.createElement("div",{style:S.hdr},
-      React.createElement("div",null,
-        React.createElement("div",{style:{fontSize:19,fontWeight:800}},"PARKMAN HEALTHCARE PARTNERS"),
-        React.createElement("div",{style:{fontSize:10,opacity:0.8}},"CA Medi-Cal MCO Analytics — Proprietary Research")),
-      React.createElement("div",{style:{textAlign:"right",fontSize:10,opacity:0.8}},"March 2026 | DHCS, SEC, CMS")),
-    React.createElement("div",{style:S.tabs},TABS.map((t,i)=>React.createElement("div",{key:i,style:S.tab(tab===i),onClick:()=>setTab(i)},t))),
-    React.createElement("div",{style:S.s},
-      tab===0&&<T0 an={an} L={L}/>,tab===1&&<T1/>,tab===2&&<T2/>,tab===3&&<T3 an={an}/>,tab===4&&<T4/>,tab===5&&<T5/>,tab===6&&<T6/>,tab===7&&<T7/>,tab===8&&<T8/>),
-    React.createElement("div",{style:{padding:"6px 16px",fontSize:8,color:"#8A9A8C",borderTop:"1px solid #E0E7E0",background:"#fff"}},"Disclaimer: Internal research only. Not investment advice. Data from SEC EDGAR, CA DHCS, CMS. Past performance ≠ future results."));
+function calcAn(){
+  var mP=QD.map(function(d){return d.mP}),cP=QD.map(function(d){return d.cP}),en=QD.map(function(d){return d.enr});
+  var mRet=mP.slice(1).map(function(p,i){return(p-mP[i])/mP[i]*100});
+  var cRet=cP.slice(1).map(function(p,i){return(p-cP[i])/cP[i]*100});
+  var eChg=en.slice(1).map(function(e,i){return(e-en[i])/en[i]*100});
+  var mMC=QD.slice(1).map(function(x,i){return x.mM-QD[i].mM});
+  var cHC=QD.slice(1).map(function(x,i){return x.cH-QD[i].cH});
+  return{
+    rMM:pcorr(mMC,mRet),rCH:pcorr(cHC,cRet),rEM:pcorr(eChg,mRet),rEC:pcorr(eChg,cRet),
+    regMM:lreg(QD.slice(1).map(function(x){return x.mM}),mRet),
+    regCH:lreg(QD.slice(1).map(function(x){return x.cH}),cRet),
+    regEN:lreg(eChg,mRet),
+    sMOH:QD.slice(1).map(function(x,i){return{mcr:x.mM,ret:mRet[i],q:x.q}}),
+    sCNC:QD.slice(1).map(function(x,i){return{hbr:x.cH,ret:cRet[i],q:x.q}})
+  };
 }
 
-function T0({an,L}){return<Fragment>
-<div style={S.c}><div style={S.ct}>Dashboard Overview</div><div style={S.cd}>This platform tracks CA Medi-Cal managed care enrollment alongside financials and stock performance of <b>Molina Healthcare (MOH)</b> and <b>Centene/Health Net (CNC)</b>, benchmarked against UNH, ELV, and HUM. The thesis: enrollment composition changes — disenrollment velocity, acuity shifts, county mix — are leading indicators of MCO earnings quality. The post-pandemic redetermination unwinding removed ~1.8M CA members, leaving a sicker pool that compressed margins industry-wide.</div></div>
-<div style={S.kr}>
-  <div style={S.k(P.moh)}><div style={S.kl}>MOH Stock</div><div style={{...S.kv,color:P.moh}}>${L.mP}</div><div style={S.ks}>MCR: {pct(L.mM)} | 52wk $121-$360</div></div>
-  <div style={S.k(P.cnc)}><div style={S.kl}>CNC Stock</div><div style={{...S.kv,color:P.cnc}}>${L.cP}</div><div style={S.ks}>HBR: {pct(L.cH)} | 52wk $25-$66</div></div>
-  <div style={S.k(P.green)}><div style={S.kl}>CA Medi-Cal</div><div style={{...S.kv,color:P.green}}>{(L.enr/1000).toFixed(1)}M</div><div style={S.ks}>Peak 15.0M → Down {((1-L.enr/QD[0].enr)*100).toFixed(1)}%</div></div>
-</div>
-<div style={S.c}><div style={S.ct}>Key Correlations (Pearson ρ, 12 qtrs)</div><div style={S.cd}>Strong inverse = rising MCR predicts stock decline. Foundation of the trading signal framework.</div>
-<table style={S.t}><thead><tr><th style={S.th}>Pair</th><th style={S.th}>ρ</th><th style={S.th}>Signal</th></tr></thead><tbody>
-{[["MOH MCR Δ → Return",an.rMM],["CNC HBR Δ → Return",an.rCH],["Enrollment Δ → MOH",an.rEM],["Enrollment Δ → CNC",an.rEC]].map(([l,v],i)=><tr key={i}><td style={S.td}>{l}</td><td style={S.td}><span style={S.cb(v)}>{v.toFixed(3)}</span></td><td style={S.td}>{v<-0.5?"Strong Inverse":v<-0.2?"Moderate Inverse":v<0.2?"Weak":"Positive"}</td></tr>)}
-</tbody></table></div>
-<div style={S.c}><div style={S.ct}>Stock Price vs MCR/HBR — 12 Quarter Trend</div><div style={S.cd}>Dual-axis: as MCR/HBR crossed ~90%, stock declines accelerated. Q4'25 spikes coincided with earnings misses.</div>
-<ResponsiveContainer width="100%" height={250}><ComposedChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:9}} interval={1}/><YAxis yAxisId="p" tick={{fontSize:9}}/><YAxis yAxisId="m" orientation="right" tick={{fontSize:9}} domain={[85,96]}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/>
-<Line yAxisId="p" dataKey="mP" stroke={P.moh} strokeWidth={2} name="MOH $" dot={{r:2}}/><Line yAxisId="p" dataKey="cP" stroke={P.cnc} strokeWidth={2} name="CNC $" dot={{r:2}}/>
-<Line yAxisId="m" dataKey="mM" stroke={P.moh} strokeWidth={2} strokeDasharray="5 5" name="MOH MCR"/><Line yAxisId="m" dataKey="cH" stroke={P.cnc} strokeWidth={2} strokeDasharray="5 5" name="CNC HBR"/>
-</ComposedChart></ResponsiveContainer></div></Fragment>;}
+var TABS=["Summary","Enrollment","Fundamentals","Correlations","Acuity","Disenrollment","Scenarios","Peers","Signals"];
 
-function T1(){return<Fragment>
-<div style={S.c}><div style={S.ct}>CA Medi-Cal Enrollment Tracker</div><div style={S.cd}><b>What:</b> Total managed care enrollment across CA from DHCS monthly data. <b>Why:</b> Each member = PMPM capitation revenue. The 2023-24 unwinding removed ~1.8M healthier members, raising acuity. <b>Watch:</b> Whether floor holds at ~12.8M given CA's 2026 asset limit reinstatement and immigration enrollment changes.</div>
-<ResponsiveContainer width="100%" height={230}><AreaChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}} domain={[12000,15500]} tickFormatter={v=>(v/1000).toFixed(1)+"M"}/><Tooltip contentStyle={{fontSize:10}} formatter={v=>[(v/1000).toFixed(2)+"M",""]}/><Area type="monotone" dataKey="enr" fill="#C8E6C9" stroke="#1B5E20" strokeWidth={2}/><ReferenceLine y={15000} stroke="#8A9A8C" strokeDasharray="3 3"/></AreaChart></ResponsiveContainer></div>
-<div style={S.c}><div style={S.ct}>LA County — Health Net (CNC) vs L.A. Care</div><div style={S.cd}>LA = 23% of CA Medi-Cal (~3M members). Two-Plan model: only Health Net (CNC) and L.A. Care. <b>Molina has NO LA exposure.</b> Health Net share declining faster than L.A. Care — competitive/satisfaction signal.</div>
-<ResponsiveContainer width="100%" height={200}><BarChart data={LA}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="mo" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}} tickFormatter={v=>v+"K"}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/><Bar dataKey="hn" fill={P.cnc} name="Health Net" stackId="a"/><Bar dataKey="la" fill={P.gs} name="L.A. Care" stackId="a"/></BarChart></ResponsiveContainer></div>
-</Fragment>;}
+function App(){
+  var tabState=useState(0);
+  var tab=tabState[0], setTab=tabState[1];
+  var an=useMemo(calcAn,[]);
+  var L=QD[QD.length-1];
+  return React.createElement("div",null,
+    React.createElement("div",{className:"hdr"},
+      React.createElement("div",null,
+        React.createElement("h1",null,"PARKMAN HEALTHCARE PARTNERS"),
+        React.createElement("div",{className:"sub"},"CA Medi-Cal MCO Analytics Platform")
+      ),
+      React.createElement("div",{style:{textAlign:"right",fontSize:10,opacity:0.8}},"March 2026 | DHCS, SEC, CMS")
+    ),
+    React.createElement("div",{className:"tabs"},
+      TABS.map(function(t,i){return React.createElement("div",{key:i,className:"tab"+(tab===i?" on":""),onClick:function(){setTab(i)}},t)})
+    ),
+    React.createElement("div",{className:"sect"},
+      tab===0?React.createElement(T0,{an:an,L:L}):null,
+      tab===1?React.createElement(T1,null):null,
+      tab===2?React.createElement(T2,null):null,
+      tab===3?React.createElement(T3,{an:an}):null,
+      tab===4?React.createElement(T4,null):null,
+      tab===5?React.createElement(T5,null):null,
+      tab===6?React.createElement(T6,null):null,
+      tab===7?React.createElement(T7,null):null,
+      tab===8?React.createElement(T8,null):null
+    ),
+    React.createElement("div",{className:"footer"},React.createElement("b",null,"Disclaimer:")," Internal research only. Not investment advice. MOH=Molina, CNC=Centene/Health Net, ELV=Elevance, UNH=UnitedHealth, HUM=Humana.")
+  );
+}
+
+function T0(props){
+  var an=props.an, L=props.L;
+  return <div>
+    <div className="card"><div className="ct">Dashboard Overview</div>
+    <div className="cd">This platform tracks CA Medi-Cal managed care enrollment alongside financials and stock performance of <b>Molina Healthcare (MOH)</b> and <b>Centene/Health Net (CNC)</b>, with peer benchmarking against UNH, ELV, and HUM. The thesis: enrollment composition changes are leading indicators of MCO earnings quality. The post-pandemic redetermination unwinding removed ~1.8M CA members, leaving a sicker pool that compressed margins industry-wide.</div></div>
+    <div className="kr">
+      <div className="kpi" style={{borderLeft:"4px solid "+C.moh}}><div className="l">MOH Stock</div><div className="v" style={{color:C.moh}}>${L.mP}</div><div className="s">MCR: {pct(L.mM)} | 52wk: $121-$360</div></div>
+      <div className="kpi" style={{borderLeft:"4px solid "+C.cnc}}><div className="l">CNC Stock</div><div className="v" style={{color:C.cnc}}>${L.cP}</div><div className="s">HBR: {pct(L.cH)} | 52wk: $25-$66</div></div>
+      <div className="kpi" style={{borderLeft:"4px solid "+C.grn}}><div className="l">CA Medi-Cal</div><div className="v" style={{color:C.grn}}>{(L.enr/1000).toFixed(1)}M</div><div className="s">Peak 15.0M, down {((1-L.enr/QD[0].enr)*100).toFixed(1)}%</div></div>
+    </div>
+    <div className="card"><div className="ct">Key Correlations (Pearson rho)</div>
+    <table><thead><tr><th>Pair</th><th>rho</th><th>Signal</th></tr></thead><tbody>
+      <tr><td>MOH MCR chg - Return</td><td><b>{an.rMM.toFixed(3)}</b></td><td>{an.rMM<-0.5?"Strong Inverse":"Moderate"}</td></tr>
+      <tr><td>CNC HBR chg - Return</td><td><b>{an.rCH.toFixed(3)}</b></td><td>{an.rCH<-0.5?"Strong Inverse":"Moderate"}</td></tr>
+      <tr><td>Enrollment chg - MOH</td><td><b>{an.rEM.toFixed(3)}</b></td><td>{an.rEM<-0.2?"Inverse":"Weak"}</td></tr>
+      <tr><td>Enrollment chg - CNC</td><td><b>{an.rEC.toFixed(3)}</b></td><td>{an.rEC<-0.2?"Inverse":"Weak"}</td></tr>
+    </tbody></table></div>
+    <div className="card"><div className="ct">Stock Price vs MCR/HBR -- 12 Quarters</div>
+    <div className="cd">As MCR/HBR crossed ~90%, stock prices accelerated downward. Q4'25 spikes coincided with earnings misses.</div>
+    <ResponsiveContainer width="100%" height={250}><ComposedChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="q" tick={{fontSize:9}} interval={1}/><YAxis yAxisId="p" tick={{fontSize:9}}/><YAxis yAxisId="m" orientation="right" tick={{fontSize:9}} domain={[85,96]}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/>
+      <Line yAxisId="p" dataKey="mP" stroke={C.moh} strokeWidth={2} name="MOH $" dot={{r:2}}/><Line yAxisId="p" dataKey="cP" stroke={C.cnc} strokeWidth={2} name="CNC $" dot={{r:2}}/>
+      <Line yAxisId="m" dataKey="mM" stroke={C.moh} strokeWidth={2} strokeDasharray="5 5" name="MOH MCR"/><Line yAxisId="m" dataKey="cH" stroke={C.cnc} strokeWidth={2} strokeDasharray="5 5" name="CNC HBR"/>
+    </ComposedChart></ResponsiveContainer></div>
+  </div>;
+}
+
+function T1(){
+  return <div>
+    <div className="card"><div className="ct">CA Medi-Cal Enrollment Tracker</div>
+    <div className="cd"><b>What:</b> Total managed care enrollment across CA. <b>Why:</b> Each member = PMPM revenue. The 2023-24 unwinding removed ~1.8M healthier members, raising acuity. <b>Watch:</b> Floor at ~12.8M given 2026 asset limit reinstatement and immigration restrictions.</div>
+    <ResponsiveContainer width="100%" height={230}><AreaChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="q" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}} domain={[12000,15500]} tickFormatter={function(v){return (v/1000).toFixed(1)+"M"}}/><Tooltip contentStyle={{fontSize:10}}/>
+      <Area type="monotone" dataKey="enr" fill={C.gp} stroke={C.grn} strokeWidth={2}/>
+    </AreaChart></ResponsiveContainer></div>
+    <div className="card"><div className="ct">LA County -- Health Net (CNC) vs L.A. Care</div>
+    <div className="cd"><b>Why:</b> LA = 23% of CA Medi-Cal. Two-Plan model: only Health Net (CNC) and L.A. Care. Molina has NO LA exposure.</div>
+    <ResponsiveContainer width="100%" height={200}><BarChart data={LA}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="mo" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}} tickFormatter={function(v){return v+"K"}}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/>
+      <Bar dataKey="hn" fill={C.cnc} name="Health Net" stackId="a"/><Bar dataKey="la" fill={C.gs} name="L.A. Care" stackId="a"/>
+    </BarChart></ResponsiveContainer></div>
+  </div>;
+}
 
 function T2(){
-const pm=QD.map(r=>({q:r.q,mPM:r.mMb>0?Math.round((r.mR*1e6)/(r.mMb*1000*3)):0,cPM:r.cMb>0?Math.round((r.cR*1e6)/(r.cMb*1000*3)):0}));
-return<Fragment>
-<div style={S.c}><div style={S.ct}>Quarterly Financials</div><div style={S.cd}>When both MCR/HBR move together = systemic (post-redetermination acuity). Divergence = company-specific. In 2025 both rose together — confirming industry-wide pressure, limiting pair-trade hedge value.</div>
-<div style={{overflowX:"auto"}}><table style={S.t}><thead><tr><th style={S.th}>Qtr</th><th style={S.th}>MOH Rev</th><th style={S.th}>CNC Rev</th><th style={S.th}>MOH MCR</th><th style={S.th}>CNC HBR</th><th style={S.th}>MOH EPS</th><th style={S.th}>CNC EPS</th><th style={S.th}>MOH $</th><th style={S.th}>CNC $</th></tr></thead>
-<tbody>{QD.map((r,i)=><tr key={i} style={{background:i%2===0?"#F9FBF9":"transparent"}}><td style={{...S.td,fontWeight:700}}>{r.q}</td><td style={S.td}>${(r.mR/1000).toFixed(1)}B</td><td style={S.td}>${(r.cR/1000).toFixed(1)}B</td>
-<td style={{...S.td,color:r.mM>91?"#D32F2F":r.mM>89?"#F57C00":"#4CAF50",fontWeight:700}}>{pct(r.mM)}</td><td style={{...S.td,color:r.cH>91?"#D32F2F":r.cH>89?"#F57C00":"#4CAF50",fontWeight:700}}>{pct(r.cH)}</td>
-<td style={{...S.td,color:r.mE<0?"#D32F2F":"#2D3B2F",fontWeight:700}}>${r.mE.toFixed(2)}</td><td style={{...S.td,color:r.cE<0?"#D32F2F":"#2D3B2F",fontWeight:700}}>${r.cE.toFixed(2)}</td>
-<td style={S.td}>${r.mP}</td><td style={S.td}>${r.cP}</td></tr>)}</tbody></table></div></div>
-<div style={S.g2}>
-<div style={S.c}><div style={S.ct}>PMPM Revenue</div><div style={S.cd}>Rising PMPM = rate increases flowing through. When PMPM growth exceeds cost trend, margins recover. Both MCOs receiving 4.5-5.5% rate increases from states in 2025-2026.</div>
-<ResponsiveContainer width="100%" height={190}><LineChart data={pm}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:8}} interval={2}/><YAxis tick={{fontSize:8}} tickFormatter={v=>"$"+v}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/><Line dataKey="mPM" stroke={P.moh} strokeWidth={2} name="MOH" dot={{r:2}}/><Line dataKey="cPM" stroke={P.cnc} strokeWidth={2} name="CNC" dot={{r:2}}/></LineChart></ResponsiveContainer></div>
-<div style={S.c}><div style={S.ct}>EPS Trajectory</div><div style={S.cd}>MOH: ~$5.50/qtr → Q4'25 loss. 2026 guide: ~$5 adj. CNC: >$3. Any beat on these lowered bars = relief rally potential.</div>
-<ResponsiveContainer width="100%" height={190}><ComposedChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:8}} interval={2}/><YAxis tick={{fontSize:8}}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/><ReferenceLine y={0} stroke="#D32F2F" strokeDasharray="3 3"/><Bar dataKey="mE" fill={P.moh} name="MOH" barSize={10} opacity={0.7}/><Bar dataKey="cE" fill={P.cnc} name="CNC" barSize={10} opacity={0.7}/></ComposedChart></ResponsiveContainer></div>
-</div></Fragment>;}
+  return <div>
+    <div className="card"><div className="ct">Quarterly Financials</div>
+    <div className="cd">When both MCR/HBR move together = systemic. When they diverge = company-specific. In 2025 both rose = industry-wide.</div>
+    <div style={{overflowX:"auto"}}><table><thead><tr><th>Qtr</th><th>MOH Rev</th><th>CNC Rev</th><th>MOH MCR</th><th>CNC HBR</th><th>MOH EPS</th><th>CNC EPS</th><th>MOH $</th><th>CNC $</th></tr></thead>
+      <tbody>{QD.map(function(r,i){return <tr key={i} style={{background:i%2===0?"#F9FBF9":"transparent"}}><td style={{fontWeight:700}}>{r.q}</td><td>${(r.mR/1000).toFixed(1)}B</td><td>${(r.cR/1000).toFixed(1)}B</td>
+        <td style={{color:r.mM>91?C.red:r.mM>89?C.or:C.gs,fontWeight:700}}>{pct(r.mM)}</td><td style={{color:r.cH>91?C.red:r.cH>89?C.or:C.gs,fontWeight:700}}>{pct(r.cH)}</td>
+        <td style={{color:r.mE<0?C.red:C.g800,fontWeight:700}}>${r.mE.toFixed(2)}</td><td style={{color:r.cE<0?C.red:C.g800,fontWeight:700}}>${r.cE.toFixed(2)}</td>
+        <td>${r.mP}</td><td>${r.cP}</td></tr>})}</tbody></table></div></div>
+    <div className="g2">
+      <div className="card"><div className="ct">EPS Trajectory</div>
+      <ResponsiveContainer width="100%" height={190}><ComposedChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="q" tick={{fontSize:8}} interval={2}/><YAxis tick={{fontSize:8}}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/>
+        <ReferenceLine y={0} stroke={C.red} strokeDasharray="3 3"/><Bar dataKey="mE" fill={C.moh} name="MOH" barSize={10} opacity={0.7}/><Bar dataKey="cE" fill={C.cnc} name="CNC" barSize={10} opacity={0.7}/>
+      </ComposedChart></ResponsiveContainer></div>
+      <div className="card"><div className="ct">MCR/HBR Trend</div>
+      <ResponsiveContainer width="100%" height={190}><LineChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="q" tick={{fontSize:8}} interval={2}/><YAxis tick={{fontSize:8}} domain={[85,96]}/><Tooltip contentStyle={{fontSize:10}}/><Legend wrapperStyle={{fontSize:9}}/>
+        <Line dataKey="mM" stroke={C.moh} strokeWidth={2} name="MOH MCR" dot={{r:2}}/><Line dataKey="cH" stroke={C.cnc} strokeWidth={2} name="CNC HBR" dot={{r:2}}/>
+        <ReferenceLine y={88} stroke={C.gs} strokeDasharray="5 5"/><ReferenceLine y={91} stroke={C.red} strokeDasharray="5 5"/>
+      </LineChart></ResponsiveContainer></div>
+    </div>
+  </div>;
+}
 
-function T3({an}){return<Fragment>
-<div style={S.c}><div style={S.ct}>MCR/HBR → Stock Return (Core Trading Signal)</div>
-<div style={S.cd}><b>Most actionable relationship.</b> MOH ρ = {an.rMM.toFixed(3)}. Regression: +1pp MCR ≈ {an.rgMM.slope.toFixed(1)}% stock move. R² = {an.rgMM.r2.toFixed(3)}. Market reacts most violently to MCR surprises &gt;50bps above consensus — stocks gap 5-15% on earnings day.</div>
-<div style={S.g2}>{[["MOH",an.sMOH,"mcr",P.moh,an.rMM],["CNC",an.sCNC,"hbr",P.cnc,an.rCH]].map(([nm,data,xk,clr,rho],idx)=><div key={idx}>
-<div style={{fontSize:10,fontWeight:700,color:clr,marginBottom:4}}>{nm}: ρ = {rho.toFixed(3)}</div>
-<ResponsiveContainer width="100%" height={190}><ScatterChart><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis type="number" dataKey={xk} tick={{fontSize:8}} domain={[85,96]}/><YAxis type="number" dataKey="ret" tick={{fontSize:8}}/><Tooltip content={({payload:p})=>p&&p[0]?<div style={{background:"#fff",border:"1px solid #ddd",padding:4,fontSize:9}}><b>{p[0].payload.q}</b><br/>{xk.toUpperCase()}: {p[0].payload[xk]}% | Ret: {p[0].payload.ret.toFixed(1)}%</div>:null}/><Scatter data={data} fill={clr} r={4}/><ReferenceLine y={0} stroke="#8A9A8C" strokeDasharray="3 3"/></ScatterChart></ResponsiveContainer></div>)}</div></div>
-<div style={S.c}><div style={S.ct}>Regression Summary</div>
-<table style={S.t}><thead><tr><th style={S.th}>Model</th><th style={S.th}>Slope</th><th style={S.th}>R²</th><th style={S.th}>Interpretation</th></tr></thead><tbody>
-<tr><td style={S.td}>MOH MCR→Ret</td><td style={{...S.td,fontWeight:700}}>{an.rgMM.slope.toFixed(3)}</td><td style={S.td}>{an.rgMM.r2.toFixed(3)}</td><td style={S.td}>+1pp MCR ≈ {an.rgMM.slope.toFixed(1)}% stock</td></tr>
-<tr><td style={S.td}>CNC HBR→Ret</td><td style={{...S.td,fontWeight:700}}>{an.rgCH.slope.toFixed(3)}</td><td style={S.td}>{an.rgCH.r2.toFixed(3)}</td><td style={S.td}>+1pp HBR ≈ {an.rgCH.slope.toFixed(1)}% stock</td></tr>
-<tr><td style={S.td}>Enrollment→MOH</td><td style={{...S.td,fontWeight:700}}>{an.rgEN.slope.toFixed(3)}</td><td style={S.td}>{an.rgEN.r2.toFixed(3)}</td><td style={S.td}>-1% enrollment ≈ {Math.abs(an.rgEN.slope).toFixed(1)}% decline</td></tr>
-</tbody></table></div></Fragment>;}
+function T3(props){
+  var an=props.an;
+  return <div>
+    <div className="card"><div className="ct">MCR/HBR to Stock Return -- Core Signal</div>
+    <div className="cd"><b>Most actionable relationship.</b> MOH rho = {an.rMM.toFixed(3)}. Slope: +1pp MCR = {an.regMM.slope.toFixed(1)}% stock. R2 = {an.regMM.r2.toFixed(3)}.</div>
+    <div className="g2">
+      <div><div style={{fontSize:10,fontWeight:700,color:C.moh,marginBottom:4}}>MOH: rho = {an.rMM.toFixed(3)}</div>
+        <ResponsiveContainer width="100%" height={190}><ScatterChart><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis type="number" dataKey="mcr" tick={{fontSize:8}} domain={[85,96]}/><YAxis type="number" dataKey="ret" tick={{fontSize:8}}/><Tooltip/>
+          <Scatter data={an.sMOH} fill={C.moh} r={4}/><ReferenceLine y={0} stroke={C.g400} strokeDasharray="3 3"/>
+        </ScatterChart></ResponsiveContainer></div>
+      <div><div style={{fontSize:10,fontWeight:700,color:C.cnc,marginBottom:4}}>CNC: rho = {an.rCH.toFixed(3)}</div>
+        <ResponsiveContainer width="100%" height={190}><ScatterChart><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis type="number" dataKey="hbr" tick={{fontSize:8}} domain={[85,96]}/><YAxis type="number" dataKey="ret" tick={{fontSize:8}}/><Tooltip/>
+          <Scatter data={an.sCNC} fill={C.cnc} r={4}/><ReferenceLine y={0} stroke={C.g400} strokeDasharray="3 3"/>
+        </ScatterChart></ResponsiveContainer></div>
+    </div></div>
+    <div className="card"><div className="ct">Regression Summary</div>
+    <table><thead><tr><th>Model</th><th>Slope</th><th>R2</th><th>Read</th></tr></thead><tbody>
+      <tr><td>MOH MCR to Ret</td><td><b>{an.regMM.slope.toFixed(3)}</b></td><td>{an.regMM.r2.toFixed(3)}</td><td>+1pp MCR = {an.regMM.slope.toFixed(1)}% stock</td></tr>
+      <tr><td>CNC HBR to Ret</td><td><b>{an.regCH.slope.toFixed(3)}</b></td><td>{an.regCH.r2.toFixed(3)}</td><td>+1pp HBR = {an.regCH.slope.toFixed(1)}% stock</td></tr>
+      <tr><td>Enrollment to MOH</td><td><b>{an.regEN.slope.toFixed(3)}</b></td><td>{an.regEN.r2.toFixed(3)}</td><td>-1% enroll = {Math.abs(an.regEN.slope).toFixed(1)}% decline</td></tr>
+    </tbody></table></div>
+  </div>;
+}
 
-function T4(){return<Fragment>
-<div style={S.c}><div style={S.ct}>Member Acuity Proxy Analysis</div><div style={S.cd}><b>Acuity</b> = member sickness/costliness. Proxies: (1) Specialty Rx PMPM — GLP-1s, cell/gene therapy, (2) Behavioral health — cited as #1 cost driver in 2025, (3) LTSS costs. <b>Flywheel:</b> healthy leave → acuity rises → MCR up → rates lag 12-18mo → margin compressed → stock falls. Currently in "rates catching up" phase (2026).</div></div>
-<div style={S.g2}>
-<div style={S.c}><div style={S.ct}>Specialty Rx PMPM Index</div><div style={S.cd}>25-30% growth since Q1'24 from GLP-1s, oncology biosimilars.</div>
-<ResponsiveContainer width="100%" height={170}><LineChart data={AQ}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:8}}/><YAxis tick={{fontSize:8}} domain={[10,18]}/><Tooltip contentStyle={{fontSize:9}}/><Legend wrapperStyle={{fontSize:9}}/><Line dataKey="mRx" stroke={P.moh} strokeWidth={2} name="MOH" dot={{r:2}}/><Line dataKey="cRx" stroke={P.cnc} strokeWidth={2} name="CNC" dot={{r:2}}/></LineChart></ResponsiveContainer></div>
-<div style={S.c}><div style={S.ct}>Behavioral Health Utilization</div><div style={S.cd}>CNC CEO: BH is largest Medicaid cost driver. Higher = costlier encounters.</div>
-<ResponsiveContainer width="100%" height={170}><AreaChart data={AQ}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:8}}/><YAxis tick={{fontSize:8}} domain={[6,14]}/><Tooltip contentStyle={{fontSize:9}}/><Area dataKey="bh" fill="#E1BEE7" stroke="#7B1FA2" strokeWidth={2}/></AreaChart></ResponsiveContainer></div></div>
-<div style={S.c}><div style={S.ct}>MCR/HBR with Target Zones</div><div style={S.cd}>Below 88% = healthy. 88-91% = pressure building. Above 91% = margin destruction. Recovery = MCR below 90% for 2+ consecutive quarters.</div>
-<ResponsiveContainer width="100%" height={220}><ComposedChart data={QD}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="q" tick={{fontSize:8}} interval={1}/><YAxis tick={{fontSize:8}} domain={[85,96]}/><Tooltip contentStyle={{fontSize:9}}/><Legend wrapperStyle={{fontSize:9}}/>
-<Area dataKey="mM" fill="#BBDEFB" stroke={P.moh} strokeWidth={2} name="MOH MCR" fillOpacity={0.3}/><Area dataKey="cH" fill="#FFE0B2" stroke={P.cnc} strokeWidth={2} name="CNC HBR" fillOpacity={0.3}/>
-<ReferenceLine y={88} stroke="#4CAF50" strokeDasharray="5 5"/><ReferenceLine y={91} stroke="#D32F2F" strokeDasharray="5 5"/>
-</ComposedChart></ResponsiveContainer></div></Fragment>;}
+function T4(){
+  return <div>
+    <div className="card"><div className="ct">Acuity Proxy Analysis</div>
+    <div className="cd"><b>Acuity = member sickness.</b> Proxies: specialty Rx (GLP-1s), behavioral health (#1 cost driver 2025), LTSS. Flywheel: healthy leave, acuity rises, MCR up, rates lag 12-18mo, margin crushed, stock falls. Now in "rates catching up" phase.</div></div>
+    <div className="g2">
+      <div className="card"><div className="ct">Specialty Rx PMPM</div>
+      <ResponsiveContainer width="100%" height={170}><LineChart data={AQ}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="q" tick={{fontSize:8}}/><YAxis tick={{fontSize:8}} domain={[10,18]}/><Tooltip contentStyle={{fontSize:9}}/><Legend wrapperStyle={{fontSize:9}}/>
+        <Line dataKey="mRx" stroke={C.moh} strokeWidth={2} name="MOH" dot={{r:2}}/><Line dataKey="cRx" stroke={C.cnc} strokeWidth={2} name="CNC" dot={{r:2}}/>
+      </LineChart></ResponsiveContainer></div>
+      <div className="card"><div className="ct">Behavioral Health Index</div>
+      <ResponsiveContainer width="100%" height={170}><AreaChart data={AQ}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="q" tick={{fontSize:8}}/><YAxis tick={{fontSize:8}} domain={[6,14]}/><Tooltip contentStyle={{fontSize:9}}/>
+        <Area dataKey="bh" fill={C.pl} stroke={C.pu} strokeWidth={2}/>
+      </AreaChart></ResponsiveContainer></div>
+    </div>
+  </div>;
+}
 
 function T5(){
-const tl=[{ph:"Pre-Unwinding Q1'23",e:14.9,mm:87.6,ch:87.0,mp:310,cp:68,n:"Baseline: inflated enrollment, healthy MCR"},{ph:"Peak Disenroll Q1'24",e:13.8,mm:88.6,ch:87.6,mp:395,cp:72,n:"Stocks at HIGHS — market thought unwinding positive"},{ph:"Acuity Emerges Q3'24",e:13.2,mm:89.2,ch:89.2,mp:340,cp:58,n:"MCR rising despite rate updates"},{ph:"Collapse Q2'25",e:13.0,mm:90.4,ch:93.0,mp:280,cp:42,n:"CNC massive loss, acuity trap visible"},{ph:"Trough Q4'25",e:12.8,mm:94.6,ch:94.3,mp:180,cp:37,n:"Both post losses, MOH removed from S&P 500"}];
-return<Fragment>
-<div style={S.c}><div style={S.ct}>Disenrollment → Earnings Timeline</div><div style={S.cd}><b>The paradox:</b> In early 2024 when disenrollment peaked, Wall Street was BULLISH. MOH hit ATH ($420) March 2024 when enrollment was falling fastest. Market missed that healthy low-cost members were leaving while sick expensive ones stayed. <b>Lesson:</b> Monitor WHO leaves (procedural vs for-cause), not just how many. Procedural disenrollment (failing paperwork) = younger/healthier = bearish signal.</div>
-<table style={S.t}><thead><tr><th style={S.th}>Phase</th><th style={S.th}>Enroll</th><th style={S.th}>MOH MCR</th><th style={S.th}>CNC HBR</th><th style={S.th}>MOH $</th><th style={S.th}>CNC $</th><th style={S.th}>Context</th></tr></thead>
-<tbody>{tl.map((r,i)=><tr key={i} style={{background:i>=3?"#FFF3E0":"transparent"}}><td style={{...S.td,fontWeight:700,fontSize:10}}>{r.ph}</td><td style={S.td}>{r.e}M</td><td style={{...S.td,color:r.mm>91?"#D32F2F":"#2D3B2F"}}>{pct(r.mm)}</td><td style={{...S.td,color:r.ch>91?"#D32F2F":"#2D3B2F"}}>{pct(r.ch)}</td><td style={S.td}>${r.mp}</td><td style={S.td}>${r.cp}</td><td style={{...S.td,fontSize:9}}>{r.n}</td></tr>)}</tbody></table></div>
-<div style={S.c}><div style={S.ct}>Disenrollment Impact Framework</div><div style={S.cd}><b>When bearish:</b> Healthy members leaving (adverse selection → MCR rises → 3-4 qtr lag). <b>When bullish:</b> MCOs intentionally exiting unprofitable markets (MOH cut ACA counties 20%, CNC raised premiums 30%). <b>Framework:</b> Classify every change as "voluntary exit" (bullish: margin-accretive) vs "involuntary attrition" (bearish: adverse selection). Use county-level DHCS data.</div></div></Fragment>;}
+  return <div>
+    <div className="card"><div className="ct">Disenrollment to Earnings Timeline</div>
+    <div className="cd"><b>The paradox:</b> In early 2024 when disenrollment peaked, Wall Street was BULLISH. MOH hit ATH ($420) Mar 2024. Market missed that healthy members were leaving. <b>Lesson:</b> Monitor WHO leaves, not how many.</div>
+    <table><thead><tr><th>Phase</th><th>Enroll</th><th>MOH MCR</th><th>CNC HBR</th><th>MOH $</th><th>CNC $</th><th>Context</th></tr></thead><tbody>
+      <tr><td style={{fontWeight:700}}>Pre-Unwinding Q1'23</td><td>14.9M</td><td>87.6%</td><td>87.0%</td><td>$310</td><td>$68</td><td style={{fontSize:9}}>Baseline</td></tr>
+      <tr><td style={{fontWeight:700}}>Peak Disenroll Q1'24</td><td>13.8M</td><td>88.6%</td><td>87.6%</td><td>$395</td><td>$72</td><td style={{fontSize:9}}>Stocks at HIGHS</td></tr>
+      <tr style={{background:"#FFF3E0"}}><td style={{fontWeight:700}}>Collapse Q2'25</td><td>13.0M</td><td style={{color:C.red}}>90.4%</td><td style={{color:C.red}}>93.0%</td><td>$280</td><td>$42</td><td style={{fontSize:9}}>CNC massive loss</td></tr>
+      <tr style={{background:"#FFF3E0"}}><td style={{fontWeight:700}}>Trough Q4'25</td><td>12.8M</td><td style={{color:C.red}}>94.6%</td><td style={{color:C.red}}>94.3%</td><td>$180</td><td>$37</td><td style={{fontSize:9}}>Both post losses</td></tr>
+    </tbody></table></div>
+    <div className="card"><div className="ct">Framework</div>
+    <div className="cd"><b>Bearish disenrollment:</b> Healthy members leave (adverse selection, MCR rises 3-4 qtr lag). <b>Bullish:</b> MCOs exit unprofitable markets (MOH cut ACA counties 20%, CNC raised premiums 30%). Classify every change as voluntary exit (bullish) vs involuntary attrition (bearish).</div></div>
+  </div>;
+}
 
 function T6(){
-const[sc,setSc]=useState("base");
-const MS={bull:{l:"Bull",c:"#4CAF50",mcr:89.5,eps:8.50,px:153,pb:20,d:"Rates catch up 6%+. MCR normalizes below 90% by H2'26. Enrollment stabilizes. ACA repricing works."},base:{l:"Base",c:"#FFD600",mcr:91.0,eps:5.00,px:80,pb:50,d:"Delivers $5 adj EPS. MCR ~91%. Enrollment flat. Rate increases 4.5% partially offset cost trend."},bear:{l:"Bear",c:"#D32F2F",mcr:93.0,eps:2.00,px:24,pb:30,d:"Costs accelerate. Rates fail. ACA subsidy loss → adverse selection. Another guidance cut."}};
-const CS={bull:{l:"Bull",c:"#4CAF50",hbr:90.0,eps:5.50,px:66,pb:20,d:"ACA repricing restores profitability. Medicaid HBR below 91%. MA exit removes drag."},base:{l:"Base",c:"#FFD600",hbr:92.0,eps:3.00,px:33,pb:50,d:"Delivers >$3 adj EPS. Medicaid memb -5-6%. ACA drops to 3.5M. HBR elevated but improving."},bear:{l:"Bear",c:"#D32F2F",hbr:94.5,eps:0.50,px:4,pb:30,d:"ACA subsidy loss worse than expected. Medicaid rates inadequate. Balance sheet stress."}};
-const wM=Object.values(MS).reduce((s,v)=>s+v.px*v.pb/100,0),wC=Object.values(CS).reduce((s,v)=>s+v.px*v.pb/100,0);
-const m=MS[sc],c=CS[sc];
-const sens=[{mcr:88,imp:"+$4.50",n:"Pre-2025 norm"},{mcr:89,imp:"+$2.80",n:"Strong recovery"},{mcr:90,imp:"+$1.20",n:"Consensus"},{mcr:91,imp:"$0.00",n:"Guidance baseline"},{mcr:92,imp:"-$1.50",n:"Guidance at risk"},{mcr:93,imp:"-$3.00",n:"Another cut likely"},{mcr:94,imp:"-$4.50",n:"Crisis territory"}];
-return<Fragment>
-<div style={S.c}><div style={S.ct}>Scenario Analysis</div><div style={S.cd}>Three scenarios per MCO. Key inputs: MCR/HBR (each 100bps ≈ $1.50 MOH EPS), membership, rate increases, implied P/E. Probability-weighted expected value = fair value estimate. Compare to current price for asymmetry.</div></div>
-<div style={{display:"flex",gap:6,marginBottom:10}}>{Object.entries(MS).map(([k,v])=><div key={k} onClick={()=>setSc(k)} style={{flex:1,padding:8,borderRadius:6,border:"2px solid "+(sc===k?v.c:"#E0E7E0"),background:sc===k?v.c+"18":"#fff",cursor:"pointer",textAlign:"center"}}><div style={{fontSize:12,fontWeight:700,color:sc===k?v.c:"#5A6B5C"}}>{v.l} Case</div><div style={{fontSize:9,color:"#8A9A8C"}}>Prob: {v.pb}%</div></div>)}</div>
-<div style={S.g2}>
-<div style={S.c}><div style={{...S.ct,color:P.moh}}>MOH — {m.l}</div><div style={S.cd}>{m.d}</div>
-<div style={S.kr}><div style={S.k(P.moh)}><div style={S.kl}>MCR</div><div style={{...S.kv,fontSize:15,color:m.mcr>91?"#D32F2F":"#F57C00"}}>{pct(m.mcr)}</div></div><div style={S.k(P.moh)}><div style={S.kl}>EPS</div><div style={{...S.kv,fontSize:15,color:m.eps<1?"#D32F2F":"#1B5E20"}}>${m.eps}</div></div><div style={S.k(P.moh)}><div style={S.kl}>Price</div><div style={{...S.kv,fontSize:15}}>${m.px}</div><div style={S.ks}>{((m.px-180)/180*100).toFixed(0)}% vs $180</div></div></div></div>
-<div style={S.c}><div style={{...S.ct,color:P.cnc}}>CNC — {c.l}</div><div style={S.cd}>{c.d}</div>
-<div style={S.kr}><div style={S.k(P.cnc)}><div style={S.kl}>HBR</div><div style={{...S.kv,fontSize:15,color:c.hbr>91?"#D32F2F":"#F57C00"}}>{pct(c.hbr)}</div></div><div style={S.k(P.cnc)}><div style={S.kl}>EPS</div><div style={{...S.kv,fontSize:15,color:c.eps<1?"#D32F2F":"#1B5E20"}}>${c.eps}</div></div><div style={S.k(P.cnc)}><div style={S.kl}>Price</div><div style={{...S.kv,fontSize:15}}>${c.px}</div><div style={S.ks}>{((c.px-37)/37*100).toFixed(0)}% vs $37</div></div></div></div></div>
-<div style={S.c}><div style={S.ct}>Probability-Weighted Valuation</div>
-<table style={S.t}><thead><tr><th style={S.th}>Scenario</th><th style={S.th}>Prob</th><th style={S.th}>MOH EPS</th><th style={S.th}>MOH Px</th><th style={S.th}>vs Now</th><th style={S.th}>CNC EPS</th><th style={S.th}>CNC Px</th><th style={S.th}>vs Now</th></tr></thead><tbody>
-{["bull","base","bear"].map(k=>{const mv=MS[k],cv=CS[k];return<tr key={k}><td style={{...S.td,fontWeight:700}}>{mv.l}</td><td style={S.td}>{mv.pb}%</td><td style={S.td}>${mv.eps}</td><td style={S.td}>${mv.px}</td><td style={{...S.td,color:mv.px>180?"#4CAF50":"#D32F2F",fontWeight:700}}>{((mv.px-180)/180*100).toFixed(0)}%</td><td style={S.td}>${cv.eps}</td><td style={S.td}>${cv.px}</td><td style={{...S.td,color:cv.px>37?"#4CAF50":"#D32F2F",fontWeight:700}}>{((cv.px-37)/37*100).toFixed(0)}%</td></tr>})}
-<tr style={{background:"#E8F5E9",fontWeight:700}}><td style={S.td}>Weighted EV</td><td style={S.td}>100%</td><td style={S.td}></td><td style={{...S.td,fontSize:14}}>${wM.toFixed(0)}</td><td style={{...S.td,color:wM>180?"#4CAF50":"#D32F2F"}}>{((wM-180)/180*100).toFixed(0)}%</td><td style={S.td}></td><td style={{...S.td,fontSize:14}}>${wC.toFixed(0)}</td><td style={{...S.td,color:wC>37?"#4CAF50":"#D32F2F"}}>{((wC-37)/37*100).toFixed(0)}%</td></tr>
-</tbody></table></div>
-<div style={S.c}><div style={S.ct}>MOH MCR Sensitivity — EPS per 100bps</div><div style={S.cd}>Every 100bps MCR ≈ $1.50 annualized EPS at ~$43B premium revenue / ~52M diluted shares.</div>
-<table style={S.t}><thead><tr><th style={S.th}>MCR</th><th style={S.th}>EPS Impact</th><th style={S.th}>Implied EPS</th><th style={S.th}>At 16x</th><th style={S.th}>Note</th></tr></thead><tbody>
-{sens.map((r,i)=><tr key={i} style={{background:r.mcr===91?"#E8F5E9":r.mcr>92?"#FFF3E0":"transparent"}}><td style={{...S.td,fontWeight:700,color:r.mcr>92?"#D32F2F":r.mcr<90?"#4CAF50":"#2D3B2F"}}>{pct(r.mcr)}</td><td style={{...S.td,fontWeight:700}}>{r.imp}</td><td style={S.td}>${(5+parseFloat(r.imp.replace(/[+$]/g,""))).toFixed(2)}</td><td style={S.td}>${((5+parseFloat(r.imp.replace(/[+$]/g,"")))*16).toFixed(0)}</td><td style={{...S.td,fontSize:10}}>{r.n}</td></tr>)}</tbody></table></div></Fragment>;}
+  var scState=useState("base");
+  var sc=scState[0], setSc=scState[1];
+  var MS={
+    bull:{l:"Bull",c:"#4CAF50",mcr:89.5,eps:8.50,px:153,pb:20,d:"Rates catch up 6%+. MCR below 90% by H2'26."},
+    base:{l:"Base",c:"#FFD600",mcr:91.0,eps:5.00,px:80,pb:50,d:"Delivers $5 adj EPS. MCR ~91%. Flat enrollment."},
+    bear:{l:"Bear",c:"#D32F2F",mcr:93.0,eps:2.00,px:24,pb:30,d:"Cost trend accelerates. Another guidance cut."}
+  };
+  var CS={
+    bull:{l:"Bull",c:"#4CAF50",hbr:90.0,eps:5.50,px:66,pb:20,d:"ACA repricing works. Medicaid HBR below 91%."},
+    base:{l:"Base",c:"#FFD600",hbr:92.0,eps:3.00,px:33,pb:50,d:"Delivers >$3 EPS. Medicaid down 5-6%. HBR elevated."},
+    bear:{l:"Bear",c:"#D32F2F",hbr:94.5,eps:0.50,px:4,pb:30,d:"ACA subsidy loss worse. Balance sheet stress."}
+  };
+  var wM=MS.bull.px*0.2+MS.base.px*0.5+MS.bear.px*0.3;
+  var wC=CS.bull.px*0.2+CS.base.px*0.5+CS.bear.px*0.3;
+  var m=MS[sc],c=CS[sc];
+  var sens=[{mcr:88,imp:"+$4.50",n:"Pre-2025 norm"},{mcr:89,imp:"+$2.80",n:"Strong recovery"},{mcr:90,imp:"+$1.20",n:"Modest improve"},{mcr:91,imp:"$0.00",n:"Baseline"},{mcr:92,imp:"-$1.50",n:"Pressure"},{mcr:93,imp:"-$3.00",n:"Severe"},{mcr:94,imp:"-$4.50",n:"Crisis"}];
+
+  return <div>
+    <div className="card"><div className="ct">Scenario Analysis</div>
+    <div className="cd">Bull/Base/Bear per MCO. Every 100bps MCR = ~$1.50 EPS for MOH. Probability-weighted EV vs current price shows asymmetry.</div></div>
+    <div style={{display:"flex",gap:6,marginBottom:10}}>
+      {["bull","base","bear"].map(function(k){var v=MS[k];return <div key={k} onClick={function(){setSc(k)}} style={{flex:1,padding:8,borderRadius:6,border:"2px solid "+(sc===k?v.c:"#E0E7E0"),background:sc===k?v.c+"18":"#fff",cursor:"pointer",textAlign:"center"}}>
+        <div style={{fontSize:12,fontWeight:700,color:sc===k?v.c:"#5A6B5C"}}>{v.l}</div><div style={{fontSize:9,color:"#8A9A8C"}}>Prob: {v.pb}%</div>
+      </div>})}
+    </div>
+    <div className="g2">
+      <div className="card"><div className="ct" style={{color:C.moh}}>MOH -- {m.l}</div><div className="cd">{m.d}</div>
+        <div className="kr">
+          <div className="kpi" style={{borderLeft:"4px solid "+C.moh}}><div className="l">MCR</div><div className="v" style={{fontSize:15,color:m.mcr>91?C.red:C.or}}>{pct(m.mcr)}</div></div>
+          <div className="kpi" style={{borderLeft:"4px solid "+C.moh}}><div className="l">EPS</div><div className="v" style={{fontSize:15,color:m.eps<1?C.red:C.grn}}>${m.eps}</div></div>
+          <div className="kpi" style={{borderLeft:"4px solid "+C.moh}}><div className="l">Price</div><div className="v" style={{fontSize:15}}>${m.px}</div><div className="s">{((m.px-180)/180*100).toFixed(0)}% vs $180</div></div>
+        </div></div>
+      <div className="card"><div className="ct" style={{color:C.cnc}}>CNC -- {c.l}</div><div className="cd">{c.d}</div>
+        <div className="kr">
+          <div className="kpi" style={{borderLeft:"4px solid "+C.cnc}}><div className="l">HBR</div><div className="v" style={{fontSize:15,color:c.hbr>91?C.red:C.or}}>{pct(c.hbr)}</div></div>
+          <div className="kpi" style={{borderLeft:"4px solid "+C.cnc}}><div className="l">EPS</div><div className="v" style={{fontSize:15,color:c.eps<1?C.red:C.grn}}>${c.eps}</div></div>
+          <div className="kpi" style={{borderLeft:"4px solid "+C.cnc}}><div className="l">Price</div><div className="v" style={{fontSize:15}}>${c.px}</div><div className="s">{((c.px-37)/37*100).toFixed(0)}% vs $37</div></div>
+        </div></div>
+    </div>
+    <div className="card"><div className="ct">Probability-Weighted Valuation</div>
+    <table><thead><tr><th>Scenario</th><th>Prob</th><th>MOH EPS</th><th>MOH Px</th><th>vs Now</th><th>CNC EPS</th><th>CNC Px</th><th>vs Now</th></tr></thead><tbody>
+      {["bull","base","bear"].map(function(k){var mv=MS[k],cv=CS[k];return <tr key={k}><td style={{fontWeight:700}}>{mv.l}</td><td>{mv.pb}%</td><td>${mv.eps}</td><td>${mv.px}</td><td style={{color:mv.px>180?C.gs:C.red,fontWeight:700}}>{((mv.px-180)/180*100).toFixed(0)}%</td><td>${cv.eps}</td><td>${cv.px}</td><td style={{color:cv.px>37?C.gs:C.red,fontWeight:700}}>{((cv.px-37)/37*100).toFixed(0)}%</td></tr>})}
+      <tr style={{background:C.gb,fontWeight:700}}><td>Weighted EV</td><td>100%</td><td></td><td>${wM.toFixed(0)}</td><td style={{color:wM>180?C.gs:C.red}}>{((wM-180)/180*100).toFixed(0)}%</td><td></td><td>${wC.toFixed(0)}</td><td style={{color:wC>37?C.gs:C.red}}>{((wC-37)/37*100).toFixed(0)}%</td></tr>
+    </tbody></table></div>
+    <div className="card"><div className="ct">MOH MCR Sensitivity</div><div className="cd">Every 100bps MCR = ~$1.50 EPS impact.</div>
+    <table><thead><tr><th>MCR</th><th>EPS Impact</th><th>Implied EPS</th><th>At 16x</th><th>Note</th></tr></thead><tbody>
+      {sens.map(function(r,i){return <tr key={i} style={{background:r.mcr===91?C.gb:r.mcr>92?"#FFF3E0":"transparent"}}><td style={{fontWeight:700,color:r.mcr>92?C.red:r.mcr<90?C.gs:C.g800}}>{pct(r.mcr)}</td><td style={{fontWeight:700}}>{r.imp}</td><td>${(5+parseFloat(r.imp.replace(/[+$]/g,""))).toFixed(2)}</td><td>${((5+parseFloat(r.imp.replace(/[+$]/g,"")))*16).toFixed(0)}</td><td style={{fontSize:10}}>{r.n}</td></tr>})}
+    </tbody></table></div>
+  </div>;
+}
 
 function T7(){
-const peers=[
-{tk:"UNH",cl:P.unh,px:276,mc:250,ae:26.0,eg:17.0,mlr:88.9,md:16,ma:30,aca:5,pe:16.2,dd:45,ca:"Low",nt:"Largest MCO. Optum diversification. Guiding $439B rev 2026, first decline. MA rate headwinds. Strongest balance sheet."},
-{tk:"ELV",cl:P.elv,px:345,mc:79,ae:30.29,eg:22.30,mlr:90.0,md:25,ma:20,aca:8,pe:13.5,dd:42,ca:"High",nt:"Blue Cross 14 states. Carelon services growing. Q4 MLR 93.5%. Guiding $25.50 adj EPS. Strong CA Medicaid franchise."},
-{tk:"HUM",cl:P.hum,px:170,mc:20.5,ae:17.14,eg:9.00,mlr:90.4,md:7,ma:85,aca:3,pe:18.9,dd:68,ca:"Min",nt:"MA pure-play (85%). Star ratings decline = $3.5B headwind. Guiding only $9 EPS. CenterWell VBC is long-term thesis."},
-{tk:"MOH",cl:P.moh,px:148,mc:7.7,ae:11.03,eg:3.20,mlr:91.7,md:86,ma:4,aca:10,pe:29.6,dd:65,ca:"V.High",nt:"Pure-play Medicaid (86%). Highest MCR in group. Removed from S&P 500. Exiting MA for 2027. CA is key state."},
-{tk:"CNC",cl:P.cnc,px:35,mc:16.9,ae:2.08,eg:3.00,mlr:91.9,md:45,ma:15,aca:20,pe:11.7,dd:65,ca:"V.High",nt:"Largest Medicaid MCO (12.5M). Largest ACA insurer. $6.7B 2025 net loss. Divesting Magellan. Guiding >$3 adj EPS."}];
-return<Fragment>
-<div style={S.c}><div style={S.ct}>MCO Peer Comparison</div><div style={S.cd}>Entire sector under pressure, but magnitude varies by mix. Pure-play Medicaid (MOH) and mixed Medicaid/ACA (CNC) hit hardest. MA-heavy (HUM) = Star downgrades. Diversified (UNH, ELV) more resilient but not immune.</div></div>
-<div style={S.c}><div style={S.ct}>Fundamental Table</div>
-<div style={{overflowX:"auto"}}><table style={S.t}><thead><tr><th style={S.th}>Ticker</th><th style={S.th}>Price</th><th style={S.th}>MCap</th><th style={S.th}>Adj EPS'25</th><th style={S.th}>EPS'26G</th><th style={S.th}>MLR'25</th><th style={S.th}>P/E</th><th style={S.th}>Mcaid%</th><th style={S.th}>MA%</th><th style={S.th}>ACA%</th><th style={S.th}>From Hi</th><th style={S.th}>CA</th></tr></thead>
-<tbody>{peers.map((p,i)=><tr key={i} style={{background:i%2===0?"#F9FBF9":"transparent"}}><td style={{...S.td,fontWeight:700,color:p.cl}}>{p.tk}</td><td style={S.td}>${p.px}</td><td style={S.td}>${p.mc}B</td><td style={{...S.td,fontWeight:700}}>${p.ae}</td><td style={{...S.td,fontWeight:700,color:p.eg<p.ae?"#D32F2F":"#4CAF50"}}>${p.eg}</td><td style={{...S.td,fontWeight:700,color:p.mlr>91?"#D32F2F":p.mlr>89?"#F57C00":"#4CAF50"}}>{pct(p.mlr)}</td><td style={S.td}>{p.pe}x</td><td style={{...S.td,fontWeight:p.md>40?700:400}}>{p.md}%</td><td style={S.td}>{p.ma}%</td><td style={S.td}>{p.aca}%</td><td style={{...S.td,color:"#D32F2F",fontWeight:700}}>-{p.dd}%</td><td style={S.td}><span style={S.bd(p.ca==="V.High"?"#FFCDD2":p.ca==="High"?"#FFE0B2":"#C8E6C9")}>{p.ca}</span></td></tr>)}</tbody></table></div></div>
-<div style={S.g2}>
-<div style={S.c}><div style={S.ct}>Business Mix</div>
-<ResponsiveContainer width="100%" height={200}><BarChart data={peers.map(p=>({nm:p.tk,Medicaid:p.md,MA:p.ma,ACA:p.aca,Other:Math.max(0,100-p.md-p.ma-p.aca)}))} layout="vertical"><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis type="number" tick={{fontSize:8}} domain={[0,100]} tickFormatter={v=>v+"%"}/><YAxis type="category" dataKey="nm" tick={{fontSize:10}} width={32}/><Tooltip contentStyle={{fontSize:9}}/><Legend wrapperStyle={{fontSize:9}}/><Bar dataKey="Medicaid" stackId="a" fill={P.moh}/><Bar dataKey="MA" stackId="a" fill={P.pu}/><Bar dataKey="ACA" stackId="a" fill={P.tl}/><Bar dataKey="Other" stackId="a" fill={P.g400}/></BarChart></ResponsiveContainer></div>
-<div style={S.c}><div style={S.ct}>FY2025 MLR</div>
-<ResponsiveContainer width="100%" height={200}><BarChart data={peers.map(p=>({nm:p.tk,mlr:p.mlr}))}><CartesianGrid strokeDasharray="3 3" stroke="#E0E7E0"/><XAxis dataKey="nm" tick={{fontSize:10}}/><YAxis tick={{fontSize:9}} domain={[85,95]}/><Tooltip contentStyle={{fontSize:10}}/><ReferenceLine y={88} stroke="#4CAF50" strokeDasharray="5 5"/><ReferenceLine y={91} stroke="#D32F2F" strokeDasharray="5 5"/><Bar dataKey="mlr" name="MLR">{peers.map((p,i)=><Cell key={i} fill={p.cl}/>)}</Bar></BarChart></ResponsiveContainer></div></div>
-<div style={S.c}><div style={S.ct}>Peer Notes</div>{peers.map((p,i)=><div key={i} style={{padding:8,borderLeft:"4px solid "+p.cl,marginBottom:6,background:"#F9FBF9",borderRadius:"0 6px 6px 0"}}><div style={{fontWeight:700,color:p.cl,fontSize:11}}>{p.tk} <span style={{fontSize:9,color:"#8A9A8C",fontWeight:400}}>| ${p.px} | {p.pe}x</span></div><div style={{fontSize:10,color:"#5A6B5C",marginTop:2}}>{p.nt}</div></div>)}</div>
-<div style={S.c}><div style={S.ct}>Pair Trade Ideas</div>
-<table style={S.t}><thead><tr><th style={S.th}>Trade</th><th style={S.th}>Long</th><th style={S.th}>Short</th><th style={S.th}>Thesis</th><th style={S.th}>Risk</th></tr></thead><tbody>
-{[["Medicaid Recovery","CNC","MOH","CNC lower P/E, more diversification, more self-help levers.","CNC ACA bleeds; MOH purer Medicaid rate benefit."],["Diversified vs Pure","ELV","MOH","ELV Carelon buffer. 75% non-Medicaid cushion.","MOH bounces harder in recovery."],["Anti-MA / Pro-Mcaid","CNC","HUM","Medicaid recovers faster than Stars. CNC cheaper.","MA rates surprise positive; federal cuts hit CNC."]].map((r,i)=><tr key={i}><td style={{...S.td,fontWeight:700}}>{r[0]}</td><td style={{...S.td,color:"#4CAF50",fontWeight:700}}>{r[1]}</td><td style={{...S.td,color:"#D32F2F",fontWeight:700}}>{r[2]}</td><td style={{...S.td,fontSize:10}}>{r[3]}</td><td style={{...S.td,fontSize:10,color:"#F57C00"}}>{r[4]}</td></tr>)}</tbody></table></div></Fragment>;}
+  var peers=[
+    {tk:"UNH",cl:C.unh,px:276,mc:"$250B",ae:26.0,eg:17.0,mlr:88.9,md:16,ma:30,aca:5,pe:16.2,dd:45,ca:"Low",nt:"Largest MCO. Optum diversification. $439B rev guide 2026."},
+    {tk:"ELV",cl:C.elv,px:345,mc:"$79B",ae:30.29,eg:22.30,mlr:90.0,md:25,ma:20,aca:8,pe:13.5,dd:42,ca:"High",nt:"Blue Cross 14 states. Carelon growing. $25.50 adj EPS guide."},
+    {tk:"HUM",cl:C.hum,px:170,mc:"$20B",ae:17.14,eg:9.00,mlr:90.4,md:7,ma:85,aca:3,pe:18.9,dd:68,ca:"Min",nt:"MA pure-play 85%. Star decline = $3.5B headwind. $9 EPS guide."},
+    {tk:"MOH",cl:C.moh,px:148,mc:"$7.7B",ae:11.03,eg:3.20,mlr:91.7,md:86,ma:4,aca:10,pe:29.6,dd:65,ca:"V.High",nt:"Pure Medicaid 86%. Highest MCR. Removed from S&P 500."},
+    {tk:"CNC",cl:C.cnc,px:35,mc:"$17B",ae:2.08,eg:3.00,mlr:91.9,md:45,ma:15,aca:20,pe:11.7,dd:65,ca:"V.High",nt:"Largest Medicaid MCO 12.5M. $6.7B loss 2025. >$3 EPS guide."}
+  ];
+  return <div>
+    <div className="card"><div className="ct">Peer Comparison</div>
+    <div className="cd">Entire sector under pressure. Pure Medicaid (MOH) and mixed (CNC) hardest hit. MA-heavy (HUM) has Star problems. Diversified (UNH, ELV) more resilient.</div></div>
+    <div className="card">
+    <div style={{overflowX:"auto"}}><table><thead><tr><th>Ticker</th><th>Price</th><th>MCap</th><th>Adj EPS'25</th><th>EPS'26G</th><th>MLR'25</th><th>P/E</th><th>Mcaid%</th><th>MA%</th><th>From Hi</th><th>CA</th></tr></thead>
+      <tbody>{peers.map(function(p,i){return <tr key={i} style={{background:i%2===0?"#F9FBF9":"transparent"}}>
+        <td style={{fontWeight:700,color:p.cl}}>{p.tk}</td><td>${p.px}</td><td>{p.mc}</td>
+        <td style={{fontWeight:700}}>${p.ae}</td><td style={{fontWeight:700,color:p.eg<p.ae?C.red:C.gs}}>${p.eg}</td>
+        <td style={{fontWeight:700,color:p.mlr>91?C.red:p.mlr>89?C.or:C.gs}}>{pct(p.mlr)}</td><td>{p.pe}x</td>
+        <td style={{fontWeight:p.md>40?700:400}}>{p.md}%</td><td>{p.ma}%</td>
+        <td style={{color:C.red,fontWeight:700}}>-{p.dd}%</td><td><span className="bd" style={{background:p.ca==="V.High"?C.rl:p.ca==="High"?C.ol:C.gp}}>{p.ca}</span></td>
+      </tr>})}</tbody></table></div></div>
+    <div className="g2">
+      <div className="card"><div className="ct">Business Mix</div>
+      <ResponsiveContainer width="100%" height={200}><BarChart data={peers.map(function(p){return{nm:p.tk,Medicaid:p.md,MA:p.ma,ACA:p.aca,Other:Math.max(0,100-p.md-p.ma-p.aca)}})} layout="vertical"><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis type="number" tick={{fontSize:8}} domain={[0,100]}/><YAxis type="category" dataKey="nm" tick={{fontSize:10}} width={32}/><Tooltip contentStyle={{fontSize:9}}/><Legend wrapperStyle={{fontSize:9}}/>
+        <Bar dataKey="Medicaid" stackId="a" fill={C.moh}/><Bar dataKey="MA" stackId="a" fill={C.pu}/><Bar dataKey="ACA" stackId="a" fill={C.unh}/><Bar dataKey="Other" stackId="a" fill={C.g400}/>
+      </BarChart></ResponsiveContainer></div>
+      <div className="card"><div className="ct">FY2025 MLR</div>
+      <ResponsiveContainer width="100%" height={200}><BarChart data={peers.map(function(p){return{nm:p.tk,mlr:p.mlr}})}><CartesianGrid strokeDasharray="3 3" stroke={C.g200}/><XAxis dataKey="nm" tick={{fontSize:10}}/><YAxis tick={{fontSize:9}} domain={[85,95]}/><Tooltip contentStyle={{fontSize:10}}/>
+        <ReferenceLine y={88} stroke={C.gs} strokeDasharray="5 5"/><ReferenceLine y={91} stroke={C.red} strokeDasharray="5 5"/>
+        <Bar dataKey="mlr" name="MLR">{peers.map(function(p,i){return <Cell key={i} fill={p.cl}/>})}</Bar>
+      </BarChart></ResponsiveContainer></div>
+    </div>
+    <div className="card"><div className="ct">Peer Notes</div>
+      {peers.map(function(p,i){return <div key={i} style={{padding:8,borderLeft:"4px solid "+p.cl,marginBottom:6,background:"#F9FBF9",borderRadius:"0 6px 6px 0"}}>
+        <div style={{fontWeight:700,color:p.cl,fontSize:11}}>{p.tk} <span style={{fontSize:9,color:C.g400,fontWeight:400}}>| ${p.px} | {p.pe}x</span></div>
+        <div style={{fontSize:10,color:C.g600,marginTop:2}}>{p.nt}</div>
+      </div>})}</div>
+    <div className="card"><div className="ct">Pair Trade Ideas</div>
+    <table><thead><tr><th>Trade</th><th>Long</th><th>Short</th><th>Thesis</th></tr></thead><tbody>
+      <tr><td style={{fontWeight:700}}>Medicaid Recovery</td><td style={{color:C.gs,fontWeight:700}}>CNC</td><td style={{color:C.red,fontWeight:700}}>MOH</td><td style={{fontSize:10}}>CNC lower P/E, more diversification.</td></tr>
+      <tr><td style={{fontWeight:700}}>Diversified vs Pure</td><td style={{color:C.gs,fontWeight:700}}>ELV</td><td style={{color:C.red,fontWeight:700}}>MOH</td><td style={{fontSize:10}}>ELV Carelon buffer, 75% non-Medicaid.</td></tr>
+      <tr><td style={{fontWeight:700}}>Anti-MA / Pro-Medicaid</td><td style={{color:C.gs,fontWeight:700}}>CNC</td><td style={{color:C.red,fontWeight:700}}>HUM</td><td style={{fontSize:10}}>Medicaid recovers faster than MA Stars.</td></tr>
+    </tbody></table></div>
+  </div>;
+}
 
 function T8(){
-const L=QD[QD.length-1],mTr=L.mM-QD[QD.length-3].mM,cTr=L.cH-QD[QD.length-3].cH;
-const sigs=[{nm:"MCR/HBR Trajectory",ms:mTr>1?"bearish":"neutral",cs:cTr>1?"bearish":"neutral",d:"2-qtr change. Rising >1pp = bearish."},{nm:"Enrollment Velocity",ms:"neutral",cs:"neutral",d:"CA stabilizing ~12.8M. Floor holding = mildly positive."},{nm:"Valuation Floor",ms:"bullish",cs:"bullish",d:"MOH ~$148 RSI 21 oversold. CNC ~$35 decade low."},{nm:"Rate Cycle",ms:"bullish",cs:"bullish",d:"Medicaid +4.5-5.5%. ACA +30%. If rates > costs, MCR improves."},{nm:"Policy Risk",ms:"bearish",cs:"bearish",d:"Flat MA rates 2027. ACA subsidies expired. Medicaid cuts possible."},{nm:"Earnings Calendar",ms:"neutral",cs:"neutral",d:"MOH Apr 22, CNC Apr 24 = first proof of MCR recovery."}];
-return<Fragment>
-<div style={S.c}><div style={S.ct}>Trading Signals</div><div style={S.cd}>Weight of signals drives positioning. Most useful 4-8 weeks pre-earnings. Current: enrollment stable (positive), stocks at lows (asymmetric upside), but policy overhang caps multiples.</div></div>
-{sigs.map((s,i)=><div key={i} style={{display:"grid",gridTemplateColumns:"1fr 60px 60px",gap:4,marginBottom:5}}>
-<div style={S.sb(s.ms==="bearish"||s.cs==="bearish"?"bearish":s.ms==="bullish"&&s.cs==="bullish"?"bullish":"neutral")}><div style={{fontWeight:700,fontSize:11,marginBottom:1}}>{s.nm}</div><div style={{fontSize:10}}>{s.d}</div></div>
-<div style={{...S.sb(s.ms),textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"}}><div style={{fontSize:8,fontWeight:600}}>MOH</div><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase"}}>{s.ms}</div></div>
-<div style={{...S.sb(s.cs),textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"}}><div style={{fontSize:8,fontWeight:600}}>CNC</div><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase"}}>{s.cs}</div></div></div>)}
-<div style={S.c}><div style={S.ct}>Catalysts Calendar</div>
-<table style={S.t}><thead><tr><th style={S.th}>Date</th><th style={S.th}>Event</th><th style={S.th}>Impact</th></tr></thead><tbody>
-{[["Apr 21","UNH Q1'26","Sets sector tone. MCR improvement = bullish read-through for all."],["Apr 22","MOH Q1'26","Key: MCR improving? Consensus ~$2.38. MCR <91% = very bullish."],["Apr 24","CNC Q1'26","Medicaid HBR + ACA memb after 30% hikes. HBR <92% = positive."],["Jul 1","CA Rate Updates","Annual adjustments. >5% = supportive. <4% = disappointing."],["Ongoing","Federal Medicaid","FMAP cuts/block grants = material negative for MOH (86%) and CNC (45%)."]].map((r,i)=><tr key={i}><td style={{...S.td,fontWeight:700,whiteSpace:"nowrap"}}>{r[0]}</td><td style={{...S.td,fontWeight:600}}>{r[1]}</td><td style={{...S.td,fontSize:10}}>{r[2]}</td></tr>)}</tbody></table></div>
-<div style={S.c}><div style={S.ct}>Data Monitoring Cadence</div>
-<table style={S.t}><thead><tr><th style={S.th}>Source</th><th style={S.th}>Freq</th><th style={S.th}>Lag</th><th style={S.th}>Watch For</th></tr></thead><tbody>
-{[["DHCS Managed Care Enrollment","Monthly","~6wk","Plan-level splits by county, HN vs LA Care in LA"],["DHCS Eligibles by Language","Monthly","~8wk","Non-English share as immigration proxy"],["CMS Monthly Enrollment","Monthly","~8wk","National Medicaid by state vs MOH/CNC counts"],["SEC 10-Q/K Filings","Quarterly","~45d","MCR by segment, PMPM, rate commentary"],["Earnings Calls","Quarterly","Same day","Management tone on cost trends, rate adequacy"]].map((r,i)=><tr key={i}><td style={{...S.td,fontWeight:600}}>{r[0]}</td><td style={S.td}>{r[1]}</td><td style={S.td}>{r[2]}</td><td style={{...S.td,fontSize:10}}>{r[3]}</td></tr>)}</tbody></table></div></Fragment>;}
+  var sigs=[
+    {nm:"MCR/HBR Trajectory",ms:"bearish",cs:"bearish",d:"Both deep in danger zone (>91%). 2-qtr rising >1pp."},
+    {nm:"Enrollment Velocity",ms:"neutral",cs:"neutral",d:"CA stabilizing ~12.8M. Floor holding = mildly positive."},
+    {nm:"Valuation Floor",ms:"bullish",cs:"bullish",d:"MOH $148 RSI 21 oversold. CNC $35 decade low. Near book."},
+    {nm:"Rate Cycle",ms:"bullish",cs:"bullish",d:"Medicaid +4.5-5.5%. ACA +30%. If rates > cost, MCR improves."},
+    {nm:"Policy Risk",ms:"bearish",cs:"bearish",d:"Flat MA rates 2027. ACA subsidies expired. Federal cuts possible."},
+    {nm:"Earnings",ms:"neutral",cs:"neutral",d:"MOH Apr 22, CNC Apr 24. Q1'26 = first proof of MCR recovery."}
+  ];
+  return <div>
+    <div className="card"><div className="ct">Trading Signals</div>
+    <div className="cd">Weight of signals matters. Best 4-8 weeks pre-earnings. Current: enrollment stable (good), stocks at lows (asymmetric), policy overhang caps multiples.</div></div>
+    {sigs.map(function(s,i){return <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 60px 60px",gap:4,marginBottom:5}}>
+      <div className={"sb "+(s.ms==="bearish"||s.cs==="bearish"?"bear":s.ms==="bullish"&&s.cs==="bullish"?"bull":"neut")}>
+        <div style={{fontWeight:700,fontSize:11,marginBottom:1}}>{s.nm}</div><div style={{fontSize:10}}>{s.d}</div></div>
+      <div className={"sb "+(s.ms==="bullish"?"bull":s.ms==="bearish"?"bear":"neut")} style={{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+        <div style={{fontSize:8,fontWeight:600}}>MOH</div><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase"}}>{s.ms}</div></div>
+      <div className={"sb "+(s.cs==="bullish"?"bull":s.cs==="bearish"?"bear":"neut")} style={{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+        <div style={{fontSize:8,fontWeight:600}}>CNC</div><div style={{fontSize:10,fontWeight:800,textTransform:"uppercase"}}>{s.cs}</div></div>
+    </div>})}
+    <div className="card"><div className="ct">Catalysts</div>
+    <table><thead><tr><th>Date</th><th>Event</th><th>Impact</th></tr></thead><tbody>
+      <tr><td style={{fontWeight:700}}>Apr 21</td><td>UNH Q1'26</td><td style={{fontSize:10}}>Sets sector tone.</td></tr>
+      <tr><td style={{fontWeight:700}}>Apr 22</td><td>MOH Q1'26</td><td style={{fontSize:10}}>MCR below 91% = very bullish.</td></tr>
+      <tr><td style={{fontWeight:700}}>Apr 24</td><td>CNC Q1'26</td><td style={{fontSize:10}}>HBR below 92% = positive.</td></tr>
+      <tr><td style={{fontWeight:700}}>Jul 1</td><td>CA Rate Updates</td><td style={{fontSize:10}}>Above 5% = supportive.</td></tr>
+      <tr><td style={{fontWeight:700}}>Ongoing</td><td>Fed Medicaid</td><td style={{fontSize:10}}>Cuts = material negative for MOH/CNC.</td></tr>
+    </tbody></table></div>
+    <div className="card"><div className="ct">Data Monitoring</div><div className="cd">The edge: enrollment data monthly, MCOs report quarterly. 2-3 month forward look.</div>
+    <table><thead><tr><th>Source</th><th>Freq</th><th>Watch</th></tr></thead><tbody>
+      <tr><td>DHCS Managed Care</td><td>Monthly</td><td style={{fontSize:10}}>Plan splits by county, Health Net vs L.A. Care</td></tr>
+      <tr><td>DHCS Language Data</td><td>Monthly</td><td style={{fontSize:10}}>Immigration proxy via non-English share</td></tr>
+      <tr><td>CMS Enrollment</td><td>Monthly</td><td style={{fontSize:10}}>National Medicaid by state</td></tr>
+      <tr><td>SEC Filings</td><td>Quarterly</td><td style={{fontSize:10}}>MCR by segment, PMPM, acuity commentary</td></tr>
+      <tr><td>Earnings Calls</td><td>Quarterly</td><td style={{fontSize:10}}>Tone on cost trends, rate adequacy</td></tr>
+    </tbody></table></div>
+  </div>;
+}
 
-ReactDOM.render(<App/>,document.getElementById("root"));
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
 </script>
 </body>
 </html>
