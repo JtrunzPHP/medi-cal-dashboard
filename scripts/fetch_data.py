@@ -298,11 +298,13 @@ def process_language_county():
                 continue
             if count > 0:
                 nonzero_count += 1
+            county_total = parse_int(h.get("County Total", "") if "County Total" in h else "0")
             rows.append({
                 "m": month,
                 "co": county,
                 "lang": lang,
                 "c": count,
+                "ct": county_total,
             })
 
     print(f"  Total rows: {len(rows)}, Non-zero counts: {nonzero_count}")
