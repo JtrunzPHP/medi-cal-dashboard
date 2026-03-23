@@ -1,12 +1,15 @@
 name: Update Medi-Cal Data
 
 on:
+  # Run on the 15th of every month at 10am UTC
   schedule:
     - cron: '0 10 15 * *'
+  # Run when workflow or script changes
   push:
     paths:
       - '.github/workflows/update-data.yml'
       - 'scripts/fetch_data.py'
+  # Allow manual trigger
   workflow_dispatch:
 
 permissions:
@@ -15,73 +18,35 @@ permissions:
 jobs:
   fetch-data:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Pull latest
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Download CSVs from DHCS
-        run: |
-          mkdir -p tmp
-
-          echo "=== Step 1: Get enrollment CSV URL via CKAN API ==="
-          ENROLL_URL=$(python3 -c "
-          import urllib.request, json
-          req = urllib.request.Request(
-            'https://data.chhs.ca.gov/api/3/action/package_show?id=medi-cal-managed-care-enrollment-report',
-            headers={'User-Agent': 'Mozilla/5.0'}
-          )
-          data = json.loads(urllib.request.urlopen(req, timeout=30).read())
-          for r in data['result']['resources']:
-            if r.get('format','').upper() == 'CSV':
-              print(r['url'])
-              break
-          ")
-          echo "Enrollment URL: $ENROLL_URL"
-          curl -L -o tmp/enrollment.csv -H "User-Agent: Mozilla/5.0" --retry 3 --max-time 300 "$ENROLL_URL"
-          echo "Enrollment CSV: $(wc -c < tmp/enrollment.csv) bytes"
-          head -1 tmp/enrollment.csv
-
-          echo ""
-          echo "=== Step 2: Get newly-eligible language CSV via CKAN API ==="
-          LANG_URL=$(python3 -c "
-          import urllib.request, json
-          req = urllib.request.Request(
-            'https://data.chhs.ca.gov/api/3/action/package_show?id=primary-language-of-newly-medi-cal-eligible-individuals',
-            headers={'User-Agent': 'Mozilla/5.0'}
-          )
-          data = json.loads(urllib.request.urlopen(req, timeout=30).read())
-          for r in data['result']['resources']:
-            if r.get('format','').upper() == 'CSV':
-              print(r['url'])
-              break
-          ")
-          echo "Language URL: $LANG_URL"
-          curl -L -o tmp/language.csv -H "User-Agent: Mozilla/5.0" --retry 3 --max-time 300 "$LANG_URL" || echo "Language download failed"
-          echo "Language CSV: $(wc -c < tmp/language.csv 2>/dev/null || echo 0) bytes"
-          head -3 tmp/language.csv 2>/dev/null || true
-
-      - name: Process CSVs into JSON
+      - name: Fetch and process DHCS data
         run: python scripts/fetch_data.py
 
-      - name: Commit and push
+      - name: List output files
         run: |
+          echo "=== data/ directory ==="
+          ls -lh data/ || echo "No data directory"
+          echo ""
+          echo "=== File sizes ==="
+          du -sh data/* 2>/dev/null || echo "No files"
+
+      - name: Commit updated data files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
           if git diff --cached --quiet; then
-            echo "No changes"
+            echo "No data changes detected"
           else
-            git commit -m "data: update Medi-Cal enrollment $(date +%Y-%m-%d)"
+            git commit -m "data: update Medi-Cal enrollment & language $(date +%Y-%m-%d)"
             git push
           fi
