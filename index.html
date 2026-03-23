@@ -4,10 +4,23 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Parkman Healthcare Partners — CA Medi-Cal MCO Analytics</title>
-<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js"></script>
-<script src="https://unpkg.com/recharts@2.13.3/umd/Recharts.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-is/18.2.0/umd/react-is.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/3.2.1/Recharts.min.js"></script>
+<script>
+// BOOT CHECK: If any library failed to load, show an error instead of white screen
+window.addEventListener('DOMContentLoaded', function(){
+  var missing=[];
+  if(!window.React) missing.push('React');
+  if(!window.ReactDOM) missing.push('ReactDOM');
+  if(!window.Recharts) missing.push('Recharts');
+  if(missing.length>0){
+    document.getElementById('root').innerHTML='<div style="padding:40px;font-family:sans-serif;color:red"><h2>CDN Load Error</h2><p>Failed to load: '+missing.join(', ')+'</p><p>Check browser console (F12) for details.</p></div>';
+  }
+});
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:#F9FBF9;color:#2D3B2F;font-size:13px}
