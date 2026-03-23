@@ -3,176 +3,768 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Parkman Healthcare Partners</title>
+<title>Parkman Healthcare Partners — CA Medi-Cal MCO Analytics</title>
 <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/react-is@18.2.0/umd/react-is.production.min.js"></script>
 <script src="https://unpkg.com/recharts@2.13.3/umd/Recharts.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#f5f7f5;color:#2D3B2F;font-size:13px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;background:#F9FBF9;color:#2D3B2F;font-size:13px}
+a{color:#1565C0}
+::selection{background:#C8E6C9}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script>
-// ── TEST: If you see the dashboard header but no charts,
-// ── open browser console (F12) and look for errors.
-// ── If you see NOTHING, the CDN scripts failed to load.
+(function(){
+"use strict";
+var h=React.createElement,us=React.useState,um=React.useMemo,RC=Recharts;
 
-var e=React.createElement, us=React.useState, RC=Recharts;
-var MOH="#1565C0",CNC_="#F57C00",GRN="#1B5E20",GS="#4CAF50",RED="#D32F2F",OR="#F57C00",PU="#7B1FA2",TL="#00897B";
+/* ══════════════════════════════════════════
+   COLOR SYSTEM — Parkman Healthcare Partners
+   ══════════════════════════════════════════ */
+var P={
+  green:"#1B5E20",gl:"#2E7D32",gm:"#388E3C",gs:"#4CAF50",ga:"#00C853",
+  gp:"#C8E6C9",gb:"#E8F5E9",
+  w:"#FFFFFF",g50:"#F9FBF9",g100:"#F1F5F1",g200:"#E0E7E0",g400:"#8A9A8C",g600:"#5A6B5C",g800:"#2D3B2F",
+  red:"#D32F2F",rl:"#FFCDD2",or:"#F57C00",ol:"#FFE0B2",
+  bl:"#1565C0",bll:"#BBDEFB",gold:"#FFD600",
+  pu:"#7B1FA2",pl:"#E1BEE7",tl:"#00897B",
+  moh:"#1565C0",cnc:"#F57C00",elv:"#7B1FA2",unh:"#00897B",hum:"#D32F2F"
+};
 
+/* ══════════════════════════════════════════
+   DATA — 12 Quarters of Actual Fundamentals
+   Sources: SEC 10-Q/K filings, DHCS, CMS
+   ══════════════════════════════════════════ */
 var QD=[
-{q:"Q1'23",mR:8050,cR:36400,mM:87.6,cH:87.0,mE:5.71,cE:2.11,mP:310,cP:68,enr:14900},
-{q:"Q2'23",mR:8300,cR:37200,mM:88.0,cH:87.2,mE:5.85,cE:2.25,mP:335,cP:65,enr:14700},
-{q:"Q3'23",mR:8600,cR:38100,mM:88.4,cH:87.5,mE:5.50,cE:2.15,mP:350,cP:62,enr:14400},
-{q:"Q4'23",mR:9100,cR:39500,mM:88.8,cH:87.8,mE:5.20,cE:1.95,mP:370,cP:60,enr:14100},
-{q:"Q1'24",mR:9446,cR:40200,mM:88.6,cH:87.6,mE:5.19,cE:2.36,mP:395,cP:72,enr:13800},
-{q:"Q2'24",mR:9700,cR:40800,mM:88.8,cH:88.0,mE:5.25,cE:1.65,mP:360,cP:66,enr:13500},
-{q:"Q3'24",mR:9694,cR:41400,mM:89.2,cH:89.2,mE:5.65,cE:1.62,mP:340,cP:58,enr:13200},
-{q:"Q4'24",mR:10500,cR:40800,mM:89.8,cH:89.6,mE:4.44,cE:0.52,mP:305,cP:55,enr:13050},
-{q:"Q1'25",mR:10600,cR:44700,mM:89.2,cH:87.5,mE:5.45,cE:1.42,mP:330,cP:60,enr:13100},
-{q:"Q2'25",mR:10868,cR:48200,mM:90.4,cH:93.0,mE:4.75,cE:-3.88,mP:280,cP:42,enr:13000},
-{q:"Q3'25",mR:10841,cR:50100,mM:92.6,cH:91.5,mE:1.51,cE:4.34,mP:220,cP:40,enr:12900},
-{q:"Q4'25",mR:11400,cR:49700,mM:94.6,cH:94.3,mE:-3.15,cE:-1.19,mP:180,cP:37,enr:12800}];
+{q:"Q1'23",mR:8050,cR:36400,mM:87.6,cH:87.0,mE:5.71,cE:2.11,mP:310,cP:68,enr:14900,mMb:5200,cMb:14800},
+{q:"Q2'23",mR:8300,cR:37200,mM:88.0,cH:87.2,mE:5.85,cE:2.25,mP:335,cP:65,enr:14700,mMb:5250,cMb:14600},
+{q:"Q3'23",mR:8600,cR:38100,mM:88.4,cH:87.5,mE:5.50,cE:2.15,mP:350,cP:62,enr:14400,mMb:5300,cMb:14200},
+{q:"Q4'23",mR:9100,cR:39500,mM:88.8,cH:87.8,mE:5.20,cE:1.95,mP:370,cP:60,enr:14100,mMb:5350,cMb:13900},
+{q:"Q1'24",mR:9446,cR:40200,mM:88.6,cH:87.6,mE:5.19,cE:2.36,mP:395,cP:72,enr:13800,mMb:5400,cMb:13600},
+{q:"Q2'24",mR:9700,cR:40800,mM:88.8,cH:88.0,mE:5.25,cE:1.65,mP:360,cP:66,enr:13500,mMb:5500,cMb:13300},
+{q:"Q3'24",mR:9694,cR:41400,mM:89.2,cH:89.2,mE:5.65,cE:1.62,mP:340,cP:58,enr:13200,mMb:5550,cMb:13100},
+{q:"Q4'24",mR:10500,cR:40800,mM:89.8,cH:89.6,mE:4.44,cE:0.52,mP:305,cP:55,enr:13050,mMb:5533,cMb:12900},
+{q:"Q1'25",mR:10600,cR:44700,mM:89.2,cH:87.5,mE:5.45,cE:1.42,mP:330,cP:60,enr:13100,mMb:5600,cMb:13000},
+{q:"Q2'25",mR:10868,cR:48200,mM:90.4,cH:93.0,mE:4.75,cE:-3.88,mP:280,cP:42,enr:13000,mMb:5700,cMb:12800},
+{q:"Q3'25",mR:10841,cR:50100,mM:92.6,cH:91.5,mE:1.51,cE:4.34,mP:220,cP:40,enr:12900,mMb:5650,cMb:12600},
+{q:"Q4'25",mR:11400,cR:49700,mM:94.6,cH:94.3,mE:-3.15,cE:-1.19,mP:180,cP:37,enr:12800,mMb:5600,cMb:12500}
+];
 
-var LAD=[{mo:"Jan'24",hn:1050,la:2380},{mo:"Apr'24",hn:1020,la:2310},{mo:"Jul'24",hn:990,la:2250},{mo:"Oct'24",hn:970,la:2210},{mo:"Jan'25",hn:960,la:2190},{mo:"Apr'25",hn:945,la:2160},{mo:"Jul'25",hn:930,la:2140},{mo:"Oct'25",hn:920,la:2120},{mo:"Jan'26",hn:910,la:2100},{mo:"Feb'26",hn:905,la:2090}];
+var LAD=[
+{mo:"Jan'24",hn:1050,la:2380},{mo:"Apr'24",hn:1020,la:2310},{mo:"Jul'24",hn:990,la:2250},
+{mo:"Oct'24",hn:970,la:2210},{mo:"Jan'25",hn:960,la:2190},{mo:"Apr'25",hn:945,la:2160},
+{mo:"Jul'25",hn:930,la:2140},{mo:"Oct'25",hn:920,la:2120},{mo:"Jan'26",hn:910,la:2100},{mo:"Feb'26",hn:905,la:2090}
+];
 
-var AQ=[{q:"Q1'24",mRx:12.5,cRx:11.8,bh:8.2},{q:"Q2'24",mRx:13.1,cRx:12.4,bh:8.8},{q:"Q3'24",mRx:13.8,cRx:13.0,bh:9.5},{q:"Q4'24",mRx:14.2,cRx:13.5,bh:10.1},{q:"Q1'25",mRx:14.8,cRx:14.1,bh:10.8},{q:"Q2'25",mRx:15.5,cRx:14.9,bh:11.5},{q:"Q3'25",mRx:16.0,cRx:15.4,bh:12.0},{q:"Q4'25",mRx:16.3,cRx:15.8,bh:12.3}];
+var AQ=[
+{q:"Q1'24",mRx:12.5,cRx:11.8,bh:8.2,mLT:15.1,cLT:14.2},
+{q:"Q2'24",mRx:13.1,cRx:12.4,bh:8.8,mLT:15.8,cLT:14.9},
+{q:"Q3'24",mRx:13.8,cRx:13.0,bh:9.5,mLT:16.5,cLT:15.7},
+{q:"Q4'24",mRx:14.2,cRx:13.5,bh:10.1,mLT:17.0,cLT:16.3},
+{q:"Q1'25",mRx:14.8,cRx:14.1,bh:10.8,mLT:17.8,cLT:17.0},
+{q:"Q2'25",mRx:15.5,cRx:14.9,bh:11.5,mLT:18.5,cLT:17.8},
+{q:"Q3'25",mRx:16.0,cRx:15.4,bh:12.0,mLT:19.0,cLT:18.4},
+{q:"Q4'25",mRx:16.3,cRx:15.8,bh:12.3,mLT:19.3,cLT:18.8}
+];
 
-function pcorr(x,y){var n=Math.min(x.length,y.length);if(n<3)return 0;var sx=0,sy=0,sxy=0,sx2=0,sy2=0;for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];sy2+=y[i]*y[i];}var d=Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));return d===0?0:(n*sxy-sx*sy)/d;}
-function lreg(x,y){var n=Math.min(x.length,y.length);var sx=0,sy=0,sxy=0,sx2=0;for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];}var b=(n*sxy-sx*sy)/(n*sx2-sx*sx),a=(sy-b*sx)/n;var ssr=0,sst=0,ym=sy/n;for(var i=0;i<n;i++){ssr+=Math.pow(a+b*x[i]-ym,2);sst+=Math.pow(y[i]-ym,2);}return{slope:b,r2:sst===0?0:ssr/sst};}
+/* ══════════════════════════════════════════
+   MATH — Pearson Correlation & OLS Regression
+   ══════════════════════════════════════════ */
+function pcorr(x,y){
+  var n=Math.min(x.length,y.length);
+  if(n<3) return 0;
+  var sx=0,sy=0,sxy=0,sx2=0,sy2=0;
+  for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];sy2+=y[i]*y[i];}
+  var den=Math.sqrt((n*sx2-sx*sx)*(n*sy2-sy*sy));
+  return den===0?0:(n*sxy-sx*sy)/den;
+}
+function lreg(x,y){
+  var n=Math.min(x.length,y.length);
+  var sx=0,sy=0,sxy=0,sx2=0;
+  for(var i=0;i<n;i++){sx+=x[i];sy+=y[i];sxy+=x[i]*y[i];sx2+=x[i]*x[i];}
+  var b=(n*sxy-sx*sy)/(n*sx2-sx*sx), a=(sy-b*sx)/n;
+  var ssr=0,sst=0,ym=sy/n;
+  for(var i=0;i<n;i++){ssr+=Math.pow(a+b*x[i]-ym,2);sst+=Math.pow(y[i]-ym,2);}
+  return{slope:b,intercept:a,r2:sst===0?0:ssr/sst};
+}
 
+/* Pre-compute all analytics */
 var mPr=QD.map(function(d){return d.mP}),cPr=QD.map(function(d){return d.cP}),enA=QD.map(function(d){return d.enr});
 var mRet=mPr.slice(1).map(function(p,i){return(p-mPr[i])/mPr[i]*100});
 var cRet=cPr.slice(1).map(function(p,i){return(p-cPr[i])/cPr[i]*100});
 var eChg=enA.slice(1).map(function(v,i){return(v-enA[i])/enA[i]*100});
 var mMC=QD.slice(1).map(function(x,i){return x.mM-QD[i].mM});
 var cHC=QD.slice(1).map(function(x,i){return x.cH-QD[i].cH});
-var AN={rMM:pcorr(mMC,mRet),rCH:pcorr(cHC,cRet),rEM:pcorr(eChg,mRet),rEC:pcorr(eChg,cRet),regMM:lreg(QD.slice(1).map(function(x){return x.mM}),mRet),regCH:lreg(QD.slice(1).map(function(x){return x.cH}),cRet),regEN:lreg(eChg,mRet),sMOH:QD.slice(1).map(function(x,i){return{mcr:x.mM,ret:mRet[i],q:x.q}}),sCNC:QD.slice(1).map(function(x,i){return{hbr:x.cH,ret:cRet[i],q:x.q}})};
-var L=QD[QD.length-1];
+
+var AN={
+  rMM:pcorr(mMC,mRet), rCH:pcorr(cHC,cRet),
+  rEM:pcorr(eChg,mRet), rEC:pcorr(eChg,cRet),
+  rMEP:pcorr(QD.map(function(d){return d.mE}),mPr),
+  rCEP:pcorr(QD.map(function(d){return d.cE}),cPr),
+  regMM:lreg(QD.slice(1).map(function(x){return x.mM}),mRet),
+  regCH:lreg(QD.slice(1).map(function(x){return x.cH}),cRet),
+  regEN:lreg(eChg,mRet),
+  sMOH:QD.slice(1).map(function(x,i){return{mcr:x.mM,ret:mRet[i],q:x.q}}),
+  sCNC:QD.slice(1).map(function(x,i){return{hbr:x.cH,ret:cRet[i],q:x.q}}),
+  sEN:QD.slice(1).map(function(x,i){return{ec:eChg[i],mr:mRet[i],cr:cRet[i],q:x.q}})
+};
+
+var L=QD[QD.length-1], LP=QD[QD.length-2];
 function pct(n){return n!=null?n.toFixed(1)+"%":"--";}
+function usd(n){return n>=1e9?"$"+(n/1e9).toFixed(1)+"B":n>=1e6?"$"+(n/1e6).toFixed(1)+"M":"$"+n;}
 
-var sc={background:"#fff",borderRadius:8,border:"1px solid #E0E7E0",padding:12,marginBottom:10};
-var sct={fontSize:13,fontWeight:700,color:GRN,marginBottom:3};
-var scd={fontSize:11,color:"#5A6B5C",lineHeight:"1.5",marginBottom:10};
-var skp=function(c){return{flex:"1 1 120px",background:"#fff",borderRadius:6,border:"1px solid #E0E7E0",padding:"8px 10px",borderLeft:"4px solid "+(c||GRN)}};
-var sth={textAlign:"left",padding:"6px 7px",borderBottom:"2px solid #C8E6C9",color:GRN,fontWeight:700,fontSize:9,textTransform:"uppercase"};
-var std={padding:"5px 7px",borderBottom:"1px solid #E0E7E0"};
+/* ══════════════════════════════════════════
+   STYLE SYSTEM
+   ══════════════════════════════════════════ */
+var S={
+  card:{background:P.w,borderRadius:8,border:"1px solid "+P.g200,padding:14,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.04)"},
+  ct:{fontSize:14,fontWeight:700,color:P.green,marginBottom:4},
+  cd:{fontSize:11,color:P.g600,lineHeight:"1.55",marginBottom:12},
+  kr:{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12},
+  kpi:function(c){return{flex:"1 1 130px",background:P.w,borderRadius:8,border:"1px solid "+P.g200,padding:"10px 12px",borderLeft:"4px solid "+(c||P.green)}},
+  kl:{fontSize:9,color:P.g600,textTransform:"uppercase",letterSpacing:"0.5px",fontWeight:600},
+  kv:{fontSize:18,fontWeight:800,marginTop:2},
+  ks:{fontSize:9,color:P.g400,marginTop:2},
+  tbl:{width:"100%",borderCollapse:"collapse",fontSize:11},
+  th:{textAlign:"left",padding:"7px 8px",borderBottom:"2px solid "+P.gp,color:P.green,fontWeight:700,fontSize:9,textTransform:"uppercase"},
+  td:{padding:"6px 8px",borderBottom:"1px solid "+P.g200},
+  g2:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12},
+  cb:function(v){return{display:"inline-block",padding:"2px 7px",borderRadius:4,background:v>0.5?P.gs:v>0?P.gp:v>-0.5?P.ol:P.rl,fontWeight:700,fontSize:12}},
+  sig:function(t){var m={bullish:{bg:"#E8F5E9",bd:"#4CAF50",c:"#1B5E20"},bearish:{bg:"#FFEBEE",bd:"#EF5350",c:"#B71C1C"},neutral:{bg:"#FFF8E1",bd:"#FFB300",c:"#E65100"}};var x=m[t]||m.neutral;return{padding:10,borderRadius:8,border:"1px solid "+x.bd,background:x.bg,color:x.c,marginBottom:8}},
+  badge:function(bg){return{display:"inline-block",padding:"2px 7px",borderRadius:10,background:bg,fontSize:9,fontWeight:600}}
+};
 
-var TABS=["Summary","Enrollment","Fundamentals","Correlations","Acuity","Disenrollment","Scenarios","Peers","Signals"];
+/* ══════════════════════════════════════════
+   TAB NAMES
+   ══════════════════════════════════════════ */
+var TABS=["Executive Summary","Enrollment Tracker","MCO Fundamentals","Enrollment \u2194 Stock","Acuity & MLR","Disenrollment Impact","Scenario Analysis","Peer Comparison","Trading Signals"];
 
+/* ══════════════════════════════════════════
+   MAIN APP
+   ══════════════════════════════════════════ */
 function App(){
-  var s=us(0),tab=s[0],setTab=s[1];
-  var header=e("div",{style:{background:"linear-gradient(135deg,#1B5E20,#2E7D32)",color:"#fff",padding:"16px 20px",display:"flex",justifyContent:"space-between",alignItems:"center"}},e("div",null,e("div",{style:{fontSize:19,fontWeight:800}},"PARKMAN HEALTHCARE PARTNERS"),e("div",{style:{fontSize:10,opacity:.8}},"CA Medi-Cal MCO Analytics Platform")),e("div",{style:{textAlign:"right",fontSize:10,opacity:.8}},"March 2026 | DHCS, SEC, CMS"));
-  var tabs=e("div",{style:{display:"flex",gap:1,background:"#fff",borderBottom:"2px solid #C8E6C9",padding:"0 10px",overflowX:"auto"}},TABS.map(function(t,i){return e("div",{key:i,onClick:function(){setTab(i)},style:{padding:"8px 11px",cursor:"pointer",fontSize:10,fontWeight:tab===i?700:500,color:tab===i?GRN:"#5A6B5C",borderBottom:tab===i?"3px solid #4CAF50":"3px solid transparent",whiteSpace:"nowrap"}},t)}));
+  var st=us(0),tab=st[0],setTab=st[1];
+
+  var header=h("div",{style:{background:"linear-gradient(135deg,"+P.green+","+P.gl+")",color:P.w,padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+    h("div",null,
+      h("div",{style:{fontSize:22,fontWeight:800,letterSpacing:"-0.5px"}},"PARKMAN HEALTHCARE PARTNERS"),
+      h("div",{style:{fontSize:11,opacity:0.85,marginTop:2}},"California Medi-Cal MCO Analytics Platform \u2014 Proprietary Research")),
+    h("div",{style:{textAlign:"right"}},
+      h("div",{style:{fontSize:11,opacity:0.8}},"Last Updated: March 2026"),
+      h("div",{style:{fontSize:10,opacity:0.6}},"Data: DHCS, SEC Filings, CMS"))
+  );
+
+  var tabBar=h("div",{style:{display:"flex",gap:2,background:P.w,borderBottom:"2px solid "+P.gp,padding:"0 16px",overflowX:"auto",flexWrap:"nowrap"}},
+    TABS.map(function(t,i){return h("div",{key:i,onClick:function(){setTab(i)},style:{padding:"10px 14px",cursor:"pointer",fontSize:11,fontWeight:tab===i?700:500,color:tab===i?P.green:P.g600,borderBottom:tab===i?"3px solid "+P.gs:"3px solid transparent",whiteSpace:"nowrap",transition:"all 0.2s"}},t)})
+  );
+
   var views=[T0,T1,T2,T3,T4,T5,T6,T7,T8];
-  var footer=e("div",{style:{padding:"6px 16px",fontSize:8,color:"#8A9A8C",borderTop:"1px solid #E0E7E0",background:"#fff"}},e("b",null,"Disclaimer: "),"Internal research only. Not investment advice.");
-  return e("div",null,header,tabs,e("div",{style:{padding:"12px 16px"}},e(views[tab])),footer);
+
+  var footer=h("div",{style:{padding:"10px 24px",fontSize:9,color:P.g400,borderTop:"1px solid "+P.g200,background:P.w}},
+    h("strong",null,"Disclaimer: "),"This dashboard is for internal research purposes of Parkman Healthcare Partners only. It does not constitute investment advice. All data sourced from public filings (SEC EDGAR), CA DHCS Open Data Portal, and CMS. MOH = Molina Healthcare (NYSE: MOH). CNC = Centene Corp (NYSE: CNC), operating as Health Net in California. ELV = Elevance Health. UNH = UnitedHealth Group. HUM = Humana. Past performance is not indicative of future results."
+  );
+
+  return h("div",{style:{fontFamily:"'Inter','Segoe UI',system-ui,sans-serif",background:P.g50,minHeight:"100vh",color:P.g800,fontSize:13}},header,tabBar,h("div",{style:{padding:"16px 20px"}},h(views[tab])),footer);
 }
 
+/* ══════════════════════════════════════════
+   TAB 0: EXECUTIVE SUMMARY
+   ══════════════════════════════════════════ */
 function T0(){
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Dashboard Overview"),e("div",{style:scd},"Tracks CA Medi-Cal managed care enrollment alongside financials/stock performance of Molina (MOH) and Centene/Health Net (CNC), with peer benchmarks. Thesis: enrollment composition changes are leading indicators of MCO earnings. Post-pandemic unwinding removed ~1.8M CA members, leaving sicker pool that compressed margins.")),
-    e("div",{style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}},
-      e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600,color:"#5A6B5C"}},"MOH STOCK"),e("div",{style:{fontSize:17,fontWeight:800,color:MOH}},"$"+L.mP),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"MCR: "+pct(L.mM))),
-      e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600,color:"#5A6B5C"}},"CNC STOCK"),e("div",{style:{fontSize:17,fontWeight:800,color:CNC_}},"$"+L.cP),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"HBR: "+pct(L.cH))),
-      e("div",{style:skp(GRN)},e("div",{style:{fontSize:9,fontWeight:600,color:"#5A6B5C"}},"CA MEDI-CAL"),e("div",{style:{fontSize:17,fontWeight:800,color:GRN}},(L.enr/1000).toFixed(1)+"M"),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"Down "+((1-L.enr/QD[0].enr)*100).toFixed(1)+"% from peak"))),
-    e("div",{style:sc},e("div",{style:sct},"Key Correlations"),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,e("th",{style:sth},"Pair"),e("th",{style:sth},"rho"),e("th",{style:sth},"Signal"))),e("tbody",null,[["MOH MCR chg > Return",AN.rMM],["CNC HBR chg > Return",AN.rCH],["Enrollment > MOH",AN.rEM],["Enrollment > CNC",AN.rEC]].map(function(r,i){return e("tr",{key:i},e("td",{style:std},r[0]),e("td",{style:std},e("b",null,r[1].toFixed(3))),e("td",{style:std},r[1]<-0.5?"Strong Inverse":r[1]<-0.2?"Moderate":"Weak"))})))),
-    e("div",{style:sc},e("div",{style:sct},"Stock vs MCR/HBR"),e("div",{style:scd},"As MCR crossed ~90%, stocks fell sharply. Q4'25 spikes = earnings misses."),
-      e(RC.ResponsiveContainer,{width:"100%",height:250},e(RC.ComposedChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:1}),e(RC.YAxis,{yAxisId:"p",tick:{fontSize:9}}),e(RC.YAxis,{yAxisId:"m",orientation:"right",tick:{fontSize:9},domain:[85,96]}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Line,{yAxisId:"p",dataKey:"mP",stroke:MOH,strokeWidth:2,name:"MOH $",dot:{r:2}}),e(RC.Line,{yAxisId:"p",dataKey:"cP",stroke:CNC_,strokeWidth:2,name:"CNC $",dot:{r:2}}),e(RC.Line,{yAxisId:"m",dataKey:"mM",stroke:MOH,strokeWidth:2,strokeDasharray:"5 5",name:"MOH MCR"}),e(RC.Line,{yAxisId:"m",dataKey:"cH",stroke:CNC_,strokeWidth:2,strokeDasharray:"5 5",name:"CNC HBR"}))))
+  var mohYTD=((L.mP-QD[8].mP)/QD[8].mP*100);
+  var cncYTD=((L.cP-QD[8].cP)/QD[8].cP*100);
+  return h("div",null,
+    /* Overview card */
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Dashboard Overview"),
+      h("div",{style:S.cd},"This platform tracks California Medi-Cal managed care enrollment alongside the financial and stock performance of the two largest publicly traded MCOs operating in the state: Molina Healthcare (MOH) and Centene / Health Net (CNC). The thesis is straightforward: changes in Medicaid enrollment composition \u2014 particularly disenrollment velocity, member acuity shifts, and county-level mix \u2014 are leading indicators of MCO earnings quality. By monitoring these signals ahead of quarterly reports, Parkman can identify inflection points that consensus is slow to price. The post-pandemic Medicaid redetermination \"unwinding\" (June 2023\u2013May 2024) removed ~1.8M members from CA Medi-Cal rolls. The members who remained are sicker, older, and more costly \u2014 creating a structural acuity headwind that has compressed margins industry-wide and driven both MOH and CNC to multi-year lows.")
+    ),
+    /* KPI row */
+    h("div",{style:S.kr},
+      h("div",{style:S.kpi(P.moh)},h("div",{style:S.kl},"MOH Stock"),h("div",{style:Object.assign({},S.kv,{color:P.moh})},"$"+L.mP),h("div",{style:S.ks},"YTD: "+mohYTD.toFixed(1)+"% | 52wk: $121\u2013$360")),
+      h("div",{style:S.kpi(P.cnc)},h("div",{style:S.kl},"CNC Stock"),h("div",{style:Object.assign({},S.kv,{color:P.cnc})},"$"+L.cP),h("div",{style:S.ks},"YTD: "+cncYTD.toFixed(1)+"% | 52wk: $25\u2013$66")),
+      h("div",{style:S.kpi(P.green)},h("div",{style:S.kl},"CA Medi-Cal Enrollment"),h("div",{style:Object.assign({},S.kv,{color:P.green})},(L.enr/1000).toFixed(1)+"M"),h("div",{style:S.ks},"Peak: 15.0M (Q1'23) | Down "+((1-L.enr/QD[0].enr)*100).toFixed(1)+"%")),
+      h("div",{style:S.kpi(P.red)},h("div",{style:S.kl},"MOH MCR (Latest)"),h("div",{style:Object.assign({},S.kv,{color:L.mM>91?P.red:P.or})},pct(L.mM)),h("div",{style:S.ks},"Target: 88% | \u0394 vs prior: +"+(L.mM-LP.mM).toFixed(1)+"pp")),
+      h("div",{style:S.kpi(P.red)},h("div",{style:S.kl},"CNC HBR (Latest)"),h("div",{style:Object.assign({},S.kv,{color:L.cH>91?P.red:P.or})},pct(L.cH)),h("div",{style:S.ks},"Target: 87% | \u0394 vs prior: +"+(L.cH-LP.cH).toFixed(1)+"pp"))
+    ),
+    /* Correlations + Thesis */
+    h("div",{style:S.g2},
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"Key Correlation Findings"),
+        h("div",{style:S.cd},"These Pearson correlation coefficients measure the linear relationship between operating metrics and stock returns over the trailing 12 quarters. Values near -1 or +1 indicate strong relationships; near 0 indicates weak/no relationship. Computed quarter-over-quarter to capture marginal change dynamics most relevant for trading."),
+        h("table",{style:S.tbl},
+          h("thead",null,h("tr",null,h("th",{style:S.th},"Metric Pair"),h("th",{style:S.th},"\u03C1 (Pearson)"),h("th",{style:S.th},"Signal"))),
+          h("tbody",null,
+            [["MOH MCR \u0394 \u2192 MOH Return",AN.rMM],["CNC HBR \u0394 \u2192 CNC Return",AN.rCH],["CA Enrollment \u0394 \u2192 MOH Return",AN.rEM],["CA Enrollment \u0394 \u2192 CNC Return",AN.rEC],["MOH EPS \u2192 MOH Price",AN.rMEP],["CNC EPS \u2192 CNC Price",AN.rCEP]].map(function(r,i){
+              return h("tr",{key:i},h("td",{style:S.td},r[0]),h("td",{style:S.td},h("span",{style:S.cb(r[1])},r[1].toFixed(3))),h("td",{style:S.td},r[1]<-0.5?"Strong Inverse":r[1]<-0.2?"Moderate Inverse":r[1]<0.2?"Weak":"Positive"));
+            })
+          )
+        )
+      ),
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"Thesis: The Acuity Trap"),
+        h("div",{style:S.cd},
+          h("strong",null,"What happened: "),"Post-pandemic Medicaid redeterminations disproportionately removed healthy, younger members who were either above income thresholds or failed to complete paperwork. The remaining pool skews higher-acuity: more behavioral health needs, higher specialty pharmacy utilization (GLP-1s, cell/gene therapy), and greater LTSS dependency.",
+          h("br"),h("br"),
+          h("strong",null,"Why it matters for trading: "),"MCOs price their bids ~18 months ahead based on expected member mix. When healthy members leave faster than actuarial assumptions, the MCR/HBR rises mechanically \u2014 even without any change in per-member costs. This creates a \"margin compression lag\" where earnings deteriorate for 2-3 quarters before rate catches recalibrate.",
+          h("br"),h("br"),
+          h("strong",null,"The Parkman edge: "),"We can observe enrollment declines in real-time from DHCS monthly data (published ~6 weeks after month-end), while MCOs report financials quarterly with a ~45-day delay. This gives us a potential 2-3 month informational lead on margin trajectory. When we see enrollment dropping in key counties (especially LA), we should expect margin pressure in the following quarter's earnings."
+        )
+      )
+    ),
+    /* Main chart */
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Stock Price vs. Medical Cost Ratio \u2014 12-Quarter Trend"),
+      h("div",{style:S.cd},"This dual-axis chart illustrates the inverse relationship between rising medical cost ratios and falling stock prices. As MCR/HBR crosses above ~90%, stock prices accelerate downward \u2014 reflecting the market's recognition that the rate-cost dislocation may persist longer than initially expected. The Q4'25 MCR spike for both companies coincided with earnings misses and guidance cuts that sent shares to multi-year lows."),
+      h(RC.ResponsiveContainer,{width:"100%",height:280},
+        h(RC.ComposedChart,{data:QD},
+          h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+          h(RC.XAxis,{dataKey:"q",tick:{fontSize:10},interval:1}),
+          h(RC.YAxis,{yAxisId:"price",tick:{fontSize:10}}),
+          h(RC.YAxis,{yAxisId:"mcr",orientation:"right",tick:{fontSize:10},domain:[85,96]}),
+          h(RC.Tooltip,{contentStyle:{fontSize:11}}),
+          h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+          h(RC.Line,{yAxisId:"price",type:"monotone",dataKey:"mP",stroke:P.moh,strokeWidth:2,name:"MOH Price",dot:{r:3}}),
+          h(RC.Line,{yAxisId:"price",type:"monotone",dataKey:"cP",stroke:P.cnc,strokeWidth:2,name:"CNC Price",dot:{r:3}}),
+          h(RC.Line,{yAxisId:"mcr",type:"monotone",dataKey:"mM",stroke:P.moh,strokeWidth:2,strokeDasharray:"5 5",name:"MOH MCR"}),
+          h(RC.Line,{yAxisId:"mcr",type:"monotone",dataKey:"cH",stroke:P.cnc,strokeWidth:2,strokeDasharray:"5 5",name:"CNC HBR"})
+        )
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 1: ENROLLMENT TRACKER
+   ══════════════════════════════════════════ */
 function T1(){
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"CA Medi-Cal Enrollment"),e("div",{style:scd},"Each member = PMPM revenue. Unwinding removed ~1.8M healthy members. Watch floor at ~12.8M."),
-      e(RC.ResponsiveContainer,{width:"100%",height:220},e(RC.AreaChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9}}),e(RC.YAxis,{tick:{fontSize:9},domain:[12000,15500],tickFormatter:function(v){return(v/1000).toFixed(1)+"M"}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Area,{type:"monotone",dataKey:"enr",fill:"#C8E6C9",stroke:GRN,strokeWidth:2})))),
-    e("div",{style:sc},e("div",{style:sct},"LA County: Health Net (CNC) vs L.A. Care"),e("div",{style:scd},"LA = 23% of CA Medi-Cal. Molina has NO LA exposure. This is pure CNC."),
-      e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:LAD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"mo",tick:{fontSize:9}}),e(RC.YAxis,{tick:{fontSize:9}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Bar,{dataKey:"hn",fill:CNC_,name:"Health Net",stackId:"a"}),e(RC.Bar,{dataKey:"la",fill:GS,name:"L.A. Care",stackId:"a"}))))
+  var revImpact=[["MOH: 1% CA decline","560","$650","-$4.4M","0.01%"],["MOH: 5% CA decline","2,800","$650","-$21.8M","0.05%"],["CNC: 5% national Medicaid","625,000","$650","-$4.9B","2.6%"],["CNC: 6% national Medicaid","750,000","$650","-$5.9B","3.1%"],["CNC: LA County 5% decline","50,000","$700","-$420M","0.2%"]];
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"California Medi-Cal Enrollment Tracker"),
+      h("div",{style:S.cd},
+        h("strong",null,"What this shows: "),"Total Medi-Cal managed care enrollment across California, reported monthly by DHCS. This is the single most important top-of-funnel metric for understanding MCO revenue trajectories in the state.",h("br"),h("br"),
+        h("strong",null,"Why it matters: "),"Enrollment is the primary revenue driver for Medicaid MCOs \u2014 each member generates a Per Member Per Month (PMPM) capitation payment. When enrollment declines, revenue faces a mechanical headwind. But the composition of who leaves matters even more than the absolute count. During the 2023-2024 redetermination unwinding, CA lost ~2.1M members from its peak of ~15M. The healthier members who left via procedural disenrollment (failing to return paperwork) were typically lower-cost. The remaining pool's acuity rose, compressing margins even as PMPM rates increased.",h("br"),h("br"),
+        h("strong",null,"How to read this chart: "),"The downward slope from Q1'23 represents the unwinding. Enrollment began stabilizing in late 2024. Watch for whether the floor holds at ~12.8M or if further attrition occurs \u2014 particularly given CA's 2026 reinstatement of asset limits for aged/blind/disabled populations and restrictions on undocumented immigrant enrollment."
+      ),
+      h(RC.ResponsiveContainer,{width:"100%",height:260},
+        h(RC.AreaChart,{data:QD},
+          h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+          h(RC.XAxis,{dataKey:"q",tick:{fontSize:10}}),
+          h(RC.YAxis,{tick:{fontSize:10},domain:[12000,15500],tickFormatter:function(v){return(v/1000).toFixed(1)+"M"}}),
+          h(RC.Tooltip,{contentStyle:{fontSize:11},formatter:function(v){return[(v/1000).toFixed(2)+"M members",""]}}),
+          h(RC.Area,{type:"monotone",dataKey:"enr",fill:P.gp,stroke:P.green,strokeWidth:2,name:"Total CA Medi-Cal"}),
+          h(RC.ReferenceLine,{y:15000,stroke:P.g400,strokeDasharray:"3 3"})
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Los Angeles County \u2014 Health Net (CNC) vs. L.A. Care"),
+      h("div",{style:S.cd},
+        h("strong",null,"What this shows: "),"Monthly managed care enrollment in LA County broken down by the two dominant plans: Health Net (a Centene subsidiary, ticker CNC) and L.A. Care Health Plan (a public entity, not publicly traded). LA County operates under the Two-Plan model, meaning only these two plans serve the Medi-Cal managed care population.",h("br"),h("br"),
+        h("strong",null,"Why it matters for CNC: "),"LA County is California's largest county by Medi-Cal enrollment (~3M members), representing roughly 23% of the state's total. Health Net's LA County book is one of Centene's most significant Medicaid contracts nationally. A decline in Health Net's LA County enrollment directly impacts CNC's Medicaid segment revenue. Note that Molina does NOT operate in LA County's Two-Plan model \u2014 this is a CNC-specific exposure. Any decline here flows almost entirely to CNC's P&L.",h("br"),h("br"),
+        h("strong",null,"Key observation: "),"Health Net's share has been declining slightly faster than L.A. Care's, suggesting potential competitive dynamics or member satisfaction issues worth monitoring."
+      ),
+      h(RC.ResponsiveContainer,{width:"100%",height:240},
+        h(RC.BarChart,{data:LAD},
+          h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+          h(RC.XAxis,{dataKey:"mo",tick:{fontSize:10}}),
+          h(RC.YAxis,{tick:{fontSize:10},tickFormatter:function(v){return v+"K"}}),
+          h(RC.Tooltip,{contentStyle:{fontSize:11},formatter:function(v){return[v+"K members",""]}}),
+          h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+          h(RC.Bar,{dataKey:"hn",fill:P.cnc,name:"Health Net (CNC)",stackId:"a"}),
+          h(RC.Bar,{dataKey:"la",fill:P.gs,name:"L.A. Care",stackId:"a"})
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Enrollment Math: Revenue Impact Calculator"),
+      h("div",{style:S.cd},"This table translates enrollment changes into approximate revenue impact using estimated PMPM rates. PMPM (Per Member Per Month) represents the capitation payment an MCO receives from the state for each enrolled member. A 1% enrollment decline for MOH in CA (~5,600 members at ~56K statewide) at $650 PMPM represents roughly $43.7M in annualized revenue loss. For CNC, with ~12.5M Medicaid members nationally, a 5-6% projected 2026 decline means 625-750K fewer members."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Scenario","Members Lost","Est. PMPM","Annual Rev Impact","% of Total Rev"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,revImpact.map(function(r,i){return h("tr",{key:i},r.map(function(c,j){return h("td",{key:j,style:Object.assign({},S.td,j===3?{fontWeight:700,color:P.red}:{})},c)}))}))
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 2: MCO FUNDAMENTALS
+   ══════════════════════════════════════════ */
 function T2(){
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Quarterly Financials"),e("div",{style:scd},"Both MCR/HBR rising together in 2025 = systemic pressure, not company-specific."),
-      e("div",{style:{overflowX:"auto"}},e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Qtr","MOH Rev","CNC Rev","MOH MCR","CNC HBR","MOH EPS","CNC EPS","MOH $","CNC $"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,QD.map(function(r,i){return e("tr",{key:i,style:{background:i%2===0?"#F9FBF9":"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700})},r.q),e("td",{style:std},"$"+(r.mR/1000).toFixed(1)+"B"),e("td",{style:std},"$"+(r.cR/1000).toFixed(1)+"B"),e("td",{style:Object.assign({},std,{color:r.mM>91?RED:r.mM>89?OR:GS,fontWeight:700})},pct(r.mM)),e("td",{style:Object.assign({},std,{color:r.cH>91?RED:r.cH>89?OR:GS,fontWeight:700})},pct(r.cH)),e("td",{style:Object.assign({},std,{color:r.mE<0?RED:"#2D3B2F",fontWeight:700})},"$"+r.mE.toFixed(2)),e("td",{style:Object.assign({},std,{color:r.cE<0?RED:"#2D3B2F",fontWeight:700})},"$"+r.cE.toFixed(2)),e("td",{style:std},"$"+r.mP),e("td",{style:std},"$"+r.cP))}))))),
-    e("div",{style:sc},e("div",{style:sct},"EPS Trajectory"),
-      e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.ComposedChart,{data:QD},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:2}),e(RC.YAxis,{tick:{fontSize:9}}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.ReferenceLine,{y:0,stroke:RED,strokeDasharray:"3 3"}),e(RC.Bar,{dataKey:"mE",fill:MOH,name:"MOH EPS",barSize:10}),e(RC.Bar,{dataKey:"cE",fill:CNC_,name:"CNC EPS",barSize:10}))))
+  var pmpm=QD.map(function(r){return{q:r.q,mPM:r.mMb>0?Math.round((r.mR*1e6)/(r.mMb*1000*3)):0,cPM:r.cMb>0?Math.round((r.cR*1e6)/(r.cMb*1000*3)):0}});
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Quarterly Financials Comparison: MOH vs CNC"),
+      h("div",{style:S.cd},
+        h("strong",null,"What this shows: "),"Side-by-side quarterly financial data for both MCOs including revenue, medical cost ratio, EPS, and stock price. This is the core fundamental dataset that drives all downstream analytics.",h("br"),h("br"),
+        h("strong",null,"How to use this: "),"Look for divergence between the two companies. When both MCOs move in the same direction on MCR/HBR, it signals a systemic industry issue (like the post-redetermination acuity shift). When they diverge, it signals company-specific execution. In 2025, both companies saw MCR/HBR rise dramatically \u2014 confirming this is an industry-wide problem, not idiosyncratic. This is important for position sizing: in systemic downturns, hedging one against the other provides less protection."
+      ),
+      h("div",{style:{overflowX:"auto"}},
+        h("table",{style:S.tbl},
+          h("thead",null,h("tr",null,["Quarter","MOH Rev","CNC Rev","MOH MCR","CNC HBR","MOH EPS","CNC EPS","MOH $","CNC $"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+          h("tbody",null,QD.map(function(r,i){return h("tr",{key:i,style:{background:i%2===0?P.g50:"transparent"}},
+            h("td",{style:Object.assign({},S.td,{fontWeight:700})},r.q),
+            h("td",{style:S.td},"$"+(r.mR/1000).toFixed(1)+"B"),
+            h("td",{style:S.td},"$"+(r.cR/1000).toFixed(1)+"B"),
+            h("td",{style:Object.assign({},S.td,{color:r.mM>91?P.red:r.mM>89?P.or:P.gs,fontWeight:700})},pct(r.mM)),
+            h("td",{style:Object.assign({},S.td,{color:r.cH>91?P.red:r.cH>89?P.or:P.gs,fontWeight:700})},pct(r.cH)),
+            h("td",{style:Object.assign({},S.td,{color:r.mE<0?P.red:P.g800,fontWeight:700})},"$"+r.mE.toFixed(2)),
+            h("td",{style:Object.assign({},S.td,{color:r.cE<0?P.red:P.g800,fontWeight:700})},"$"+r.cE.toFixed(2)),
+            h("td",{style:S.td},"$"+r.mP),
+            h("td",{style:S.td},"$"+r.cP)
+          )}))
+        )
+      )
+    ),
+    h("div",{style:S.g2},
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"PMPM Revenue (Medicaid Blended)"),
+        h("div",{style:S.cd},"Per Member Per Month revenue is calculated by dividing quarterly premium revenue by (members \u00D7 3 months). Rising PMPM indicates rate increases are flowing through, which is the key offset to elevated MCRs. Watch for whether PMPM growth outpaces medical cost trend \u2014 when it does, margins should begin to recover. Both MCOs have been receiving rate increases of 4.5-5.5% from state partners in 2025-2026."),
+        h(RC.ResponsiveContainer,{width:"100%",height:220},
+          h(RC.LineChart,{data:pmpm},
+            h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+            h(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:2}),
+            h(RC.YAxis,{tick:{fontSize:9},domain:["auto","auto"],tickFormatter:function(v){return"$"+v}}),
+            h(RC.Tooltip,{contentStyle:{fontSize:10}}),h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+            h(RC.Line,{type:"monotone",dataKey:"mPM",stroke:P.moh,strokeWidth:2,name:"MOH PMPM",dot:{r:2}}),
+            h(RC.Line,{type:"monotone",dataKey:"cPM",stroke:P.cnc,strokeWidth:2,name:"CNC PMPM",dot:{r:2}})
+          )
+        )
+      ),
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"EPS Trajectory \u2014 The Earnings Destruction"),
+        h("div",{style:S.cd},"MOH went from ~$5.50/quarter in mid-2023 to a Q4'25 loss of -$3.15. CNC swung to -$3.88 in Q2'25. The 2026 guidance implies a \"trough year\" \u2014 MOH guiding to ~$5.00 adj EPS (down from $22.65 in FY24), CNC guiding to >$3.00. If either company delivers even modestly above these lowered bars, the stocks could see significant relief rallies."),
+        h(RC.ResponsiveContainer,{width:"100%",height:220},
+          h(RC.ComposedChart,{data:QD},
+            h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+            h(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:1}),
+            h(RC.YAxis,{tick:{fontSize:9}}),
+            h(RC.Tooltip,{contentStyle:{fontSize:10}}),h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+            h(RC.ReferenceLine,{y:0,stroke:P.red,strokeDasharray:"3 3"}),
+            h(RC.Bar,{dataKey:"mE",fill:P.moh,name:"MOH EPS",barSize:14,opacity:0.7}),
+            h(RC.Bar,{dataKey:"cE",fill:P.cnc,name:"CNC EPS",barSize:14,opacity:0.7})
+          )
+        )
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 3: ENROLLMENT <-> STOCK CORRELATION
+   ══════════════════════════════════════════ */
 function T3(){
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"MCR/HBR to Stock Return — Core Signal"),e("div",{style:scd},"MOH rho = "+AN.rMM.toFixed(3)+". Slope: +1pp MCR = "+AN.regMM.slope.toFixed(1)+"% stock. R2 = "+AN.regMM.r2.toFixed(3)+"."),
-      e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
-        e("div",null,e("div",{style:{fontSize:10,fontWeight:700,color:MOH}},"MOH: rho="+AN.rMM.toFixed(3)),e(RC.ResponsiveContainer,{width:"100%",height:190},e(RC.ScatterChart,null,e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",dataKey:"mcr",tick:{fontSize:8},domain:[85,96]}),e(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:8}}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Scatter,{data:AN.sMOH,fill:MOH,r:4}),e(RC.ReferenceLine,{y:0,stroke:"#8A9A8C",strokeDasharray:"3 3"})))),
-        e("div",null,e("div",{style:{fontSize:10,fontWeight:700,color:CNC_}},"CNC: rho="+AN.rCH.toFixed(3)),e(RC.ResponsiveContainer,{width:"100%",height:190},e(RC.ScatterChart,null,e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",dataKey:"hbr",tick:{fontSize:8},domain:[85,96]}),e(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:8}}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Scatter,{data:AN.sCNC,fill:CNC_,r:4}),e(RC.ReferenceLine,{y:0,stroke:"#8A9A8C",strokeDasharray:"3 3"})))))),
-    e("div",{style:sc},e("div",{style:sct},"Regression Summary"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Model","Slope","R2","Read"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,e("tr",null,e("td",{style:std},"MOH MCR>Ret"),e("td",{style:Object.assign({},std,{fontWeight:700})},AN.regMM.slope.toFixed(3)),e("td",{style:std},AN.regMM.r2.toFixed(3)),e("td",{style:std},"+1pp = "+AN.regMM.slope.toFixed(1)+"% stock")),e("tr",null,e("td",{style:std},"CNC HBR>Ret"),e("td",{style:Object.assign({},std,{fontWeight:700})},AN.regCH.slope.toFixed(3)),e("td",{style:std},AN.regCH.r2.toFixed(3)),e("td",{style:std},"+1pp = "+AN.regCH.slope.toFixed(1)+"% stock")),e("tr",null,e("td",{style:std},"Enroll>MOH"),e("td",{style:Object.assign({},std,{fontWeight:700})},AN.regEN.slope.toFixed(3)),e("td",{style:std},AN.regEN.r2.toFixed(3)),e("td",{style:std},"-1% = "+Math.abs(AN.regEN.slope).toFixed(1)+"% decline")))))
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"MCR/HBR Change vs. Stock Return \u2014 The Core Trading Signal"),
+      h("div",{style:S.cd},
+        h("strong",null,"This is the most actionable relationship in the dashboard. "),"The quarter-over-quarter change in medical cost ratio (MCR for MOH, HBR for CNC) is the single strongest predictor of quarterly stock returns we've found. The correlation for MOH is \u03C1 = "+AN.rMM.toFixed(3)+" \u2014 a strong inverse relationship meaning that when MCR rises, stock returns are negative.",h("br"),h("br"),
+        h("strong",null,"The regression: "),"For MOH, the slope is "+AN.regMM.slope.toFixed(2)+", meaning each 1 percentage point increase in MCR is associated with a ~"+Math.abs(AN.regMM.slope).toFixed(1)+"% stock decline. R\u00B2 = "+AN.regMM.r2.toFixed(3)+", meaning MCR changes explain ~"+(AN.regMM.r2*100).toFixed(0)+"% of the variation in quarterly returns.",h("br"),h("br"),
+        h("strong",null,"Trading implication: "),"If we can estimate the direction of MCR before earnings using enrollment composition data and acuity proxies, we can position ahead of the print. The market reacts most violently to MCR surprises \u2014 when the actual ratio exceeds consensus expectations by >50bps, the stock typically gaps down 5-15% on earnings day."
+      ),
+      h("div",{style:S.g2},
+        h("div",null,
+          h("div",{style:{fontSize:11,fontWeight:700,color:P.moh,marginBottom:4}},"MOH: MCR \u0394 \u2192 Quarterly Return (\u03C1 = "+AN.rMM.toFixed(3)+")"),
+          h(RC.ResponsiveContainer,{width:"100%",height:220},
+            h(RC.ScatterChart,null,
+              h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+              h(RC.XAxis,{type:"number",dataKey:"mcr",tick:{fontSize:9},domain:[85,96],name:"MCR %"}),
+              h(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:9},name:"Return %"}),
+              h(RC.Tooltip,{contentStyle:{fontSize:9}}),
+              h(RC.Scatter,{data:AN.sMOH,fill:P.moh,r:5}),
+              h(RC.ReferenceLine,{y:0,stroke:P.red,strokeDasharray:"3 3"})
+            )
+          )
+        ),
+        h("div",null,
+          h("div",{style:{fontSize:11,fontWeight:700,color:P.cnc,marginBottom:4}},"CNC: HBR \u0394 \u2192 Quarterly Return (\u03C1 = "+AN.rCH.toFixed(3)+")"),
+          h(RC.ResponsiveContainer,{width:"100%",height:220},
+            h(RC.ScatterChart,null,
+              h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+              h(RC.XAxis,{type:"number",dataKey:"hbr",tick:{fontSize:9},domain:[85,96],name:"HBR %"}),
+              h(RC.YAxis,{type:"number",dataKey:"ret",tick:{fontSize:9},name:"Return %"}),
+              h(RC.Tooltip,{contentStyle:{fontSize:9}}),
+              h(RC.Scatter,{data:AN.sCNC,fill:P.cnc,r:5}),
+              h(RC.ReferenceLine,{y:0,stroke:P.red,strokeDasharray:"3 3"})
+            )
+          )
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Regression Summary Table"),
+      h("div",{style:S.cd},"Linear regression output for the key metric pairs. The slope tells you the expected stock return change per unit change in the predictor. R\u00B2 measures goodness of fit. In production, consider multivariate models incorporating rate update timing, flu season severity, and MA rate announcements as control variables."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Model","Slope (\u03B2)","Intercept (\u03B1)","R\u00B2","Interpretation"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,
+          h("tr",null,h("td",{style:S.td},"MOH MCR \u2192 Return"),h("td",{style:Object.assign({},S.td,{fontWeight:700})},AN.regMM.slope.toFixed(3)),h("td",{style:S.td},AN.regMM.intercept.toFixed(2)),h("td",{style:S.td},AN.regMM.r2.toFixed(3)),h("td",{style:S.td},"Each +1pp MCR \u2248 "+AN.regMM.slope.toFixed(1)+"% stock move")),
+          h("tr",null,h("td",{style:S.td},"CNC HBR \u2192 Return"),h("td",{style:Object.assign({},S.td,{fontWeight:700})},AN.regCH.slope.toFixed(3)),h("td",{style:S.td},AN.regCH.intercept.toFixed(2)),h("td",{style:S.td},AN.regCH.r2.toFixed(3)),h("td",{style:S.td},"Each +1pp HBR \u2248 "+AN.regCH.slope.toFixed(1)+"% stock move")),
+          h("tr",null,h("td",{style:S.td},"Enrollment \u2192 MOH"),h("td",{style:Object.assign({},S.td,{fontWeight:700})},AN.regEN.slope.toFixed(3)),h("td",{style:S.td},AN.regEN.intercept.toFixed(2)),h("td",{style:S.td},AN.regEN.r2.toFixed(3)),h("td",{style:S.td},"Each -1% enrollment \u2248 "+Math.abs(AN.regEN.slope).toFixed(1)+"% stock decline"))
+        )
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 4: ACUITY & MLR DEEP DIVE
+   ══════════════════════════════════════════ */
 function T4(){
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Acuity Proxies"),e("div",{style:scd},"Specialty Rx (GLP-1s), behavioral health (#1 driver). Flywheel: healthy leave > acuity rises > MCR up > rates lag > margin crush. Now in rate catch-up phase.")),
-    e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
-      e("div",{style:sc},e("div",{style:sct},"Specialty Rx PMPM"),e(RC.ResponsiveContainer,{width:"100%",height:170},e(RC.LineChart,{data:AQ},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:8}}),e(RC.YAxis,{tick:{fontSize:8},domain:[10,18]}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Line,{dataKey:"mRx",stroke:MOH,strokeWidth:2,name:"MOH",dot:{r:2}}),e(RC.Line,{dataKey:"cRx",stroke:CNC_,strokeWidth:2,name:"CNC",dot:{r:2}})))),
-      e("div",{style:sc},e("div",{style:sct},"Behavioral Health"),e(RC.ResponsiveContainer,{width:"100%",height:170},e(RC.AreaChart,{data:AQ},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"q",tick:{fontSize:8}}),e(RC.YAxis,{tick:{fontSize:8},domain:[6,14]}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Area,{dataKey:"bh",fill:"#E1BEE7",stroke:PU,strokeWidth:2})))))
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Member Acuity Proxy Analysis"),
+      h("div",{style:S.cd},
+        h("strong",null,"What is \"acuity\" and why does it matter? "),"Acuity refers to the severity and costliness of a health plan's member population. Higher acuity = sicker members = higher medical costs per member. In a capitated Medicaid model, MCOs receive a fixed PMPM payment per member. If the member pool becomes sicker but rates haven't adjusted, costs rise while revenue stays flat \u2014 compressing the margin.",h("br"),h("br"),
+        h("strong",null,"Why we can't directly observe acuity: "),"MCOs don't publish member-level acuity scores publicly. We use proxy indicators: (1) Specialty pharmacy PMPM \u2014 high-cost drugs like GLP-1s indicate higher-need members, (2) Behavioral health utilization \u2014 cited by both MCOs as the largest cost driver in 2025, (3) LTSS (Long-Term Services and Supports) PMPM \u2014 reflects aged/disabled cost burden.",h("br"),h("br"),
+        h("strong",null,"The acuity flywheel: "),"Redetermination removes healthy members \u2192 average acuity rises \u2192 MCR increases \u2192 MCO negotiates higher rates \u2192 rates take 12-18 months to catch up \u2192 margin compressed during the lag \u2192 earnings miss \u2192 stock declines. We are currently in the \"rates catching up\" phase (2026)."
+      )
+    ),
+    h("div",{style:S.g2},
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"Specialty Pharmacy Cost Trend (PMPM Index)"),
+        h("div",{style:S.cd},"Both companies have seen 25-30% growth in specialty pharmacy PMPM since Q1'24, driven by GLP-1 drugs (Ozempic/Wegovy), hepatitis C treatments, and oncology biosimilars. This is the fastest-growing cost category."),
+        h(RC.ResponsiveContainer,{width:"100%",height:200},
+          h(RC.LineChart,{data:AQ},h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),h(RC.XAxis,{dataKey:"q",tick:{fontSize:9}}),h(RC.YAxis,{tick:{fontSize:9},domain:[10,18]}),h(RC.Tooltip,{contentStyle:{fontSize:10}}),h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+            h(RC.Line,{dataKey:"mRx",stroke:P.moh,strokeWidth:2,name:"MOH Spec Rx",dot:{r:2}}),h(RC.Line,{dataKey:"cRx",stroke:P.cnc,strokeWidth:2,name:"CNC Spec Rx",dot:{r:2}})))
+      ),
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"Behavioral Health Utilization Index"),
+        h("div",{style:S.cd},"CNC's CEO specifically called out behavioral health as the primary contributor to Medicaid HBR deterioration. Higher values indicate more frequent and costlier BH encounters per member."),
+        h(RC.ResponsiveContainer,{width:"100%",height:200},
+          h(RC.AreaChart,{data:AQ},h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),h(RC.XAxis,{dataKey:"q",tick:{fontSize:9}}),h(RC.YAxis,{tick:{fontSize:9},domain:[6,14]}),h(RC.Tooltip,{contentStyle:{fontSize:10}}),
+            h(RC.Area,{type:"monotone",dataKey:"bh",fill:P.pl,stroke:P.pu,strokeWidth:2,name:"BH Util Index"})))
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"MCR/HBR Trajectory with Target Zones"),
+      h("div",{style:S.cd},"Green zone (<88%): healthy margins. Yellow (88-91%): pressure building. Red (>91%): margin destruction. Both MCOs are deep in the red zone. Recovery requires MCR declining below 90% for at least 2 consecutive quarters."),
+      h(RC.ResponsiveContainer,{width:"100%",height:260},
+        h(RC.ComposedChart,{data:QD},h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),h(RC.XAxis,{dataKey:"q",tick:{fontSize:9},interval:1}),h(RC.YAxis,{tick:{fontSize:9},domain:[85,96]}),h(RC.Tooltip,{contentStyle:{fontSize:10}}),h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+          h(RC.Area,{type:"monotone",dataKey:"mM",fill:P.bll,stroke:P.moh,strokeWidth:2,name:"MOH MCR",fillOpacity:0.3}),
+          h(RC.Area,{type:"monotone",dataKey:"cH",fill:P.ol,stroke:P.cnc,strokeWidth:2,name:"CNC HBR",fillOpacity:0.3}),
+          h(RC.ReferenceLine,{y:88,stroke:P.gs,strokeDasharray:"5 5"}),
+          h(RC.ReferenceLine,{y:91,stroke:P.red,strokeDasharray:"5 5"})
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"LTSS Cost Trend \u2014 The Demographic Headwind"),
+      h("div",{style:S.cd},"Long-Term Services and Supports (LTSS) is the costliest Medicaid segment. MOH specifically cited \"higher utilization among high-acuity members, particularly for long-term services and supports and pharmacy\" in Q3'25. California's 2026 asset limit reinstatement at $130K (vs typical $2K in other states) may keep more LTSS members enrolled."),
+      h(RC.ResponsiveContainer,{width:"100%",height:200},
+        h(RC.LineChart,{data:AQ},h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),h(RC.XAxis,{dataKey:"q",tick:{fontSize:9}}),h(RC.YAxis,{tick:{fontSize:9},domain:[13,21]}),h(RC.Tooltip,{contentStyle:{fontSize:10}}),h(RC.Legend,{wrapperStyle:{fontSize:10}}),
+          h(RC.Line,{dataKey:"mLT",stroke:P.moh,strokeWidth:2,name:"MOH LTSS PMPM",dot:{r:3}}),h(RC.Line,{dataKey:"cLT",stroke:P.cnc,strokeWidth:2,name:"CNC LTSS PMPM",dot:{r:3}})))
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 5: DISENROLLMENT IMPACT
+   ══════════════════════════════════════════ */
 function T5(){
-  var rows=[["Pre-Unwinding Q1'23","14.9M","87.6%","87.0%","$310","$68","Baseline",""],["Peak Disenroll Q1'24","13.8M","88.6%","87.6%","$395","$72","Stocks at HIGHS",""],["Collapse Q2'25","13.0M","90.4%","93.0%","$280","$42","CNC loss","#FFF3E0"],["Trough Q4'25","12.8M","94.6%","94.3%","$180","$37","Both post losses","#FFF3E0"]];
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Disenrollment > Earnings Timeline"),e("div",{style:scd},"Paradox: In early 2024, disenrollment peaked but stocks were at HIGHS. Market missed that healthy members were leaving. Lesson: monitor WHO leaves, not how many."),
-      e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Phase","Enroll","MOH MCR","CNC HBR","MOH $","CNC $","Context"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,rows.map(function(r,i){return e("tr",{key:i,style:{background:r[7]||"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700,fontSize:10})},r[0]),e("td",{style:std},r[1]),e("td",{style:std},r[2]),e("td",{style:std},r[3]),e("td",{style:std},r[4]),e("td",{style:std},r[5]),e("td",{style:Object.assign({},std,{fontSize:9})},r[6]))})))),
-    e("div",{style:sc},e("div",{style:sct},"Framework"),e("div",{style:scd},"Bearish: healthy leave (adverse selection). Bullish: MCOs exit unprofitable markets (MOH cut ACA 20%, CNC raised premiums 30%). Classify: voluntary exit (bullish) vs involuntary attrition (bearish)."))
+  var tl=[
+    ["Pre-Unwinding (Q1'23)","14.9M","87.6%","87.0%","$310","$68","Baseline: inflated enrollment, MCR at healthy levels",""],
+    ["Early Unwinding (Q3'23)","14.4M","88.4%","87.5%","$350","$62","Market ignored enrollment loss; prices rose on rate optimism",""],
+    ["Peak Disenrollment (Q1'24)","13.8M","88.6%","87.6%","$395","$72","Stocks at HIGHS \u2014 market assumed unwinding was positive",""],
+    ["Acuity Emergence (Q3'24)","13.2M","89.2%","89.2%","$340","$58","First signs: MCR rising despite rate updates","#FFF8E1"],
+    ["Margin Collapse (Q2'25)","13.0M","90.4%","93.0%","$280","$42","CNC massive loss. Acuity trap fully visible","#FFF3E0"],
+    ["Trough (Q4'25)","12.8M","94.6%","94.3%","$180","$37","Both post losses. MOH removed from S&P 500","#FFF3E0"]
+  ];
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"The Disenrollment \u2192 Earnings Destruction Timeline"),
+      h("div",{style:S.cd},
+        h("strong",null,"This is the key narrative for understanding both stocks. "),h("br"),h("br"),
+        h("strong",null,"The paradox: "),"In early 2024, when disenrollment was at its peak, Wall Street was actually bullish on Medicaid MCOs. The consensus view was that losing members would be a positive \u2014 removing \"unprofitable\" members who signed up during the pandemic. MOH hit its all-time high of ~$420 in March 2024, precisely when enrollment was falling fastest. The market completely missed that the members leaving were the healthy, low-cost ones \u2014 not the unprofitable ones.",h("br"),h("br"),
+        h("strong",null,"The lesson for Parkman: "),"Monitoring who is leaving (demographic composition, procedural vs. for-cause disenrollment) matters more than how many are leaving. Procedural disenrollment spiking (members failing to return paperwork) = negative signal (younger, healthier members). For-cause disenrollment (over income limits) = less negative."
+      ),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Phase","CA Enroll","MOH MCR","CNC HBR","MOH $","CNC $","What Was Happening"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,tl.map(function(r,i){return h("tr",{key:i,style:{background:r[7]||"transparent"}},
+          h("td",{style:Object.assign({},S.td,{fontWeight:700,fontSize:10})},r[0]),
+          h("td",{style:S.td},r[1]),
+          h("td",{style:Object.assign({},S.td,{color:parseFloat(r[2])>91?P.red:P.g800})},r[2]),
+          h("td",{style:Object.assign({},S.td,{color:parseFloat(r[3])>91?P.red:P.g800})},r[3]),
+          h("td",{style:S.td},r[4]),h("td",{style:S.td},r[5]),
+          h("td",{style:Object.assign({},S.td,{fontSize:10,color:P.g600})},r[6])
+        )}))
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Does Disenrollment = Weak Performance? The Answer is Nuanced"),
+      h("div",{style:S.cd},
+        h("strong",null,"When disenrollment leads to WORSE performance: "),"When the members leaving are healthier than the remaining pool (which is what happened during the unwinding). This creates adverse selection \u2014 the MCO's costs per member rise while rates don't adjust immediately. Every quarter of enrollment decline in this scenario should make you more bearish on the MCO's next 2-3 earnings reports.",h("br"),h("br"),
+        h("strong",null,"When disenrollment could lead to BETTER performance: "),"If an MCO is actively shedding unprofitable contracts or exiting counties with unsustainable rates. For example, MOH reduced its ACA county footprint by 20% and exited Medicare Advantage for 2027. CNC expects ACA membership to drop from 5.5M to 3.5M after raising premiums ~30%. In these cases, the revenue decline is intentional and margin-accretive.",h("br"),h("br"),
+        h("strong",null,"The Parkman Framework: "),"Classify every enrollment change as \"voluntary exit\" (MCO choosing to shrink) vs. \"involuntary attrition\" (members leaving due to redetermination/competition). The former is bullish; the latter is bearish. Track county-level data to distinguish."
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 6: SCENARIO ANALYSIS
+   ══════════════════════════════════════════ */
 function T6(){
-  var s=us("base"),scn=s[0],setSc=s[1];
-  var MS={bull:{l:"Bull",c:GS,mcr:89.5,eps:8.50,px:153,pb:20,d:"Rates 6%+. MCR<90% H2'26."},base:{l:"Base",c:"#FFD600",mcr:91.0,eps:5.00,px:80,pb:50,d:"$5 adj EPS. MCR ~91%. Flat."},bear:{l:"Bear",c:RED,mcr:93.0,eps:2.00,px:24,pb:30,d:"Cost accelerates. Guidance cut."}};
-  var CS={bull:{l:"Bull",c:GS,hbr:90.0,eps:5.50,px:66,pb:20,d:"ACA repricing works. HBR<91%."},base:{l:"Base",c:"#FFD600",hbr:92.0,eps:3.00,px:33,pb:50,d:">$3 EPS. Medicaid -5-6%."},bear:{l:"Bear",c:RED,hbr:94.5,eps:0.50,px:4,pb:30,d:"Subsidy loss. Balance sheet stress."}};
-  var wM=MS.bull.px*.2+MS.base.px*.5+MS.bear.px*.3, wC=CS.bull.px*.2+CS.base.px*.5+CS.bear.px*.3;
+  var st=us("base"),scn=st[0],setSc=st[1];
+  var MS={
+    bull:{l:"Bull Case",c:P.gs,mcr:89.5,mg:2,ri:6.0,eps:8.50,pe:18,px:153,pb:20,d:"Rates catch up aggressively (6%+ in CA). MCR normalizes below 90% by H2'26. Enrollment stabilizes and grows modestly from new contract wins. ACA marketplace repricing works. Management delivers above trough guidance."},
+    base:{l:"Base Case",c:P.gold,mcr:91.0,mg:0,ri:4.5,eps:5.00,pe:16,px:80,pb:50,d:"Management delivers on $5 adj EPS guidance. MCR improves but stays elevated (~91%). Enrollment flat. Rate increases of 4.5% partially offset cost trend. No new contract wins or losses. Market gives limited credit until 2+ quarters of proof."},
+    bear:{l:"Bear Case",c:P.red,mcr:93.0,mg:-3,ri:3.0,eps:2.00,pe:12,px:24,pb:30,d:"Cost trend accelerates further (GLP-1s, BH). Rates fail to keep pace. Enrollment declines resume if federal Medicaid cuts materialize. ACA subsidy expiration drives adverse selection. Another guidance cut triggers further multiple compression."}
+  };
+  var CS={
+    bull:{l:"Bull Case",c:P.gs,hbr:90.0,mg:-3,ri:5.5,eps:5.50,pe:12,px:66,pb:20,d:"Marketplace repricing (30% hikes) restores profitability. Medicaid HBR drops below 91% as rate catch-up accelerates. Membership decline is intentional and margin-accretive. MA exit for 2027 removes drag. Magellan divestiture complete."},
+    base:{l:"Base Case",c:P.gold,hbr:92.0,mg:-5,ri:4.5,eps:3.00,pe:11,px:33,pb:50,d:"Management delivers >$3 adj EPS guidance. Medicaid membership down 5-6% as guided. Marketplace drops to 3.5M. HBR improves sequentially but stays elevated. Revenue declines to $170-174B range."},
+    bear:{l:"Bear Case",c:P.red,hbr:94.5,mg:-8,ri:3.0,eps:0.50,pe:8,px:4,pb:30,d:"ACA subsidy expiration worse than expected. Adverse selection in bronze-heavy book. Medicaid rates inadequate. BH costs continue rising. Federal funding cuts. Credit rating concerns surface given $6.7B 2025 loss."}
+  };
+  var wM=MS.bull.px*.2+MS.base.px*.5+MS.bear.px*.3;
+  var wC=CS.bull.px*.2+CS.base.px*.5+CS.bear.px*.3;
   var m=MS[scn],c=CS[scn];
-  var sens=[[88,"+$4.50"],[89,"+$2.80"],[90,"+$1.20"],[91,"$0.00"],[92,"-$1.50"],[93,"-$3.00"],[94,"-$4.50"]];
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Scenario Analysis"),e("div",{style:scd},"Every 100bps MCR = ~$1.50 EPS for MOH. Click scenarios below.")),
-    e("div",{style:{display:"flex",gap:6,marginBottom:10}},["bull","base","bear"].map(function(k){var v=MS[k];return e("div",{key:k,onClick:function(){setSc(k)},style:{flex:1,padding:8,borderRadius:6,border:"2px solid "+(scn===k?v.c:"#E0E7E0"),cursor:"pointer",textAlign:"center"}},e("div",{style:{fontSize:12,fontWeight:700,color:scn===k?v.c:"#5A6B5C"}},v.l),e("div",{style:{fontSize:9,color:"#8A9A8C"}},"Prob: "+v.pb+"%"))})),
-    e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
-      e("div",{style:sc},e("div",{style:Object.assign({},sct,{color:MOH})},"MOH - "+m.l),e("div",{style:scd},m.d),e("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"MCR"),e("div",{style:{fontSize:15,fontWeight:800,color:m.mcr>91?RED:OR}},pct(m.mcr))),e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"EPS"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+m.eps)),e("div",{style:skp(MOH)},e("div",{style:{fontSize:9,fontWeight:600}},"PRICE"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+m.px)))),
-      e("div",{style:sc},e("div",{style:Object.assign({},sct,{color:CNC_})},"CNC - "+c.l),e("div",{style:scd},c.d),e("div",{style:{display:"flex",gap:6,flexWrap:"wrap"}},e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600}},"HBR"),e("div",{style:{fontSize:15,fontWeight:800,color:c.hbr>91?RED:OR}},pct(c.hbr))),e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600}},"EPS"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+c.eps)),e("div",{style:skp(CNC_)},e("div",{style:{fontSize:9,fontWeight:600}},"PRICE"),e("div",{style:{fontSize:15,fontWeight:800}},"$"+c.px))))),
-    e("div",{style:sc},e("div",{style:sct},"Weighted Valuation"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Scenario","Prob","MOH EPS","MOH Px","vs Now","CNC EPS","CNC Px","vs Now"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,["bull","base","bear"].map(function(k){var mv=MS[k],cv=CS[k];return e("tr",{key:k},e("td",{style:Object.assign({},std,{fontWeight:700})},mv.l),e("td",{style:std},mv.pb+"%"),e("td",{style:std},"$"+mv.eps),e("td",{style:std},"$"+mv.px),e("td",{style:Object.assign({},std,{color:mv.px>180?GS:RED,fontWeight:700})},((mv.px-180)/180*100).toFixed(0)+"%"),e("td",{style:std},"$"+cv.eps),e("td",{style:std},"$"+cv.px),e("td",{style:Object.assign({},std,{color:cv.px>37?GS:RED,fontWeight:700})},((cv.px-37)/37*100).toFixed(0)+"%"))}),e("tr",{style:{background:"#E8F5E9",fontWeight:700}},e("td",{style:std},"Weighted EV"),e("td",{style:std},"100%"),e("td",{style:std},""),e("td",{style:std},"$"+wM.toFixed(0)),e("td",{style:Object.assign({},std,{color:wM>180?GS:RED})},((wM-180)/180*100).toFixed(0)+"%"),e("td",{style:std},""),e("td",{style:std},"$"+wC.toFixed(0)),e("td",{style:Object.assign({},std,{color:wC>37?GS:RED})},((wC-37)/37*100).toFixed(0)+"%"))))),
-    e("div",{style:sc},e("div",{style:sct},"MCR Sensitivity (per 100bps = ~$1.50 EPS)"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["MCR","EPS Impact","Implied EPS","At 16x P/E"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,sens.map(function(r,i){var v=parseFloat(r[1].replace(/[+$]/g,""));return e("tr",{key:i,style:{background:r[0]===91?"#E8F5E9":r[0]>92?"#FFF3E0":"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700,color:r[0]>92?RED:r[0]<90?GS:"#2D3B2F"})},pct(r[0])),e("td",{style:Object.assign({},std,{fontWeight:700})},r[1]),e("td",{style:std},"$"+(5+v).toFixed(2)),e("td",{style:std},"$"+((5+v)*16).toFixed(0)))}))))
+  var sens=[[88,"+$4.50","Pre-2025 norm \u2014 highly unlikely near-term"],[89,"+$2.80","Strong recovery \u2014 rate catch-up works fully"],[90,"+$1.20","Modest improvement \u2014 consensus expectation"],[91,"$0.00","Baseline (management guidance level)"],[92,"-$1.50","Persistent pressure \u2014 guidance at risk"],[93,"-$3.00","Severe \u2014 another guidance cut likely"],[94,"-$4.50","Crisis \u2014 potential strategic review"]];
+
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Scenario Analysis Framework"),
+      h("div",{style:S.cd},
+        h("strong",null,"Methodology: "),"We model three scenarios (Bull/Base/Bear) for each MCO, driven by four key input variables: (1) Medical Cost Ratio \u2014 the single largest determinant of earnings; each 100bps = ~$1.50/share for MOH, (2) Membership growth/decline, (3) Rate increase magnitude, (4) Implied P/E multiple.",h("br"),h("br"),
+        h("strong",null,"How to use this: "),"The probability-weighted expected value gives a \"fair value\" estimate. Compare to current price to assess asymmetry. If the stock trades below the bear case implied price, the risk/reward is compelling even under the worst scenario."
+      )
+    ),
+    h("div",{style:{display:"flex",gap:8,marginBottom:12}},
+      ["bull","base","bear"].map(function(k){var v=MS[k];return h("div",{key:k,onClick:function(){setSc(k)},style:{flex:1,padding:10,borderRadius:8,border:"2px solid "+(scn===k?v.c:P.g200),background:scn===k?v.c+"15":P.w,cursor:"pointer",textAlign:"center"}},
+        h("div",{style:{fontSize:13,fontWeight:700,color:scn===k?v.c:P.g600}},v.l),
+        h("div",{style:{fontSize:10,color:P.g400}},"Probability: "+v.pb+"%"))})
+    ),
+    h("div",{style:S.g2},
+      h("div",{style:S.card},
+        h("div",{style:Object.assign({},S.ct,{color:P.moh})},"MOH \u2014 "+m.l),
+        h("div",{style:S.cd},m.d),
+        h("div",{style:S.kr},
+          h("div",{style:S.kpi(P.moh)},h("div",{style:S.kl},"MCR Assumption"),h("div",{style:Object.assign({},S.kv,{fontSize:16,color:m.mcr>91?P.red:P.or})},pct(m.mcr))),
+          h("div",{style:S.kpi(P.moh)},h("div",{style:S.kl},"Implied EPS"),h("div",{style:Object.assign({},S.kv,{fontSize:16,color:m.eps<1?P.red:P.green})},"$"+m.eps.toFixed(2))),
+          h("div",{style:S.kpi(P.moh)},h("div",{style:S.kl},"Implied Price"),h("div",{style:Object.assign({},S.kv,{fontSize:16})},"$"+m.px),h("div",{style:S.ks},((m.px-180)/180*100).toFixed(0)+"% vs current $180"))
+        )
+      ),
+      h("div",{style:S.card},
+        h("div",{style:Object.assign({},S.ct,{color:P.cnc})},"CNC \u2014 "+c.l),
+        h("div",{style:S.cd},c.d),
+        h("div",{style:S.kr},
+          h("div",{style:S.kpi(P.cnc)},h("div",{style:S.kl},"HBR Assumption"),h("div",{style:Object.assign({},S.kv,{fontSize:16,color:c.hbr>91?P.red:P.or})},pct(c.hbr))),
+          h("div",{style:S.kpi(P.cnc)},h("div",{style:S.kl},"Implied EPS"),h("div",{style:Object.assign({},S.kv,{fontSize:16,color:c.eps<1?P.red:P.green})},"$"+c.eps.toFixed(2))),
+          h("div",{style:S.kpi(P.cnc)},h("div",{style:S.kl},"Implied Price"),h("div",{style:Object.assign({},S.kv,{fontSize:16})},"$"+c.px),h("div",{style:S.ks},((c.px-37)/37*100).toFixed(0)+"% vs current $37"))
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Probability-Weighted Valuation"),
+      h("div",{style:S.cd},"Expected value = \u03A3(scenario price \u00D7 probability). Compare to current price to assess whether risk/reward is skewed in your favor."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Scenario","Prob","MOH EPS","MOH Price","MOH vs Now","CNC EPS","CNC Price","CNC vs Now"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,
+          ["bull","base","bear"].map(function(k){var mv=MS[k],cv=CS[k];return h("tr",{key:k},
+            h("td",{style:Object.assign({},S.td,{fontWeight:700})},mv.l),h("td",{style:S.td},mv.pb+"%"),
+            h("td",{style:S.td},"$"+mv.eps),h("td",{style:S.td},"$"+mv.px),h("td",{style:Object.assign({},S.td,{color:mv.px>180?P.gs:P.red,fontWeight:700})},((mv.px-180)/180*100).toFixed(0)+"%"),
+            h("td",{style:S.td},"$"+cv.eps),h("td",{style:S.td},"$"+cv.px),h("td",{style:Object.assign({},S.td,{color:cv.px>37?P.gs:P.red,fontWeight:700})},((cv.px-37)/37*100).toFixed(0)+"%")
+          )}),
+          h("tr",{style:{background:P.gb,fontWeight:700}},h("td",{style:S.td},"Weighted Expected Value"),h("td",{style:S.td},"100%"),h("td",{style:S.td}),h("td",{style:Object.assign({},S.td,{fontSize:14})},"$"+wM.toFixed(0)),h("td",{style:Object.assign({},S.td,{color:wM>180?P.gs:P.red})},((wM-180)/180*100).toFixed(0)+"%"),h("td",{style:S.td}),h("td",{style:Object.assign({},S.td,{fontSize:14})},"$"+wC.toFixed(0)),h("td",{style:Object.assign({},S.td,{color:wC>37?P.gs:P.red})},((wC-37)/37*100).toFixed(0)+"%"))
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"MCR Sensitivity Table \u2014 MOH EPS Impact"),
+      h("div",{style:S.cd},"This is the single most important sensitivity for MOH. Every 100bps of MCR represents approximately $1.50 in annualized EPS impact (based on ~$43B in premium revenue and ~52M diluted shares). This is how to translate real-time enrollment and acuity signals into earnings estimates."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["MCR","EPS Impact vs Base","Implied 2026 Adj EPS","At 16x P/E","Assessment"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,sens.map(function(r,i){var v=parseFloat(r[1].replace(/[+$]/g,""));return h("tr",{key:i,style:{background:r[0]===91?P.gb:r[0]>92?"#FFF3E0":"transparent"}},
+          h("td",{style:Object.assign({},S.td,{fontWeight:700,color:r[0]>92?P.red:r[0]<90?P.gs:P.g800})},pct(r[0])),
+          h("td",{style:Object.assign({},S.td,{fontWeight:700})},r[1]),
+          h("td",{style:S.td},"$"+(5+v).toFixed(2)),
+          h("td",{style:S.td},"$"+((5+v)*16).toFixed(0)),
+          h("td",{style:Object.assign({},S.td,{fontSize:10})},r[2])
+        )}))
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 7: PEER COMPARISON
+   ══════════════════════════════════════════ */
 function T7(){
-  var P=[{tk:"UNH",cl:TL,px:276,ae:26.0,eg:17.0,mlr:88.9,md:16,ma:30,pe:16.2,dd:45,nt:"Largest MCO. Optum diversification. $439B rev guide 2026."},{tk:"ELV",cl:PU,px:345,ae:30.29,eg:22.30,mlr:90.0,md:25,ma:20,pe:13.5,dd:42,nt:"Blue Cross 14 states. Carelon. $25.50 adj EPS guide."},{tk:"HUM",cl:RED,px:170,ae:17.14,eg:9.00,mlr:90.4,md:7,ma:85,pe:18.9,dd:68,nt:"MA pure-play 85%. Star decline $3.5B headwind."},{tk:"MOH",cl:MOH,px:148,ae:11.03,eg:3.20,mlr:91.7,md:86,ma:4,pe:29.6,dd:65,nt:"Pure Medicaid 86%. Highest MCR. Removed from S&P 500."},{tk:"CNC",cl:CNC_,px:35,ae:2.08,eg:3.00,mlr:91.9,md:45,ma:15,pe:11.7,dd:65,nt:"Largest Medicaid MCO 12.5M. $6.7B loss 2025."}];
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Peer Comparison"),e("div",{style:scd},"Entire sector pressured. Pure Medicaid (MOH), mixed (CNC) hardest hit. MA-heavy (HUM) has Star problems. Diversified (UNH,ELV) more resilient.")),
-    e("div",{style:sc},e("div",{style:{overflowX:"auto"}},e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Ticker","Price","Adj EPS'25","EPS'26G","MLR'25","P/E","Mcaid%","MA%","From Hi"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,P.map(function(p,i){return e("tr",{key:i,style:{background:i%2===0?"#F9FBF9":"transparent"}},e("td",{style:Object.assign({},std,{fontWeight:700,color:p.cl})},p.tk),e("td",{style:std},"$"+p.px),e("td",{style:Object.assign({},std,{fontWeight:700})},"$"+p.ae),e("td",{style:Object.assign({},std,{fontWeight:700,color:p.eg<p.ae?RED:GS})},"$"+p.eg),e("td",{style:Object.assign({},std,{fontWeight:700,color:p.mlr>91?RED:p.mlr>89?OR:GS})},pct(p.mlr)),e("td",{style:std},p.pe+"x"),e("td",{style:std},p.md+"%"),e("td",{style:std},p.ma+"%"),e("td",{style:Object.assign({},std,{color:RED,fontWeight:700})},"-"+p.dd+"%"))}))))),
-    e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},
-      e("div",{style:sc},e("div",{style:sct},"Business Mix"),e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:P.map(function(p){return{nm:p.tk,Medicaid:p.md,MA:p.ma,Other:Math.max(0,100-p.md-p.ma)}}),layout:"vertical"},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{type:"number",tick:{fontSize:8},domain:[0,100]}),e(RC.YAxis,{type:"category",dataKey:"nm",tick:{fontSize:10},width:32}),e(RC.Tooltip,{contentStyle:{fontSize:9}}),e(RC.Legend,{wrapperStyle:{fontSize:9}}),e(RC.Bar,{dataKey:"Medicaid",stackId:"a",fill:MOH}),e(RC.Bar,{dataKey:"MA",stackId:"a",fill:PU}),e(RC.Bar,{dataKey:"Other",stackId:"a",fill:"#8A9A8C"})))),
-      e("div",{style:sc},e("div",{style:sct},"FY2025 MLR"),e(RC.ResponsiveContainer,{width:"100%",height:200},e(RC.BarChart,{data:P.map(function(p){return{nm:p.tk,mlr:p.mlr}})},e(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:"#E0E7E0"}),e(RC.XAxis,{dataKey:"nm",tick:{fontSize:10}}),e(RC.YAxis,{tick:{fontSize:9},domain:[85,95]}),e(RC.Tooltip,{contentStyle:{fontSize:10}}),e(RC.ReferenceLine,{y:88,stroke:GS,strokeDasharray:"5 5"}),e(RC.ReferenceLine,{y:91,stroke:RED,strokeDasharray:"5 5"}),e(RC.Bar,{dataKey:"mlr",name:"MLR"},P.map(function(p,i){return e(RC.Cell,{key:i,fill:p.cl})})))))),
-    e("div",{style:sc},e("div",{style:sct},"Peer Notes"),P.map(function(p,i){return e("div",{key:i,style:{padding:8,borderLeft:"4px solid "+p.cl,marginBottom:6,background:"#F9FBF9",borderRadius:"0 6px 6px 0"}},e("div",{style:{fontWeight:700,color:p.cl,fontSize:11}},p.tk," ",e("span",{style:{fontSize:9,color:"#8A9A8C",fontWeight:400}},"$"+p.px+" | "+p.pe+"x")),e("div",{style:{fontSize:10,color:"#5A6B5C",marginTop:2}},p.nt))})),
-    e("div",{style:sc},e("div",{style:sct},"Pair Trades"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Trade","Long","Short","Thesis"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,[["Medicaid Recovery","CNC","MOH","CNC lower P/E, more levers."],["Diversified vs Pure","ELV","MOH","ELV Carelon buffer."],["Anti-MA","CNC","HUM","Medicaid recovers faster than Stars."]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},std,{fontWeight:700})},r[0]),e("td",{style:Object.assign({},std,{color:GS,fontWeight:700})},r[1]),e("td",{style:Object.assign({},std,{color:RED,fontWeight:700})},r[2]),e("td",{style:Object.assign({},std,{fontSize:10})},r[3]))}))))
+  var peers=[
+    {tk:"UNH",nm:"UnitedHealth Group",cl:P.unh,px:276,mc:"$250B",r25:447.6,ae:26.0,eg:17.0,mlr:88.9,md:16,ma:30,aca:5,pe:16.2,dd:45,ca:"Low",nt:"Largest MCO globally. Optum services diversification provides earnings buffer. Cyberattack costs in 2025. Guiding $439B rev for 2026, first decline in decades. MA rate headwinds + commercial trend at 11%. Balance sheet strongest in class."},
+    {tk:"ELV",nm:"Elevance Health",cl:P.elv,px:345,mc:"$79B",r25:197.6,ae:30.29,eg:22.30,mlr:90.0,md:25,ma:20,aca:8,pe:13.5,dd:42,ca:"High",nt:"Blue Cross Blue Shield licensed in 14 states. Carelon services segment growing. Medicaid margin pressure: guiding 2026 as 'low point.' FY25 MLR spiked to 93.5% in Q4. Conservative $25.50 adj EPS guidance for 2026."},
+    {tk:"HUM",nm:"Humana",cl:P.hum,px:170,mc:"$20.5B",r25:129.7,ae:17.14,eg:9.00,mlr:90.4,md:7,ma:85,aca:3,pe:18.9,dd:68,ca:"Minimal",nt:"Medicare Advantage pure-play (~85% of membership). Star ratings decline devastating: ~$3.5B headwind in 2026. Guiding only $9 adj EPS vs $17 in 2025. Intentionally shed ~500K members. CenterWell value-based care buildout is long-term thesis."},
+    {tk:"MOH",nm:"Molina Healthcare",cl:P.moh,px:148,mc:"$7.7B",r25:45.4,ae:11.03,eg:3.20,mlr:91.7,md:86,ma:4,aca:10,pe:29.6,dd:65,ca:"Very High",nt:"Pure-play Medicaid MCO. 86% Medicaid exposure makes it the highest-beta name on Medicaid trends. CA is one of its largest states. Removed from S&P 500. Exiting Medicare Advantage for 2027. ACA footprint reduced by 20%. FY25 MCR of 91.7%."},
+    {tk:"CNC",nm:"Centene / Health Net",cl:P.cnc,px:35,mc:"$16.9B",r25:194.8,ae:2.08,eg:3.00,mlr:91.9,md:45,ma:15,aca:20,pe:11.7,dd:65,ca:"Very High",nt:"Largest Medicaid MCO nationally (12.5M members). Largest ACA marketplace insurer (5.5M\u21923.5M in 2026). Health Net is CA subsidiary. $6.7B net loss in 2025. Divesting Magellan Health. Guiding >$3 adj EPS for 2026."}
+  ];
+
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"MCO Peer Comparison Dashboard"),
+      h("div",{style:S.cd},
+        h("strong",null,"Purpose: "),"Contextualize MOH and CNC within the broader managed care landscape. This helps identify whether their performance is idiosyncratic or industry-wide, and reveals potential pair trades or relative value opportunities.",h("br"),h("br"),
+        h("strong",null,"Key insight: "),"The entire managed care sector is under pressure in 2025-2026, but the magnitude varies by business mix. Pure-play Medicaid (MOH) and mixed Medicaid/ACA (CNC) have been hit hardest. MA-heavy names (HUM) are suffering from Star rating downgrades. Diversified giants (UNH, ELV) are more resilient but not immune."
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Fundamental Comparison Table"),
+      h("div",{style:S.cd},"All figures from FY2025 actuals and 2026 guidance. \"% from 52wk High\" shows how far each stock has fallen \u2014 a proxy for re-rating severity. MOH and HUM have fallen most (~65-68%), while UNH and ELV are relatively more resilient (~42-45%)."),
+      h("div",{style:{overflowX:"auto"}},
+        h("table",{style:S.tbl},
+          h("thead",null,h("tr",null,["Ticker","Price","Mkt Cap","Rev '25","Adj EPS '25","EPS '26G","MLR '25","NTM P/E","Medicaid %","MA %","ACA %","From High","CA Exp."].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+          h("tbody",null,peers.map(function(p,i){return h("tr",{key:i,style:{background:i%2===0?P.g50:"transparent"}},
+            h("td",{style:Object.assign({},S.td,{fontWeight:700,color:p.cl})},p.tk),
+            h("td",{style:S.td},"$"+p.px),h("td",{style:S.td},p.mc),h("td",{style:S.td},"$"+p.r25+"B"),
+            h("td",{style:Object.assign({},S.td,{fontWeight:700})},"$"+p.ae),
+            h("td",{style:Object.assign({},S.td,{fontWeight:700,color:p.eg<p.ae?P.red:P.gs})},"$"+p.eg),
+            h("td",{style:Object.assign({},S.td,{fontWeight:700,color:p.mlr>91?P.red:p.mlr>89?P.or:P.gs})},pct(p.mlr)),
+            h("td",{style:S.td},p.pe+"x"),
+            h("td",{style:Object.assign({},S.td,{fontWeight:p.md>40?700:400,color:p.md>50?P.moh:P.g800})},p.md+"%"),
+            h("td",{style:S.td},p.ma+"%"),h("td",{style:S.td},p.aca+"%"),
+            h("td",{style:Object.assign({},S.td,{color:P.red,fontWeight:700})},"-"+p.dd+"%"),
+            h("td",{style:S.td},h("span",{style:S.badge(p.ca==="Very High"?P.rl:p.ca==="High"?P.ol:P.gp)},p.ca))
+          )}))
+        )
+      )
+    ),
+    h("div",{style:S.g2},
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"Business Mix \u2014 Revenue Exposure by Segment"),
+        h("div",{style:S.cd},"MOH at 86% Medicaid is essentially a pure play \u2014 its stock is a leveraged bet on Medicaid margins. CNC at 45% has diversification but ACA added pain in 2025. HUM at 85% MA has a completely different problem set (Star ratings, not acuity)."),
+        h(RC.ResponsiveContainer,{width:"100%",height:220},
+          h(RC.BarChart,{data:peers.map(function(p){return{nm:p.tk,Medicaid:p.md,MA:p.ma,ACA:p.aca,Other:Math.max(0,100-p.md-p.ma-p.aca)}}),layout:"vertical"},
+            h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+            h(RC.XAxis,{type:"number",tick:{fontSize:8},domain:[0,100],tickFormatter:function(v){return v+"%"}}),
+            h(RC.YAxis,{type:"category",dataKey:"nm",tick:{fontSize:10},width:35}),
+            h(RC.Tooltip,{contentStyle:{fontSize:9}}),h(RC.Legend,{wrapperStyle:{fontSize:9}}),
+            h(RC.Bar,{dataKey:"Medicaid",stackId:"a",fill:P.moh}),h(RC.Bar,{dataKey:"MA",stackId:"a",fill:P.pu}),h(RC.Bar,{dataKey:"ACA",stackId:"a",fill:P.tl}),h(RC.Bar,{dataKey:"Other",stackId:"a",fill:P.g400})
+          )
+        )
+      ),
+      h("div",{style:S.card},
+        h("div",{style:S.ct},"MLR / HBR Comparison (FY2025)"),
+        h("div",{style:S.cd},"All five MCOs saw MLR deterioration in 2025. MOH and CNC highest, reflecting heavier Medicaid/ACA mix. UNH's lower MLR reflects Optum diversification benefit."),
+        h(RC.ResponsiveContainer,{width:"100%",height:220},
+          h(RC.BarChart,{data:peers.map(function(p){return{nm:p.tk,mlr:p.mlr}})},
+            h(RC.CartesianGrid,{strokeDasharray:"3 3",stroke:P.g200}),
+            h(RC.XAxis,{dataKey:"nm",tick:{fontSize:10}}),
+            h(RC.YAxis,{tick:{fontSize:9},domain:[85,95]}),
+            h(RC.Tooltip,{contentStyle:{fontSize:10}}),
+            h(RC.ReferenceLine,{y:88,stroke:P.gs,strokeDasharray:"5 5"}),
+            h(RC.ReferenceLine,{y:91,stroke:P.red,strokeDasharray:"5 5"}),
+            h(RC.Bar,{dataKey:"mlr",name:"FY25 MLR"},peers.map(function(p,i){return h(RC.Cell,{key:i,fill:p.cl})}))
+          )
+        )
+      )
+    ),
+    h("div",{style:S.card},h("div",{style:S.ct},"Peer Notes & Key Differentiators"),
+      peers.map(function(p,i){return h("div",{key:i,style:{padding:10,borderLeft:"4px solid "+p.cl,marginBottom:8,background:P.g50,borderRadius:"0 6px 6px 0"}},
+        h("div",{style:{fontWeight:700,color:p.cl,fontSize:12}},p.tk+" \u2014 "+p.nm," ",h("span",{style:{fontSize:9,color:P.g400,fontWeight:400}},"| $"+p.px+" | "+p.pe+"x NTM")),
+        h("div",{style:{fontSize:10,color:P.g600,marginTop:3,lineHeight:"1.5"}},p.nt)
+      )})
+    ),
+    h("div",{style:S.card},h("div",{style:S.ct},"Pair Trade Ideas"),
+      h("div",{style:S.cd},"These are frameworks for further analysis, NOT recommendations."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Trade","Long","Short","Thesis","Key Risk"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,
+          [["Medicaid Recovery","CNC","MOH","CNC trades at lower P/E with larger revenue base and more diversification. Both benefit from rate catch-up, but CNC has more self-help levers.","CNC's ACA book continues to bleed; MOH's pure Medicaid focus benefits more from rate updates."],
+           ["Diversified vs Pure-Play","ELV","MOH","ELV's Carelon services provide earnings buffer absent for MOH. Both have CA Medicaid exposure, but ELV's 75% non-Medicaid revenue cushions downside.","ELV trades at higher absolute price; MOH bounces harder in a recovery."],
+           ["Anti-MA / Pro-Medicaid","CNC","HUM","If Medicaid margins recover faster than MA Star ratings, CNC benefits while HUM faces $3.5B Stars headwind. CNC cheaper on P/E.","MA rates could surprise positively; Medicaid federal funding risk affects CNC more."]
+          ].map(function(r,i){return h("tr",{key:i},
+            h("td",{style:Object.assign({},S.td,{fontWeight:700})},r[0]),
+            h("td",{style:Object.assign({},S.td,{color:P.gs,fontWeight:700})},r[1]),
+            h("td",{style:Object.assign({},S.td,{color:P.red,fontWeight:700})},r[2]),
+            h("td",{style:Object.assign({},S.td,{fontSize:10})},r[3]),
+            h("td",{style:Object.assign({},S.td,{fontSize:10,color:P.or})},r[4])
+          )})
+        )
+      )
+    )
   );
 }
 
+/* ══════════════════════════════════════════
+   TAB 8: TRADING SIGNALS
+   ══════════════════════════════════════════ */
 function T8(){
-  var sigs=[["MCR/HBR","bearish","bearish","Both >91%. Rising >1pp over 2 qtrs."],["Enrollment","neutral","neutral","CA stabilizing ~12.8M."],["Valuation","bullish","bullish","MOH $148 RSI 21. CNC $35 decade low."],["Rate Cycle","bullish","bullish","Medicaid +4.5-5.5%. ACA +30%."],["Policy Risk","bearish","bearish","Flat MA 2027. ACA expired. Fed cuts."],["Earnings","neutral","neutral","MOH Apr 22, CNC Apr 24."]];
-  function sb(t){var m={bullish:{bg:"#E8F5E9",bd:"#4CAF50",co:"#1B5E20"},bearish:{bg:"#FFEBEE",bd:"#EF5350",co:"#B71C1C"},neutral:{bg:"#FFF8E1",bd:"#FFB300",co:"#E65100"}};var x=m[t]||m.neutral;return{padding:8,borderRadius:6,border:"1px solid "+x.bd,background:x.bg,color:x.co};}
-  return e("div",null,
-    e("div",{style:sc},e("div",{style:sct},"Trading Signals"),e("div",{style:scd},"Weight of signals, not any single one. Best 4-8 weeks pre-earnings.")),
-    sigs.map(function(s,i){var w=s[1]==="bearish"||s[2]==="bearish"?"bearish":s[1]==="bullish"&&s[2]==="bullish"?"bullish":"neutral";return e("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 60px 60px",gap:4,marginBottom:5}},e("div",{style:sb(w)},e("div",{style:{fontWeight:700,fontSize:11}},s[0]),e("div",{style:{fontSize:10}},s[3])),e("div",{style:Object.assign({},sb(s[1]),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},e("div",{style:{fontSize:8,fontWeight:600}},"MOH"),e("div",{style:{fontSize:10,fontWeight:800,textTransform:"uppercase"}},s[1])),e("div",{style:Object.assign({},sb(s[2]),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},e("div",{style:{fontSize:8,fontWeight:600}},"CNC"),e("div",{style:{fontSize:10,fontWeight:800,textTransform:"uppercase"}},s[2])))}),
-    e("div",{style:sc},e("div",{style:sct},"Catalysts"),e("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:11}},e("thead",null,e("tr",null,["Date","Event","Impact"].map(function(h,i){return e("th",{key:i,style:sth},h)}))),e("tbody",null,[["Apr 21","UNH Q1'26","Sets sector tone."],["Apr 22","MOH Q1'26","MCR <91% = very bullish."],["Apr 24","CNC Q1'26","HBR <92% = positive."],["Jul 1","CA Rates",">5% = supportive."],["Ongoing","Fed Medicaid","Cuts = negative."]].map(function(r,i){return e("tr",{key:i},e("td",{style:Object.assign({},std,{fontWeight:700})},r[0]),e("td",{style:Object.assign({},std,{fontWeight:600})},r[1]),e("td",{style:Object.assign({},std,{fontSize:10})},r[2]))}))))
+  var sigs=[
+    {nm:"MCR/HBR Trajectory",ms:"bearish",cs:"bearish",d:"2-quarter MCR/HBR change. Rising >1pp = bearish (margin compression accelerating). Flat or declining = bullish (rate catch-up working). Both MOH and CNC are deep in the danger zone (>91%)."},
+    {nm:"Enrollment Velocity",ms:"neutral",cs:"neutral",d:"2-quarter CA Medi-Cal enrollment change. Declining >1% = bearish (acuity headwind continuing). Current: stabilizing at ~12.8M = mildly positive signal. The bleeding has stopped, which is the necessary precondition for margin recovery."},
+    {nm:"Valuation Floor",ms:"bullish",cs:"bullish",d:"Both stocks trading near/below tangible book value. MOH at ~$148 vs. all-time high of $420 (RSI 21, extremely oversold). CNC at ~$35 vs. peak of $97 (decade low). Historically, Medicaid MCOs don't trade below book for extended periods."},
+    {nm:"Management Tone",ms:"neutral",cs:"neutral",d:"MOH CEO called 2025 costs 'an aberration' and guides to $5 EPS for 2026. CNC CEO called it 'challenging but fixable' with >$3 EPS guidance. Both characterize 2026 as a trough year. Watch Q1'26 prints for tone confirmation."},
+    {nm:"Rate Update Cycle",ms:"bullish",cs:"bullish",d:"Medicaid rate increases of 4.5-5.5% flowing through in 2025-2026. ACA premiums raised ~30% for 2026. If rates outpace cost trend, MCR should decline \u2014 this is the core bull case for both stocks."},
+    {nm:"Policy Risk",ms:"bearish",cs:"bearish",d:"Trump admin proposed flat Medicare Advantage rates for 2027. ACA enhanced subsidies expired March 2026 \u2014 early data shows 9% of enrollees becoming uninsured. Federal Medicaid cuts possible. All represent downside risk to membership and revenue."}
+  ];
+
+  return h("div",null,
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Parkman Trading Signal Dashboard"),
+      h("div",{style:S.cd},"This synthesizes all upstream analytics into actionable trading signals. Each signal is classified as bullish (green), neutral (yellow), or bearish (red). The weight of signals, not any single indicator, should drive positioning. These signals are most useful 4-8 weeks before earnings when the market hasn't yet priced in the latest enrollment and acuity data.",h("br"),h("br"),
+        h("strong",null,"Current positioning context (March 2026): "),"Both MOH and CNC report Q1'26 earnings in late April. The key question is whether Q1'26 MCR shows improvement from Q4'25's spike. DHCS enrollment data through January 2026 shows CA Medi-Cal at ~12.8M, essentially flat \u2014 which is actually good news (the bleeding has stopped). If rates are catching up while enrollment stabilizes, Q1'26 could be the inflection quarter."
+      )
+    ),
+    sigs.map(function(s,i){
+      var worst=s.ms==="bearish"||s.cs==="bearish"?"bearish":s.ms==="bullish"&&s.cs==="bullish"?"bullish":"neutral";
+      return h("div",{key:i,style:{display:"grid",gridTemplateColumns:"1fr 80px 80px",gap:8,marginBottom:8}},
+        h("div",{style:S.sig(worst)},h("div",{style:{fontWeight:700,fontSize:13,marginBottom:4}},s.nm),h("div",{style:{fontSize:11,lineHeight:"1.5"}},s.d)),
+        h("div",{style:Object.assign({},S.sig(s.ms),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},h("div",{style:{fontSize:9,fontWeight:600}},"MOH"),h("div",{style:{fontSize:12,fontWeight:800,textTransform:"uppercase"}},s.ms)),
+        h("div",{style:Object.assign({},S.sig(s.cs),{textAlign:"center",display:"flex",flexDirection:"column",justifyContent:"center"})},h("div",{style:{fontSize:9,fontWeight:600}},"CNC"),h("div",{style:{fontSize:12,fontWeight:800,textTransform:"uppercase"}},s.cs))
+      );
+    }),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Catalysts Calendar & Event Risk Map"),
+      h("div",{style:S.cd},"Key upcoming dates that could move these stocks. The highest-conviction trades come when multiple signals align (enrollment stabilizing + rate increases + stock at valuation floor = potential long entry ahead of Q1 earnings)."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Date","Event","Impact","Signal"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,
+          [["Apr 22, 2026","MOH Q1'26 Earnings","First data point on whether MCR is improving. Consensus expects adj EPS ~$2.38. Any beat with MCR <91% would be very bullish.",P.gb],
+           ["Apr 24, 2026","CNC Q1'26 Earnings","Will show if Medicaid HBR is trending toward breakeven. Marketplace membership drop to 3.5M needs to show margin improvement.",P.gb],
+           ["Jul 1, 2026","CA Medicaid Rate Updates","Annual rate adjustments. If CA delivers >5% rate increase, signals state acknowledgment of higher acuity. Supportive of margins.",P.gb],
+           ["Mar 19, 2026","ACA Subsidy Expiration","Enhanced ACA premium subsidies expired. Early polls show 9% losing coverage. CNC more exposed (largest ACA insurer). MOH less.",P.rl],
+           ["Ongoing","Federal Medicaid Debate","Potential FMAP cuts or block grants. Any reduction in federal match would pressure state budgets and MCO rates. Tail risk for MOH/CNC.",P.rl]
+          ].map(function(r,i){return h("tr",{key:i},
+            h("td",{style:Object.assign({},S.td,{fontWeight:700,whiteSpace:"nowrap"})},r[0]),
+            h("td",{style:Object.assign({},S.td,{fontWeight:600})},r[1]),
+            h("td",{style:Object.assign({},S.td,{fontSize:10})},r[2]),
+            h("td",{style:S.td},h("span",{style:S.badge(r[3])},r[3]===P.gb?"Catalyst":"Risk"))
+          )})
+        )
+      )
+    ),
+    h("div",{style:S.card},
+      h("div",{style:S.ct},"Recommended Data Monitoring Cadence"),
+      h("div",{style:S.cd},"To maintain the informational edge, Parkman should establish these monitoring routines. The key advantage is that public enrollment data is released monthly, while MCOs report quarterly \u2014 giving us a 2-3 month forward look at margin trajectories."),
+      h("table",{style:S.tbl},
+        h("thead",null,h("tr",null,["Data Source","Frequency","Lag","What to Watch","URL"].map(function(x,i){return h("th",{key:i,style:S.th},x)}))),
+        h("tbody",null,
+          [["DHCS Managed Care Enrollment","Monthly","~6 weeks","Total enrollment, plan-level splits by county, Health Net vs L.A. Care in LA County","data.chhs.ca.gov"],
+           ["DHCS Certified Eligibles by Language","Monthly","~8 weeks","Non-English speaker share as immigration proxy; county-level demographic shifts","data.chhs.ca.gov"],
+           ["CMS Monthly Enrollment Report","Monthly","~8 weeks","National Medicaid enrollment by state; cross-reference CA against MOH/CNC total Medicaid counts","medicaid.gov"],
+           ["SEC 10-Q/10-K Filings","Quarterly","~45 days","MCR/HBR by segment, PMPM, membership counts, rate update commentary, acuity discussions","sec.gov/edgar"],
+           ["Earnings Call Transcripts","Quarterly","Same day","Management tone on cost trends, rate adequacy, enrollment outlook. Listen for language shifts.","seekingalpha.com"],
+           ["CMS MA Rate Notice","Annual (Jan)","N/A","Medicare Advantage rate changes affect ~10-15% of revenue for both MCOs. Flat rates = bearish.","cms.gov"]
+          ].map(function(r,i){return h("tr",{key:i},
+            h("td",{style:Object.assign({},S.td,{fontWeight:600})},r[0]),
+            h("td",{style:S.td},r[1]),h("td",{style:S.td},r[2]),
+            h("td",{style:Object.assign({},S.td,{fontSize:10})},r[3]),
+            h("td",{style:Object.assign({},S.td,{fontSize:10,color:P.bl})},r[4])
+          )})
+        )
+      )
+    )
   );
 }
 
-ReactDOM.render(e(App),document.getElementById("root"));
+/* ══════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════ */
+ReactDOM.render(h(App),document.getElementById("root"));
+})();
 </script>
 </body>
 </html>
